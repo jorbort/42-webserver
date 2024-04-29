@@ -12,11 +12,12 @@ $(NAME): $(OBJS) $(HEADER) Makefile
 	$(CC) $(CFLAG) $(OBJS) -o $(NAME)
 
 clean:
-	rm -f *.o
+	@find . -name '*.o' -type f -delete
 
 git: fclean
-	git add *
-	git commit -m "auto commit"
+	@read -p "Enter commit message: " commit_message; \
+    git add *; \
+    git commit -m "$$commit_message"
 	git push
 
 fclean: clean

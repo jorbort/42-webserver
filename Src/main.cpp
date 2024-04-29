@@ -1,5 +1,5 @@
-#include "Includes/Logger.hpp"
-#include "Includes/WebServ.hpp"
+#include "../Includes/Logger.hpp"
+#include "../Includes/WebServ.hpp"
 
 int main(void)
 {
