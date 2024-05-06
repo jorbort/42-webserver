@@ -7,7 +7,7 @@
 #define RESET "\033[0m"
 
 #include <sys/socket.h>
-#include <poll.h>
+#include <sys/epoll.h>
 #include <string>
 
 class Server
@@ -17,4 +17,13 @@ class Server
 	public:
 	void CreateSocket();
 	static void ParseConfig(std::string &arg);
+	static void ParseConfig(void);
+	void RunServer(void);
+
+
+
+	class SocketException : std::exception
+	{
+		const char* what() const throw();
+	};
 };
