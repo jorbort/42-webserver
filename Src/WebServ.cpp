@@ -5,6 +5,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
+#include <errno.h>
 
 #define MAX_EVENTS 10000
 
@@ -40,19 +41,24 @@ void Server::RunServer(void)
 	if (listen(this->sfd, 10) < 0)
 		throw SocketException();
 	fcntl(this->sfd, F_SETFL, O_NONBLOCK);
+	
+	std::cout << "waiting for conection" << std::endl;
 	while (42)
 	{
 		char buffer [30000] = {0};
 
-		std::cout << "waiting for conection" << std::endl;
 		if (( new_socket = accept(this->sfd,(struct sockaddr *) &port, (socklen_t *)&portlen)) < 0)
+		{
 			if(errno == EAGAIN || errno == EWOULDBLOCK)
-				continue;
-		else
+			{
+					continue;
+			}
+			else
 			{
 				close(epoll_fd);
 				throw SocketException();
 			}
+		}
 		event.data.fd = new_socket;
 		std::cout << new_socket << std::endl;
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socket, &event))
