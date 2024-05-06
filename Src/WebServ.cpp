@@ -25,7 +25,7 @@ void Server::RunServer(void)
 	int portlen = sizeof(port);
 
 	event.events = EPOLLIN;
-	event.data.fd = 0;
+	event.data.fd = this->sfd;
 
 	port.sin_family = AF_INET;
 	port.sin_port = htons(4242);
@@ -48,12 +48,16 @@ void Server::RunServer(void)
 				close(epoll_fd);
 				throw SocketException();
 			}
+		event.data.fd = new_socket;
+		std::cout << new_socket << std::endl;
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socket, &event))
 		{
 			close(epoll_fd);
 			throw SocketException();
 		}
+		std::cout << "pasa epollctl" <<std::endl;
 		eventCount = epoll_wait(epoll_fd, events, MAX_EVENTS, 30000);
+		std::cout << eventCount;
 		for(int i = 0; i < eventCount; i++)
 		{
 			if (read(events[i].data.fd, buffer, 30000) < 0)
