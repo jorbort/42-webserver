@@ -50,15 +50,8 @@ void Server::RunServer(void)
 		std::cout << GREEN <<  "waiting for conection..." << std::endl;
 		if (( new_socket = accept(this->sfd,(struct sockaddr *) &port, (socklen_t *)&portlen)) < 0)
 		{
-			// if(errno == EAGAIN || errno == EWOULDBLOCK)
-			// {
-			// 		continue;
-			// }
-			// else
-			// {
 				close(epoll_fd);
 				throw SocketException();
-			// }
 		}
 		event.data.fd = new_socket;
 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socket, &event))

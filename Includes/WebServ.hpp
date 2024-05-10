@@ -9,19 +9,15 @@
 #include <sys/socket.h>
 #include <sys/epoll.h>
 #include <string>
+#include "ConfigParser.hpp"
 
 class Server
 {
 	private:
 		int sfd;
 	public:
-	void CreateSocket();
-	static void ParseConfig(std::string &arg);
-	static void ParseConfig(void);
-	void RunServer(void);
-
-
-
+		void RunServer(void);
+		ConfigParser conf;
 	class SocketException : std::exception
 	{
 		const char* what() const throw();

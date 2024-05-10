@@ -10,32 +10,32 @@ int main(int argc, char **argv)
 		return (1);
 	}
 	Server webServer;
-	// if (argc == 2)
-	// {
-	// 	std::string arg = argv[1];
-	// 	try 
-	// 	{
-	// 		webServer.ParseConfig(arg);
+	if (argc == 2)
+	{
+		std::string arg = argv[1];
+		try 
+		{
+			webServer.conf.ParseConfig(arg)
 
-	// 	}
-	// 	catch(std::exception &e)
-	// 	{
-	// 		Logger::print("Error", e.what());
-	// 		return (1);
-	// 	}
-	// }
-	// else if (argc == 1)
-	// {
-	// 	try 
-	// 	{
-	// 		webServer.ParseConfig();
-	// 	}
-	// 	catch (std::exception &e)
-	// 	{
-	// 		Logger::print("Error", e.what());
-	// 		return (1);
-	// 	}
-	// }
+		}
+		catch(std::exception &e)
+		{
+			Logger::print("Error", e.what());
+			return (1);
+		}
+	}
+	else if (argc == 1)
+	{
+		try 
+		{
+			webServer.ParseConfig();
+		}
+		catch (std::exception &e)
+		{
+			Logger::print("Error", e.what());
+			return (1);
+		}
+	}
 	try
 	{
 		webServer.RunServer();
