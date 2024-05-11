@@ -9,7 +9,7 @@ class ConfigParser
 {
 	private:
 		std::map<std::string, std::string> _ConfOptions;
-
+		std::string configPath;
 	public:
 
 		ConfigParser();
@@ -17,12 +17,12 @@ class ConfigParser
 		~ConfigParser();
 
 		ConfigParser &operator=( ConfigParser const & rhs );
-		void ParseConfig(std::string path);
 		void ParseConfig(void);
 		std::string &getValue(std::string key);
-
+		std::string &getpath();
+		void setConfPath(std::string);
+		void defaultConf(void);
 };
 
-std::ostream &operator<<( std::ostream & o, ConfigParser const & i );
 
 #endif 

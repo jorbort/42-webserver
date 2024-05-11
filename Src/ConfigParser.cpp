@@ -1,4 +1,4 @@
-#include "ConfigParser.hpp"
+#include "../Includes/ConfigParser.hpp"
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
@@ -10,6 +10,7 @@ ConfigParser::ConfigParser()
 
 ConfigParser::ConfigParser( const ConfigParser & src )
 {
+	*this = src;
 }
 
 
@@ -28,19 +29,12 @@ ConfigParser::~ConfigParser()
 
 ConfigParser &				ConfigParser::operator=( ConfigParser const & rhs )
 {
-	//if ( this != &rhs )
-	//{
-		//this->_value = rhs.getValue();
-	//}
+	if ( this != &rhs )
+	{
+		*this = rhs;
+	}
 	return *this;
 }
-
-std::ostream &			operator<<( std::ostream & o, ConfigParser const & i )
-{
-	//o << "Value = " << i.getValue();
-	return o;
-}
-
 
 /*
 ** --------------------------------- METHODS ----------------------------------

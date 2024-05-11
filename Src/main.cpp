@@ -1,9 +1,9 @@
 #include "../Includes/Logger.hpp"
 #include "../Includes/WebServ.hpp"
+#include "../Includes/ConfigParser.hpp"
 
 int main(int argc, char **argv)
 {
-	(void) argv;
 	if (argc > 2)
 	{
 		Logger::print("Error", "Error : invalid amount of arguments");
@@ -15,8 +15,7 @@ int main(int argc, char **argv)
 		std::string arg = argv[1];
 		try 
 		{
-			webServer.conf.ParseConfig(arg)
-
+				webServer = Server(arg);
 		}
 		catch(std::exception &e)
 		{
@@ -28,7 +27,7 @@ int main(int argc, char **argv)
 	{
 		try 
 		{
-			webServer.ParseConfig();
+			webServer = Server();
 		}
 		catch (std::exception &e)
 		{

@@ -1,4 +1,5 @@
 #include "../Includes/WebServ.hpp"
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -9,6 +10,21 @@
 
 #define MAX_EVENTS 10000
 
+Server::Server(void)
+{
+	this->conf.defaultConf();
+}
+
+Server::Server(std::string &path)
+{
+	conf.setConfPath(path);
+	conf.ParseConfig();
+}
+Server::~Server()
+{
+	
+}
+
 int makeSocket(sockaddr_in &port, int portlen)
 {
 	int n =  socket(AF_INET, SOCK_STREAM, 0);
@@ -16,11 +32,11 @@ int makeSocket(sockaddr_in &port, int portlen)
 	port.sin_port = htons(4242);
 	port.sin_addr.s_addr = INADDR_ANY;
 	memset(port.sin_zero, '\0', sizeof(port.sin_zero));
-	if (bind(n, (struct sockaddr *) &port, sizeof(port)) == -1)
+	if (bind(n, (struct sockaddr *) &port, portlen) == -1)
 		return -1;
 	if (listen(n, 10) < 0)
 		return -1;
-
+	return (n);
 }
 
 void Server::RunServer(void)
@@ -47,7 +63,7 @@ void Server::RunServer(void)
 	{
 		char buffer [30000] = {0};
 
-		std::cout << GREEN <<  "waiting for conection..." << std::endl;
+		Logger::print("Ok", "waiting for conection...");
 		if (( new_socket = accept(this->sfd,(struct sockaddr *) &port, (socklen_t *)&portlen)) < 0)
 		{
 				close(epoll_fd);
@@ -70,6 +86,17 @@ void Server::RunServer(void)
 		}
 	}
 	close(epoll_fd);
+}
+
+Server::Server( const Server & src )
+{
+	*this = src;
+}
+Server &Server::operator=( Server const & rhs )
+{
+	if (this != &rhs)
+		*this = rhs;
+	return *this;
 }
 
 const char * Server::SocketException::what() const throw()
