@@ -13,7 +13,7 @@
 
 Server::Server(void)
 {
-	this->conf.defaultConf();
+	//this->conf.defaultConf();
 }
 
 Server::Server(std::string &path)
@@ -102,9 +102,9 @@ Server::Server( const Server & src )
 }
 Server &Server::operator=( Server const & rhs )
 {
-	if (this != &rhs)
-		*this = rhs;
-	return *this;
+	this->conf = rhs.conf;
+	this->sfd = rhs.sfd;
+	return (*this);
 }
 
 const char * Server::SocketException::what() const throw()
