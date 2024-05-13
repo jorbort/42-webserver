@@ -80,7 +80,6 @@ void ConfigParser::epurString(std::string &str)
 {
 	std::string res = "";
 	int i = 0;
-	int j = 0;
 	bool flag = false;
 
 	while (str[i] == ' ' || str[i] == '\t')
@@ -92,13 +91,12 @@ void ConfigParser::epurString(std::string &str)
 		if (str[i] != ' ' && str[i] != '\t')
 		{
 			if (flag)
-				res[j++] = ' ';
+				res.push_back(32);
 			flag = 0;
-			res[j++] = str[i];
+			res.push_back(str[i]);
 		}
 		i++;
 	}
-	res[j] = '\0';
 	str = res;
 }
 
