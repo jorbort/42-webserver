@@ -4,11 +4,13 @@
 # include <iostream>
 # include <string>
 # include <map>
+#include <vector>
 
 class ConfigParser
 {
 	private:
 		std::map<std::string, std::string> _ConfOptions;
+		std::vector<std::string> _ConfFile;
 		std::string configPath;
 	public:
 
@@ -25,4 +27,4 @@ class ConfigParser
 };
 
 
-#endif 
+#endif

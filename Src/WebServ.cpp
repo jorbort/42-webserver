@@ -2,6 +2,7 @@
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <stdexcept>
 #include <string.h>
 #include <iostream>
 #include <unistd.h>
@@ -18,11 +19,18 @@ Server::Server(void)
 Server::Server(std::string &path)
 {
 	conf.setConfPath(path);
-	conf.ParseConfig();
+	try
+	{
+		conf.ParseConfig();
+	}
+	catch (std::exception &e)
+	{
+		throw std::invalid_argument("can't open config file");
+	}
 }
 Server::~Server()
 {
-	
+
 }
 
 int makeSocket(sockaddr_in &port, int portlen)

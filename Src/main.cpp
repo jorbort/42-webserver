@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 	if (argc == 2)
 	{
 		std::string arg = argv[1];
-		try 
+		try
 		{
 				webServer = Server(arg);
 		}
@@ -23,28 +23,28 @@ int main(int argc, char **argv)
 			return (1);
 		}
 	}
-	else if (argc == 1)
-	{
-		try 
-		{
-			webServer = Server();
-		}
-		catch (std::exception &e)
-		{
-			Logger::print("Error", e.what());
-			return (1);
-		}
-	}
-	try
-	{
-		webServer.RunServer();
+	// else if (argc == 1)
+	// {
+	// 	try
+	// 	{
+	// 		webServer = Server();
+	// 	}
+	// 	catch (std::exception &e)
+	// 	{
+	// 		Logger::print("Error", e.what());
+	// 		return (1);
+	// 	}
+	// }
+	// try
+	// {
+	// 	webServer.RunServer();
 
-	}
-	catch(const std::exception& e)
-	{
-		Logger::print("Error", e.what());
-		return (1);
-	}
-	
+	// // }
+	// catch(const std::exception& e)
+	// {
+	// 	Logger::print("Error", e.what());
+	// 	return (1);
+	// }
 
+return (0);
 }
