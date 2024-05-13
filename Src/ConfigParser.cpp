@@ -42,39 +42,95 @@ ConfigParser &				ConfigParser::operator=( ConfigParser const & rhs )
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
-	void ConfigParser::setConfPath(std::string path)
+void ConfigParser::setConfPath(std::string path)
+{
+	this->configPath = path;
+}
+
+std::string &ConfigParser::getpath(void)
+{
+	return (this->configPath);
+}
+
+void ConfigParser::ParseConfig()
+{
+	std::ifstream file;
+	std::string line = "";
+
+	file.open(this->getpath().c_str(), std::ios::in );
+	if (file.is_open() == false)
+		throw std::invalid_argument("");
+	while (!file.eof())
 	{
-		this->configPath = path;
+		getline(file, line);
+		if (line[0] != '\n')
+			_ConfFile.push_back(line);
 	}
 
-	std::string &ConfigParser::getpath(void)
+	std::vector<std::string>::iterator start = _ConfFile.begin();
+	while (start != _ConfFile.end())
 	{
-		return (this->configPath);
-	} 
+		epurString(*start);
+		std::cout << *start;
+		start++;
+	}
+}
 
-	void ConfigParser::ParseConfig()
+void ConfigParser::epurString(std::string &str)
+{
+	std::string res = "";
+	int i = 0;
+	int j = 0;
+	bool flag = false;
+
+	while (str[i] == ' ' || str[i] == '\t')
+		i++;
+	while (str[i])
 	{
-		std::ifstream file;
-		std::string line = "";
-
-		file.open(this->getpath().c_str(), std::ios::in );
-		if (file.is_open() == false)
-			throw std::invalid_argument("");
-		while (!file.eof())
+		if (str[i] == ' ' || str[i] == '\t')
+			flag = true;
+		if (str[i] != ' ' && str[i] != '\t')
 		{
-			getline(file, line);
-			if (line[0] != '\n')
-				_ConfFile.push_back(line);
-			
+			if (flag)
+				res[j++] = ' ';
+			flag = 0;
+			res[j++] = str[i];
 		}
-		std::vector<std::string>::iterator start = _ConfFile.begin();
-		while (start != _ConfFile.end())
-		{	
-			std::cout << *start;
-			start++;
-		}
+		i++;
 	}
+	res[j] = '\0';
+	str = res;
+}
 
+// 	void	get_epured(char *str, char *res)
+// {
+// 		int	i;
+// 		int	j;
+// 		int	flag;
+
+// 		i = 0;
+// 		j = 0;
+// 		flag = 0;
+// 		while (str[i] == ' ' || str[i] == '\t')
+// 			i++;
+// 		while (str[i])
+// 		{
+// 			if (str[i] == ' ' || str[i] == '\t')
+// 				flag = 1;
+// 			if (str[i] != ' ' && str[i] != '\t')
+// 			{
+// 				if (flag)
+// 					res[j++] = ' ';
+// 				flag = 0;
+// 				res[j++] = str[i];
+// 			}
+// 			i++;
+// 		}
+// 		res[j] = '\0';
+// 		free(str);
+// }
+
+}
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */

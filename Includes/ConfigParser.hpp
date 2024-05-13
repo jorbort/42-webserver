@@ -22,7 +22,8 @@ class ConfigParser
 		void ParseConfig(void);
 		std::string &getValue(std::string key);
 		std::string &getpath();
-		void setConfPath(std::string);
+		void setConfPath(std::string &path);
+		void epurString(std::string &path);
 		//void defaultConf(void);
 };
 
