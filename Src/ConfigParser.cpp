@@ -63,7 +63,7 @@ void ConfigParser::ParseConfig()
 	while (!file.eof())
 	{
 		getline(file, line);
-		if (line[0] != '\n')
+		if (line[0] != '\n' && !line.empty() && line[0] != '#')
 			_ConfFile.push_back(line);
 	}
 
@@ -71,6 +71,11 @@ void ConfigParser::ParseConfig()
 	while (start != _ConfFile.end())
 	{
 		epurString(*start);
+		start++;
+	}
+	start = _ConfFile.begin();
+	while (start != _ConfFile.end())
+	{
 		std::cout << *start << std::endl;
 		start++;
 	}
