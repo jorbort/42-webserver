@@ -7,6 +7,15 @@
 #include <string>
 #include "ConfigParser.hpp"
 #include "Logger.hpp"
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <stdexcept>
+#include <string.h>
+#include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+
 
 class Server
 {
@@ -20,6 +29,7 @@ class Server
 		~Server();
 
 		ConfigParser conf;
+		int makeSocket(sockaddr_in &port, int portlen);
 		//void RunServer(void);
 	class SocketException : std::exception
 	{

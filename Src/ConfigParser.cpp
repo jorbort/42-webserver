@@ -50,10 +50,17 @@ void ConfigParser::findConfigs()
 	std::string value;
 	std::string line;
 	std::vector<std::string>::iterator vBegin = _ConfFile.begin() , vEnd = _ConfFile.end();
+	bool bracket = false;
+	int bracketCount = 0;
 
 	for (; vBegin != vEnd; vBegin++)
 	{
 		line = *vBegin;
+		if (line[line.length()] == '{')
+		{
+			bracket = true;
+			bracketCount++;
+		}
 		if (!line.compare(0,6, "listen"))
 		{
 			_ConfOptions["listen"] = line.substr(line.find(" ") + 1, (line.length()));

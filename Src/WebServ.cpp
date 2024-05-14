@@ -1,13 +1,5 @@
 #include "../Includes/WebServ.hpp"
 
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <stdexcept>
-#include <string.h>
-#include <iostream>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
 
 #define MAX_EVENTS 10000
 
@@ -33,11 +25,11 @@ Server::~Server()
 
 }
 
-// int makeSocket(sockaddr_in &port, int portlen)
+// int Server::makeSocket(sockaddr_in &port, int portlen)
 // {
 // 	int n =  socket(AF_INET, SOCK_STREAM, 0);
 // 	port.sin_family = AF_INET;
-// 	port.sin_port = htons(4242);
+// 	port.sin_port = htons(std::atoi(conf.getValue("listen").c_str()));
 // 	port.sin_addr.s_addr = INADDR_ANY;
 // 	memset(port.sin_zero, '\0', sizeof(port.sin_zero));
 // 	if (bind(n, (struct sockaddr *) &port, portlen) == -1)

@@ -5,6 +5,7 @@
 # include <string>
 # include <map>
 #include <vector>
+#include "Location.hpp"
 
 class ConfigParser
 {
@@ -26,6 +27,7 @@ class ConfigParser
 		void setConfPath(std::string &path);
 		void epurString(std::string &path);
 		//void defaultConf(void);
+		Location locations[100];
 };
 
 
