@@ -14,14 +14,15 @@ class ConfigParser
 		std::string configPath;
 	public:
 
-		ConfigParser();
+		ConfigParser(void);
 		ConfigParser( ConfigParser const & src );
-		~ConfigParser();
+		~ConfigParser(void);
 
 		ConfigParser &operator=( ConfigParser const & rhs );
 		void ParseConfig(void);
+		void findConfigs(void);
 		std::string &getValue(std::string key);
-		std::string &getpath();
+		std::string &getpath(void);
 		void setConfPath(std::string &path);
 		void epurString(std::string &path);
 		//void defaultConf(void);

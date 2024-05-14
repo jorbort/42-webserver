@@ -30,13 +30,6 @@ int main(void)
 	std::cout << "File content:\n" << content << std::endl;
 
 	HttpRequest ParseReq(content);
-	
+
 	return 0;
 }
-
-/*POST /data HTTP/1.1
-Host: api.example.com
-Content-Type: application/json
-Authorization: Bearer YOUR_ACCESS_TOKEN
-
-{"key1": "value1", "key2": "value2"}*/

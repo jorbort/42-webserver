@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <string>
 
+
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
@@ -30,7 +31,7 @@ ConfigParser::~ConfigParser()
 ** --------------------------------- OVERLOAD ---------------------------------
 */
 
-ConfigParser &				ConfigParser::operator=( ConfigParser const & rhs )
+ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 {
 	this->_ConfFile = rhs._ConfFile;
 	this->_ConfOptions  = rhs._ConfOptions;
@@ -42,14 +43,23 @@ ConfigParser &				ConfigParser::operator=( ConfigParser const & rhs )
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
-void ConfigParser::setConfPath(std::string &path)
-{
-	this->configPath = path;
-}
 
-std::string &ConfigParser::getpath(void)
+void ConfigParser::findConfigs()
 {
-	return (this->configPath);
+	std::string key;
+	std::string value;
+	std::string line;
+	std::vector<std::string>::iterator vBegin = _ConfFile.begin() , vEnd = _ConfFile.end();
+
+	for (; vBegin != vEnd; vBegin++)
+	{
+		line = *vBegin;
+		if (!line.compare(0,6, "listen"))
+		{
+			_ConfOptions["listen"] = line.substr(line.find(" ") + 1, (line.length()));
+		}
+	}
+	std::cout << _ConfOptions["listen"] << std::endl;
 }
 
 void ConfigParser::ParseConfig()
@@ -64,21 +74,13 @@ void ConfigParser::ParseConfig()
 	{
 		getline(file, line);
 		if (line[0] != '\n' && !line.empty() && line[0] != '#')
+		{
+			epurString(line);
 			_ConfFile.push_back(line);
+		}
 	}
-
-	std::vector<std::string>::iterator start = _ConfFile.begin();
-	while (start != _ConfFile.end())
-	{
-		epurString(*start);
-		start++;
-	}
-	start = _ConfFile.begin();
-	while (start != _ConfFile.end())
-	{
-		std::cout << *start << std::endl;
-		start++;
-	}
+	file.close();
+	findConfigs();
 }
 
 void ConfigParser::epurString(std::string &str)
@@ -93,7 +95,7 @@ void ConfigParser::epurString(std::string &str)
 	{
 		if (str[i] == ' ' || str[i] == '\t')
 			flag = true;
-		if (str[i] != ' ' && str[i] != '\t')
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != ';')
 		{
 			if (flag)
 				res.push_back(32);
@@ -108,6 +110,16 @@ void ConfigParser::epurString(std::string &str)
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
+
+void ConfigParser::setConfPath(std::string &path)
+{
+	this->configPath = path;
+}
+
+std::string &ConfigParser::getpath(void)
+{
+	return (this->configPath);
+}
 
 
 /* ************************************************************************** */
