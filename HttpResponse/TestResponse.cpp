@@ -4,11 +4,21 @@
 #include <unistd.h>
 #include "Response.hpp"
 
-int main(void) {
-	Response response;
-	int		fd;
+int main(int argc, char **argv) {
+	int			fd;
+	std::string	method;
 
-	fd = open("test.html", O_RDONLY);
-	std::cout << response.createResponse(fd) << std::endl;
+	if (argc < 2)
+	{
+		std::cout << "arg 1: METHOD, arg 2: URL(GET, POST)" << std::endl;
+		return (0);
+	}
+	method = argv[1];
+	if (method.compare("GET") == 0)
+	{
+		fd = open(argv[2], O_RDONLY);
+		Response response(Response::GET, 200, fd);
+		std::cout << response.createResponse() << std::endl;
+	}
 	close(fd);
 }

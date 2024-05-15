@@ -3,14 +3,27 @@
 #include <ctime>
 #include <unistd.h>
 
-Response::Response() {
+Response::Response(MethodType type, int statusCode, int fd) {
+	this->method = type;
+	this->statusCode = statusCode;
+	this->fd = fd;
 	this->maxBodySize = SIZE_MAX;
-	this->statusCode = 200;
 }
 
 Response::~Response() {}
 
-std::string	Response::createResponse(int fd) {
+std::string	Response::createResponse(void) {
+	if (this->method == GET)
+		return createGETresponse();
+	else if (this->method == POST)
+		return createPOSTresponse();
+	else if (this->method == DELETE)
+		return createDELETEresponse();
+	else
+		return "Unknown Method\n";
+}
+
+std::string	Response::createGETresponse(void) {
 	std::string response;
 	int			tmpContentLength;
 
@@ -22,8 +35,16 @@ std::string	Response::createResponse(int fd) {
 	response += addContentLengthHeader(tmpContentLength);
 	response += addLastModified();
 	response += "\r\n";
-	response += addBody(fd);
+	response += addBody();
 	return response;
+}
+
+std::string	Response::createPOSTresponse(void) {
+	return "POST Response Not Implemented";
+}
+
+std::string	Response::createDELETEresponse(void) {
+	return "DELETE Response Not Implemented";
 }
 
 std::string	Response::addStatusLine(void) {
@@ -84,14 +105,15 @@ std::string	Response::addLastModified(void) {
 	return lastModified;
 }
 
-std::string	Response::addBody(int fd) {
+std::string	Response::addBody(void) {
 	std::string	body;
 	char		buffer[1024];
 	ssize_t		bytesRead;
 	size_t		totalBytesRead;
 
 	totalBytesRead = 0;
-	while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
+	while ((bytesRead = read(this->fd, buffer, sizeof(buffer))) > 0 &&
+			totalBytesRead < this->maxBodySize) {
 		body += buffer;
 		std::memset(buffer, 0, sizeof(buffer));
 		totalBytesRead += bytesRead;
