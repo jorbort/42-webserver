@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:37:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/15 19:41:14 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/16 00:42:41 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,3 +60,4 @@ class HttpRequest
 std::ostream& operator<<(std::ostream &out, const HttpRequest &request);
 
 #endif
+

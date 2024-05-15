@@ -5,12 +5,13 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/10 18:37:54 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/15 19:34:24 by juan-anm         ###   ########.fr       */
+/*   Created: 2024/05/16 00:28:57 by juan-anm          #+#    #+#             */
+/*   Updated: 2024/05/16 00:41:05 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HTTPRequest.hpp"
+
+#include "HttpRequest.hpp"
 
 HttpRequest::HttpRequest(){}
 
@@ -76,4 +77,6 @@ std::ostream& operator<<(std::ostream &out, const HttpRequest &request){
 	for (std::vector<uint8_t>::iterator it = body.begin(); it != body.end(); it++){
 		out << *it;
 	}
+	return (out);
 }
+

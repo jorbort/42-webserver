@@ -5,10 +5,11 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/05/15 19:24:05 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/15 19:42:48 by juan-anm         ###   ########.fr       */
+/*   Created: 2024/05/16 00:20:15 by juan-anm          #+#    #+#             */
+/*   Updated: 2024/05/16 00:49:04 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #ifndef HTTPREQUESTPARSER_HPP
 #define HTTPREQUESTPARSER_HPP
@@ -16,16 +17,23 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include "HTTPRequest.hpp"
+#include "HttpRequest.hpp"
 
-class HTTPRequestParser
+class HttpRequestParser
 {
 	private:
-		HTTPRequestParser(const HTTPRequestParser &other);
-		HTTPRequestParser& operator=(const HTTPRequestParser &other);
+		HttpRequestParser(const HttpRequestParser &other);
+		HttpRequestParser& operator=(const HttpRequestParser &other);
 	public:
-		HTTPRequestParser();
-		~HTTPRequestParser();
+		HttpRequestParser();
+		~HttpRequestParser();
 		
-		void	parseRequest(const HttpRequest &request, const char *begin, const char *end);
+		void	parseRequest(HttpRequest &request, const char *begin, const char *end);
+		bool	isChar(int c);
+		bool	isControl(int c);
+		bool	isSpecial(int c);
+		bool	isDigit(int c);
+		
 };
+
+#endif

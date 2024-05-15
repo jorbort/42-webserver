@@ -6,14 +6,14 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/15 19:46:40 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/16 00:42:34 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fstream>
 #include <iostream>
-#include "HTTPRequestParser.hpp"
-#include "HTTPRequest.hpp"
+#include "HttpRequestParser.hpp"
+#include "HttpRequest.hpp"
 
 int main(void)
 {
@@ -26,13 +26,13 @@ int main(void)
 						"\r\n"
 						"{\"key1\": \"value1\", \"key2\": \"value2\"}";
 
-	std::cout << Request2 << std::endl;
 	HttpRequest request;
-	HTTPRequestParser Request_parser;
+	HttpRequestParser Request_parser;
 	
 	Request_parser.parseRequest(request, Request2.c_str(), Request2.c_str() + Request2.size());
 	
-
+	std::cout << request << std::endl;
 
 	return 0;
 }
+
