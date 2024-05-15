@@ -1,85 +1,181 @@
 #include "Response.hpp"
 #include <string>
+#include <ctime>
+#include <unistd.h>
 
 Response::Response() {
-	inicializeStatusCodeMap();
+	this->maxBodySize = SIZE_MAX;
+	this->statusCode = 200;
 }
 
 Response::~Response() {}
 
-std::string	Response::createResponse() {
+std::string	Response::createResponse(int fd) {
 	std::string response;
-	int			tmpStatus;
+	int			tmpContentLength;
 
-	tmpStatus = 200;
-	response += addStatusLine(tmpStatus);
+	tmpContentLength = 88;
+	this->maxBodySize = tmpContentLength;
+	response = addStatusLine();
+	response += addDateHeader();
+	response += addContentTypeHeader(HTML);
+	response += addContentLengthHeader(tmpContentLength);
+	response += addLastModified();
+	response += "\r\n";
+	response += addBody(fd);
 	return response;
 }
 
-std::string	Response::addStatusLine(int status) {
+std::string	Response::addStatusLine(void) {
 	std::string statusLine;
 
 	statusLine += "HTTP/1.1";
-	statusLine += " ";
-	statusLine += std::to_string(status);
-	statusLine += " ";
-	statusLine += getStatusDescription(status);
+	statusLine += ' ';
+	statusLine += std::to_string(this->statusCode);
+	statusLine += ' ';
+	statusLine += getStatusCodeDescription(this->statusCode);
 	statusLine += "\r\n";
 	return statusLine;
 }
 
-std::string	Response::getStatusDescription(int status) {
-	if (this->status_code_map.find(status) == this->status_code_map.end())
-		return "STATUS_CODE_ERROR";
-	else
-		return this->status_code_map[status];
+std::string	Response::addDateHeader(void) {
+	std::string	date;
+   	time_t		now;
+	tm			*gmtm;
+
+	date = "Date:";
+	date += " ";
+	{
+		now = time(0);
+		gmtm = gmtime(&now);
+	}
+	date += asctime(gmtm);
+	date.replace(date.rfind('\n'), 1, "\r\n");
+	return date;
 }
 
-void	Response::inicializeStatusCodeMap(void) {
+std::string	Response::addContentTypeHeader(ContentType type) {
+	std::string	contentType;
+
+	contentType = "Content-Type:";
+	contentType += ' ';
+	contentType += getContentType(type);
+	contentType += "\r\n";
+	return contentType;
+}
+
+std::string	Response::addContentLengthHeader(int length) {
+	std::string contentLength;
+
+	contentLength = "Content-Length:";
+	contentLength += " ";
+	contentLength += std::to_string(length);
+	contentLength += "\r\n";;
+	return contentLength;
+}
+
+std::string	Response::addLastModified(void) {
+	std::string lastModified;
+
+	lastModified = "Last-Modified:";
+	lastModified += ' ';
+	lastModified += "NOT IMPLEMENTED";
+	lastModified += "\r\n";
+	return lastModified;
+}
+
+std::string	Response::addBody(int fd) {
+	std::string	body;
+	char		buffer[1024];
+	ssize_t		bytesRead;
+	size_t		totalBytesRead;
+
+	totalBytesRead = 0;
+	while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
+		body += buffer;
+		std::memset(buffer, 0, sizeof(buffer));
+		totalBytesRead += bytesRead;
+	}
+	return (replaceNewlines(body));
+}
+
+std::string Response::replaceNewlines(const std::string& input) {
+    std::string result;
+    
+    for (std::string::const_iterator it = input.begin(); it != input.end(); ++it) {
+        if (*it == '\n')
+            result += "\r\n";
+        else
+            result += *it;
+    }
+    return result;
+}
+
+std::string	Response::getStatusCodeDescription(int statusCode) {
+	switch (statusCode) {
 	//1xx: Information
-	this->status_code_map[100] = "Continue";
-	this->status_code_map[101] = "Switching Protocols";
+		case 100: return "Continue";
+		case 101: return "Switching Protocols";
 	//2xx: Successful
-	this->status_code_map[200] = "OK";
-	this->status_code_map[201] = "Created";
-	this->status_code_map[202] = "Accepted";
-	this->status_code_map[203] = "Non-authoritative Information";
-	this->status_code_map[204] = "No Content";
-	this->status_code_map[205] = "Reset Content";
-	this->status_code_map[206] = "Partial Content";
+		case 200: return "OK";
+		case 201: return "Created";
+		case 202: return "Accepted";
+		case 203: return "authoritative Information";
+		case 204: return "No Content";
+		case 205: return "Reset Content";
+		case 206: return "Partial Content";
 	//3xx: Redirection
-	this->status_code_map[300] = "Multiple Choices";
-	this->status_code_map[301] = "Moved Permanently";
-	this->status_code_map[302] = "Found";
-	this->status_code_map[303] = "See Other";
-	this->status_code_map[304] = "Not Modified";
-	this->status_code_map[305] = "Use Proxy";
-	this->status_code_map[306] = "Unused";
-	this->status_code_map[307] = "Temporary Redirect";
+		case 300: return "Multiple Choices";
+		case 301: return "Moved Permanently";
+		case 302: return "Found";
+		case 303: return "See Other";
+		case 304: return "Not Modified";
+		case 305: return "Use Proxy";
+		case 306: return "Unused";
+		case 307: return "Temporary Redirect";
 	//4xx: Client Error
-	this->status_code_map[400] = "Bad Request";
-	this->status_code_map[401] = "Unauthorized";
-	this->status_code_map[402] = "Payment Required";
-	this->status_code_map[403] = "Forbidden";
-	this->status_code_map[404] = "Not Found";
-	this->status_code_map[405] = "Method Not Allowed";
-	this->status_code_map[406] = "Not Acceptable";
-	this->status_code_map[407] = "Proxy Authentication Required";
-	this->status_code_map[408] = "Request Timeout";
-	this->status_code_map[409] = "Conflict";
-	this->status_code_map[410] = "Gone";
-	this->status_code_map[411] = "Length Required";
-	this->status_code_map[412] = "Precondition Failed";
-	this->status_code_map[413] = "Request Entity Too Large";
-	this->status_code_map[414] = "Request-url Too Long";
-	this->status_code_map[415] = "Unsupported Media Type";
-	this->status_code_map[416] = "Requested Range Not Satisfiable";
-	this->status_code_map[417] = "Expectation Failed";
+		case 400: return "Bad Request";
+		case 401: return "Unauthorized";
+		case 402: return "Payment Required";
+		case 403: return "Forbidden";
+		case 404: return "Not Found";
+		case 405: return "Method Not Allowed";
+		case 406: return "Not Acceptable";
+		case 407: return "Proxy Authentication Required";
+		case 408: return "Request Timeout";
+		case 409: return "Conflict";
+		case 410: return "Gone";
+		case 411: return "Length Required";
+		case 412: return "Precondition Failed";
+		case 413: return "Request Entity Too Large";
+		case 414: return "Request-url Too Long";
+		case 415: return "Unsupported Media Type";
+		case 416: return "Requested Range Not Satisfiable";
+		case 417: return "Expectation Failed";
 	//5xx: Server Error
-	this->status_code_map[500] = "Internal Server Error";
-	this->status_code_map[501] = "Not Implemented";
-	this->status_code_map[502] = "Bad Gateway";
-	this->status_code_map[503] = "Service Unavailable";
-	this->status_code_map[504] = "Gateway Timeout";
-	this->status_code_map[505] = "HTTP Version Not Supported";
+		case 500: return "Internal Server Error";
+		case 501: return "Not Implemented";
+		case 502: return "Bad Gateway";
+		case 503: return "Service Unavailable";
+		case 504: return "Gateway Timeout";
+		case 505: return "HTTP Version Not Supported";
+		default: return "Unknown Status Code";
+	}
+}
+
+std::string	Response::getContentType(ContentType type) {
+	switch (type) {
+		case HTML:          return "text/html; charset=UTF-8";
+		case JSON:          return "application/json";
+		case PLAIN_TEXT:    return "text/plain; charset=UTF-8";
+		case XML:           return "application/xml";
+		case JPEG:          return "image/jpeg";
+		case PNG:           return "image/png";
+		case GIF:           return "image/gif";
+		case JAVASCRIPT:    return "application/javascript";
+		case CSS:           return "text/css";
+		case PDF:           return "application/pdf";
+		case ZIP:           return "application/zip";
+		default:            return "Unsupported Content Type";
+	}
 }

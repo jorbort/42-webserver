@@ -1,9 +1,14 @@
 #include <string>
 #include <iostream>
+#include <fcntl.h>
+#include <unistd.h>
 #include "Response.hpp"
 
 int main(void) {
 	Response response;
+	int		fd;
 
-	std::cout << response.createResponse() << std::endl;
+	fd = open("test.html", O_RDONLY);
+	std::cout << response.createResponse(fd) << std::endl;
+	close(fd);
 }

@@ -1,24 +1,25 @@
-NAME		:=test
-OBJDIR		:=.objs
-OBJS		:=TestResponse.o Response.o
+NAME			:=test
+SRCS			:=TestResponse.cpp Response.cpp
+OBJDIR			:=.objs
+OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
-all			: $(OBJDIR) $(NAME)
+all				: $(OBJDIR) $(NAME)
 
-$(OBJDIR)	:
+$(OBJDIR)		:
 	mkdir -p $@
 
-$(NAME)		: $(OBJS)
+$(NAME)			: $(OBJS)
 	g++ -o $@ $^
 
-%.o			: %c
-	g++ -c $< -o $(OBJDIR)/$@
+$(OBJDIR)/%.o	: %.cpp
+	g++ -c $< -o $@
 
-clean		:
-	rm -rf (OBJDIR)
+clean			:
+	rm -rf $(OBJDIR)
 
-fclean		: clean
-	rm $(NAME)
+fclean			: clean
+	rm -rf $(NAME)
 
-re			: fclean all
+re				: fclean all
 
-.PHONY		: all clean fclean re
+.PHONY			: all clean fclean re
