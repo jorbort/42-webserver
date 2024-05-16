@@ -34,7 +34,6 @@ ConfigParser::~ConfigParser()
 ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 {
 	this->_ConfFile = rhs._ConfFile;
-	this->_ConfOptions  = rhs._ConfOptions;
 	this->configPath = rhs.configPath;
 
 	return *this;
@@ -42,37 +41,38 @@ ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 
 /*
 ** --------------------------------- METHODS ----------------------------------
-*/
+// */
 
-void ConfigParser::findConfigs()
-{
-	std::string key;
-	std::string value;
-	std::string line;
-	std::vector<std::string>::iterator vBegin = _ConfFile.begin() , vEnd = _ConfFile.end();
-	bool bracket = false;
-	int bracketCount = 0;
+// void ConfigParser::findConfigs()
+// {
+// 	std::string key;
+// 	std::string value;
+// 	std::string line;
+// 	std::vector<std::string>::iterator vBegin = _ConfFile.begin() , vEnd = _ConfFile.end();
+// 	bool bracket = false;
+// 	int bracketCount = 0;
 
-	for (; vBegin != vEnd; vBegin++)
-	{
-		line = *vBegin;
-		if (line[line.length()] == '{')
-		{
-			bracket = true;
-			bracketCount++;
-		}
-		if (!line.compare(0,6, "listen"))
-		{
-			_ConfOptions["listen"] = line.substr(line.find(" ") + 1, (line.length()));
-		}
-	}
-	std::cout << _ConfOptions["listen"] << std::endl;
-}
+// 	for (; vBegin != vEnd; vBegin++)
+// 	{
+// 		line = *vBegin;
+// 		if (line[line.length()] == '{')
+// 		{
+// 			bracket = true;
+// 			bracketCount++;
+// 		}
+// 		if (!line.compare(0,6, "listen"))
+// 		{
+// 			_ConfOptions["listen"] = line.substr(line.find(" ") + 1, (line.length()));
+// 		}
+// 	}
+// 	std::cout << _ConfOptions["listen"] << std::endl;
+//}
 
 void ConfigParser::ParseConfig()
 {
 	std::ifstream file;
 	std::string line = "";
+	std::string configfile = "";
 
 	file.open(this->getpath().c_str(), std::ios::in );
 	if (file.is_open() == false)
@@ -83,11 +83,11 @@ void ConfigParser::ParseConfig()
 		if (line[0] != '\n' && !line.empty() && line[0] != '#')
 		{
 			epurString(line);
-			_ConfFile.push_back(line);
+			configfile.append(line);
 		}
 	}
 	file.close();
-	findConfigs();
+	//splitServers();
 }
 
 void ConfigParser::epurString(std::string &str)

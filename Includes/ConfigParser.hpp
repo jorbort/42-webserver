@@ -6,13 +6,16 @@
 # include <map>
 #include <vector>
 #include "Location.hpp"
+#include "ServerConfigs.hpp"
 
 class ConfigParser
 {
 	private:
-		std::map<std::string, std::string> _ConfOptions;
 		std::vector<std::string> _ConfFile;
 		std::string configPath;
+		int nOfServers;
+		std::vector<ServerConfigs> _servers;
+		
 	public:
 
 		ConfigParser(void);
@@ -26,8 +29,9 @@ class ConfigParser
 		std::string &getpath(void);
 		void setConfPath(std::string &path);
 		void epurString(std::string &path);
+		void splitServers(void);
+		void createServer(std::string &conf, ServerConfigs &server);
 		//void defaultConf(void);
-		Location locations[100];
 };
 
 

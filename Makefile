@@ -1,9 +1,9 @@
 NAME = Webserv
 CFLAG = -Wall -Werror -Wextra -g -std=c++98 -fsanitize=address
-SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp
+SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp Src/ServerConfigs.cpp Src/Location.cpp
 CC = c++
 OBJS = $(SRC:.cpp=.o)
-HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp
+HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp Includes/ServerConfigs.hpp Includes/Location.hpp
 
 
 %.o: %.cpp
