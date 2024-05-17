@@ -1,6 +1,7 @@
 #include "Response.hpp"
 #include <string>
 #include <ctime>
+#include <fcntl.h>
 #include <unistd.h>
 
 Response::~Response() {}
@@ -10,18 +11,44 @@ std::string Response::createGETresponse(int fd) {
 	size_t		maxBodySize;
 	std::string	body;
 	size_t		contentLength;
-	std::string response;
 	{
 		statusCode = 200;
 		maxBodySize = SIZE_MAX;
 		setBody(body, contentLength, fd, maxBodySize);
 	}
 
+	std::string response;
+
 	response = addStatusLine(statusCode);
 	response += addDateHeader();
+	response += addServerHeader();
 	response += addContentTypeHeader(HTML);
 	response += addContentLengthHeader(contentLength);
 	response += addLastModified();
+	response += "\r\n";
+	response += body;
+	return response;
+}
+
+std::string Response::create404NotFoundResponse(void) {
+	int			statusCode;
+	size_t		maxBodySize;
+	std::string	body;
+	size_t		contentLength;
+	{
+		int	fd = open("../docs/web/error_pages/404.html", O_RDONLY);
+		statusCode = 404;
+		maxBodySize = SIZE_MAX;
+		setBody(body, contentLength, fd, maxBodySize);
+		close(fd);
+	}
+
+	std::string	response;
+
+	response = addStatusLine(404);
+	response += addDateHeader();
+	response += addContentTypeHeader(HTML);
+	response += addContentLengthHeader(contentLength);
 	response += "\r\n";
 	response += body;
 	return response;

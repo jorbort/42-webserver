@@ -14,6 +14,7 @@ class ResponseHeader {
 		//HEADER
 		static std::string	addStatusLine(int statusCode);
 		static std::string	addDateHeader(void);
+		static std::string	addServerHeader(void);
 		static std::string	addContentTypeHeader(ContentType type);
 		static std::string	addContentLengthHeader(int contentLength);
 		static std::string	addLastModified(void);

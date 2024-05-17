@@ -8,8 +8,7 @@ ResponseHeader::~ResponseHeader() {}
 std::string	ResponseHeader::addStatusLine(int statusCode) {
 	std::string statusLine;
 
-	statusLine += "HTTP/1.1";
-	statusLine += ' ';
+	statusLine += "HTTP/1.1 ";
 	statusLine += std::to_string(statusCode);
 	statusLine += ' ';
 	statusLine += getStatusCodeDescription(statusCode);
@@ -22,8 +21,7 @@ std::string	ResponseHeader::addDateHeader(void) {
    	time_t		now;
 	tm			*gmtm;
 
-	date = "Date:";
-	date += " ";
+	date = "Date: ";
 	{
 		now = time(0);
 		gmtm = gmtime(&now);
@@ -33,11 +31,19 @@ std::string	ResponseHeader::addDateHeader(void) {
 	return date;
 }
 
+std::string	ResponseHeader::addServerHeader(void) {
+	std::string server;
+
+	server = "Server: ";
+	server += "NOT IMPLEMENTED";
+	server += "\r\n";
+	return server;
+}
+
 std::string	ResponseHeader::addContentTypeHeader(ContentType type) {
 	std::string	contentType;
 
-	contentType = "Content-Type:";
-	contentType += ' ';
+	contentType = "Content-Type: ";
 	contentType += getContentType(type);
 	contentType += "\r\n";
 	return contentType;
@@ -46,8 +52,7 @@ std::string	ResponseHeader::addContentTypeHeader(ContentType type) {
 std::string	ResponseHeader::addContentLengthHeader(int length) {
 	std::string contentLength;
 
-	contentLength = "Content-Length:";
-	contentLength += " ";
+	contentLength = "Content-Length: ";
 	contentLength += std::to_string(length);
 	contentLength += "\r\n";;
 	return contentLength;
@@ -56,8 +61,7 @@ std::string	ResponseHeader::addContentLengthHeader(int length) {
 std::string	ResponseHeader::addLastModified(void) {
 	std::string lastModified;
 
-	lastModified = "Last-Modified:";
-	lastModified += ' ';
+	lastModified = "Last-Modified: ";
 	lastModified += "NOT IMPLEMENTED";
 	lastModified += "\r\n";
 	return lastModified;
