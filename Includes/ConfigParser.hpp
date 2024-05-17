@@ -29,8 +29,10 @@ class ConfigParser
 		std::string &getpath(void);
 		void setConfPath(std::string &path);
 		void epurString(std::string &path);
-		void splitServers(void);
+		void splitServers(std::string &configfile);
 		void createServer(std::string &conf, ServerConfigs &server);
+		size_t serverBegin(size_t start, std::string &configfile);
+		size_t serverEnd(size_t start, std::string &configfile);
 		//void defaultConf(void);
 };
 

@@ -68,6 +68,65 @@ ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 // 	std::cout << _ConfOptions["listen"] << std::endl;
 //}
 
+void ConfigParser::splitServers(std::string &configfile)
+{
+	size_t start = 0;
+	ssize_t end = 1;
+
+	if (configfile.find("server",0) == std::string::npos)
+		throw std::invalid_argument("no server found in the file");
+	while (start != end && start < configfile.length())
+	{
+		start = serverBegin(start, configfile);
+		end = serverEnd(start, configfile);
+		if (start == end)
+			throw std::invalid_argument("invalid server scope");
+		this->_ConfFile.push_back(configfile.substr(start, end - start + 1));
+		this->nOfServers++;
+		start = end + 1;
+	}
+}
+
+size_t ConfigParser::serverBegin(size_t start, std::string &configfile)
+{
+	size_t i; 
+	for (i = start ; configfile[i];i++)
+	{
+		if (configfile[i] == 's')
+			break;
+	}
+	if (!configfile[i])
+		return (start);
+	if (configfile.compare(i , 6, "server") != 0)
+		throw std::invalid_argument("wrong character in server scope");
+	i += 6;
+	while (configfile[i] && isspace(configfile[i]))
+		i++;
+	if (configfile[i] == '{')
+		return (i);
+	else 
+		throw std::invalid_argument("wrong character in server scope");
+}
+
+size_t ConfigParser::serverEnd(size_t start, std::string &configfile)
+{
+	size_t i;
+	size_t scopes = 0;
+
+	for (i = start + 1; configfile[i]; i++)
+	{
+		if (configfile[i] == '{')
+			scopes++;
+		if (configfile[i] == '}')
+		{
+			if (!scopes)
+				return (i);
+			scopes--;
+		}
+	}
+	return (start);
+}
+
 void ConfigParser::ParseConfig()
 {
 	std::ifstream file;
@@ -87,7 +146,7 @@ void ConfigParser::ParseConfig()
 		}
 	}
 	file.close();
-	//splitServers();
+	splitServers(configfile);
 }
 
 void ConfigParser::epurString(std::string &str)
