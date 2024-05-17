@@ -1,5 +1,5 @@
 NAME			:=test
-SRCS			:=TestResponse.cpp Response.cpp
+SRCS			:=TestResponse.cpp Response.cpp ResponseHeader.cpp
 OBJDIR			:=.objs
 OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
