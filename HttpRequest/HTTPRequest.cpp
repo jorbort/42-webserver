@@ -1,19 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTPRequest.cpp                                    :+:      :+:    :+:   */
+/*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:28:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/16 00:41:05 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/21 00:49:42 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest(){}
+HttpRequest::HttpRequest() : _RequestMethod(NONE){}
 
 HttpRequest::~HttpRequest(){}
 
@@ -77,6 +77,7 @@ std::ostream& operator<<(std::ostream &out, const HttpRequest &request){
 	for (std::vector<uint8_t>::iterator it = body.begin(); it != body.end(); it++){
 		out << *it;
 	}
+
 	return (out);
 }
 

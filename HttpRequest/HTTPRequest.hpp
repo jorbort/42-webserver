@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTPRequest.hpp                                    :+:      :+:    :+:   */
+/*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:37:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/16 00:42:41 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/20 23:33:51 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,12 @@ enum Method{
 	GET,
 	POST,
 	DELETE,
-	NONE
+	NONE,
+};
+
+enum ParsingState{
+	ERROR,
+	SUCCESS
 };
 
 class HttpRequest
@@ -32,6 +37,8 @@ class HttpRequest
 		HttpRequest(const HttpRequest &other);
 		HttpRequest& operator=(const HttpRequest &other);
 		
+	public:
+		ParsingState						_RequestState;
 		Method 								_RequestMethod;
 		std::string							_method;
 		std::string							_URI;
@@ -39,7 +46,6 @@ class HttpRequest
 		std::map<std::string, std::string>	_headers;
 		std::vector<uint8_t>				_body;
 
-	public:
 		HttpRequest();
 		~HttpRequest();
 		
