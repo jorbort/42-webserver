@@ -147,6 +147,14 @@ void ConfigParser::ParseConfig()
 	}
 	file.close();
 	splitServers(configfile);
+	for (size_t i = 0; i < this->nOfServers ; i++)
+	{
+		ServerConfigs server;
+		createServer(this->_ConfFile[i], server);
+		this->_servers.push_back(server);
+	}
+	if (this->nOfServers > 1)
+		compareServers();
 }
 
 void ConfigParser::epurString(std::string &str)

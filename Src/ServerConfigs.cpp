@@ -4,9 +4,17 @@
 ** ------------------------------- CONSTRUCTOR --------------------------------
 */
 
-// ServerConfigs::ServerConfigs()
-// {
-// }
+ServerConfigs::ServerConfigs()
+{
+	this->listen = 0;
+	this->autoindex = false;
+	this->ClientMaxBodySize = 300000000;
+	this->index = "";
+	this->_fd = 0;
+	this->serverName = "";
+	this->root = "";
+	this->initErrorPages();
+}
 
 // ServerConfigs::ServerConfigs( const ServerConfigs & src )
 // {
@@ -17,9 +25,9 @@
 // ** -------------------------------- DESTRUCTOR --------------------------------
 // */
 
-// ServerConfigs::~ServerConfigs()
-// {
-// }
+ServerConfigs::~ServerConfigs()
+{
+}
 
 
 // /*
@@ -45,7 +53,24 @@
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
-
+void ServerConfigs::initErrorPages()
+{
+	_errorPages[301] = "";
+	_errorPages[302] = "";
+	_errorPages[400] = "";
+	_errorPages[401] = "";
+	_errorPages[402] = "";
+	_errorPages[403] = "";
+	_errorPages[404] = "";
+	_errorPages[405] = "";
+	_errorPages[406] = "";
+	_errorPages[500] = "";
+	_errorPages[501] = "";
+	_errorPages[502] = "";
+	_errorPages[503] = "";
+	_errorPages[505] = "";
+	_errorPages[505] = "";
+}
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------

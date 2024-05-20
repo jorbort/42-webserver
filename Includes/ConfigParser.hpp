@@ -33,6 +33,7 @@ class ConfigParser
 		void createServer(std::string &conf, ServerConfigs &server);
 		size_t serverBegin(size_t start, std::string &configfile);
 		size_t serverEnd(size_t start, std::string &configfile);
+		void compareServers();
 		//void defaultConf(void);
 };
 

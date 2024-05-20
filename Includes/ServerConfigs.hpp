@@ -5,6 +5,7 @@
 # include <string>
 # include <vector>
 # include "Location.hpp"
+# include <map>
 //# include "WebServ.hpp" 
 
 class ServerConfigs
@@ -19,15 +20,16 @@ class ServerConfigs
 		struct sockaddr_in *_serverAddress;
 		int _fd;
 		bool autoindex;
+		std::map<int, std::string> _errorPages;
 
 	public:
 
-		// ServerConfigs();
+		ServerConfigs();
 		// ServerConfigs( ServerConfigs const & src );
-		// ~ServerConfigs();
-
+		~ServerConfigs();
+		void initErrorPages(void);
 		// ServerConfigs &		operator=( ServerConfigs const & rhs );
 
 };
 
-#endif /* *************************************************** SERVERCONFIGS_H */
+#endif 
