@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/21 17:59:32 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/22 00:38:01 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 		if (lines[i] == "\r")
 			break;
 		std::string key = lines[i].substr(0, lines[i].find(':'));
-		std::string value = lines[i].substr(lines[i].find(' '));
+		std::string value = lines[i].substr(lines[i].find(' ') + 1);
 		request_class._headers[key] = value;
 	}
 }
