@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/21 01:04:33 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/21 17:59:32 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,16 +17,16 @@ HttpRequestParser::HttpRequestParser() : State(PushMethod) {
 
 HttpRequestParser::~HttpRequestParser(){}
 
-// void	HttpRequestParser::parseRequest(HttpRequest &request, const char *begin, const char *end){
-void	HttpRequestParser::parseRequest(HttpRequest &request, const std::string &req){
+// void	HttpRequestParser::parseRequest(HttpRequest &request_class, const char *begin, const char *end){
+void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::string &req_str){
 	std::vector<std::string>	lines;
-	std::istringstream			Req(req);
+	std::istringstream			Req(req_str);
 	std::string					line;
 	size_t 						bytes_read = 0;
 	unsigned int 				i = 0;
 	
-	if (req.empty()){
-		request._RequestState = ERROR;
+	if (req_str.empty()){
+		request_class._RequestState = ERROR;
 		return;
 	}
 	while (std::getline(Req, line)){
@@ -36,45 +36,52 @@ void	HttpRequestParser::parseRequest(HttpRequest &request, const std::string &re
 		if (line.empty() && lines.size() != 0)
 			break;
 		if (line.empty() && lines.size() == 0 && bytes_read > 1){
-		request._RequestState = ERROR;
+		request_class._RequestState = ERROR;
 		return;
 		}
 		if (!line.empty())
 			lines.push_back(line);
 	}
 	if (lines.size() == 0){
-		request._RequestState = ERROR;
+		request_class._RequestState = ERROR;
 		return;
 	}
-	if (bytes_read < req.length())
-		//fill vector of remaining bytes
-	request._method = lines[0].substr(0, lines[0].find(' '));
-	if (request._method == "GET")
-		request._RequestMethod = GET;
-	else if (request._method == "POST")
-		request._RequestMethod = POST;
-	else if (request._method == "DELETE")
-		request._RequestMethod = DELETE;
+	if (bytes_read < req_str.length())
+		parseBody(request_class, req_str.c_str() + bytes_read, req_str.c_str() + req_str.size());
+	request_class._method = lines[0].substr(0, lines[0].find(' '));
+	if (request_class._method == "GET")
+		request_class._RequestMethod = GET;
+	else if (request_class._method == "POST")
+		request_class._RequestMethod = POST;
+	else if (request_class._method == "DELETE")
+		request_class._RequestMethod = DELETE;
 	else{
-		request._RequestMethod = NONE;
-		request._RequestState = ERROR;
+		request_class._RequestMethod = NONE;
+		request_class._RequestState = ERROR;
 		return;
 	}
-		request._URI = lines[i].substr(lines[0].find(request._method) + request._method.size() + 1, lines[0].find(' '));
-		request._version = lines[i].substr(lines[0].find(request._URI) + request._URI.size() + 1, lines[0].size());
+		request_class._URI = lines[i].substr(lines[0].find(request_class._method) + request_class._method.size() + 1, lines[0].find(' '));
+		request_class._version = lines[i].substr(lines[0].find(request_class._URI) + request_class._URI.size() + 1, lines[0].size());
 	i++;		
 	for (; i  < lines.size(); i++){
 		if (lines[i] == "\r")
 			break;
 		std::string key = lines[i].substr(0, lines[i].find(':'));
 		std::string value = lines[i].substr(lines[i].find(' '));
-		request._headers[key] = value;
+		request_class._headers[key] = value;
 	}
 }
 //check for strange characters in line
 // check for double RCLF in lines that are not seprating body
 // check for body headers and control
 // improve headers mapping
+
+void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, const char *end){
+	while(begin != end)
+	{
+		request_class._body.push_back(*begin++);
+	}
+}
 
 // Check if a byte is an HTTP character.
 bool HttpRequestParser::isChar(int c)
