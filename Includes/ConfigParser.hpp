@@ -1,6 +1,7 @@
 #ifndef CONFIGPARSER_HPP
 # define CONFIGPARSER_HPP
 
+#include <cstddef>
 # include <iostream>
 # include <string>
 # include <map>
@@ -13,9 +14,9 @@ class ConfigParser
 	private:
 		std::vector<std::string> _ConfFile;
 		std::string configPath;
-		int nOfServers;
+		size_t nOfServers;
 		std::vector<ServerConfigs> _servers;
-		
+
 	public:
 
 		ConfigParser(void);

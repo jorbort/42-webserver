@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 
 /*
@@ -10,6 +11,7 @@
 
 ConfigParser::ConfigParser()
 {
+	this->nOfServers = 0;
 }
 
 ConfigParser::ConfigParser( const ConfigParser & src )
@@ -71,7 +73,7 @@ ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 void ConfigParser::splitServers(std::string &configfile)
 {
 	size_t start = 0;
-	ssize_t end = 1;
+	size_t end = 1;
 
 	if (configfile.find("server",0) == std::string::npos)
 		throw std::invalid_argument("no server found in the file");
@@ -89,7 +91,7 @@ void ConfigParser::splitServers(std::string &configfile)
 
 size_t ConfigParser::serverBegin(size_t start, std::string &configfile)
 {
-	size_t i; 
+	size_t i;
 	for (i = start ; configfile[i];i++)
 	{
 		if (configfile[i] == 's')
@@ -98,14 +100,14 @@ size_t ConfigParser::serverBegin(size_t start, std::string &configfile)
 	if (!configfile[i])
 		return (start);
 	if (configfile.compare(i , 6, "server") != 0)
-		throw std::invalid_argument("wrong character in server scope");
+		throw std::invalid_argument("wrong character in server scope {");
 	i += 6;
 	while (configfile[i] && isspace(configfile[i]))
 		i++;
 	if (configfile[i] == '{')
 		return (i);
-	else 
-		throw std::invalid_argument("wrong character in server scope");
+	else
+		throw std::invalid_argument("wrong character in server scope {");
 }
 
 size_t ConfigParser::serverEnd(size_t start, std::string &configfile)
@@ -141,6 +143,8 @@ void ConfigParser::ParseConfig()
 		getline(file, line);
 		if (line[0] != '\n' && !line.empty() && line[0] != '#')
 		{
+			if (line[line.length() - 1] == '{')
+				line += "\n";
 			epurString(line);
 			configfile.append(line);
 		}
@@ -149,12 +153,33 @@ void ConfigParser::ParseConfig()
 	splitServers(configfile);
 	for (size_t i = 0; i < this->nOfServers ; i++)
 	{
+
 		ServerConfigs server;
 		createServer(this->_ConfFile[i], server);
-		this->_servers.push_back(server);
+		// this->_servers.push_back(server);
 	}
-	if (this->nOfServers > 1)
-		compareServers();
+	//if (this->nOfServers > 1)
+	//	compareServers(); -->to-do
+}
+
+void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
+{
+	(void)server;
+	std::string::size_type begin = 0;
+	std::string::size_type end;
+	std::string line = "";
+
+	while (1)
+	{
+		end = conf.find_first_of(';' ,begin);
+		if (end  == std::string::npos)
+		 	break;
+		line = conf.substr(begin, end - begin);
+		std::cout <<line << std::endl;
+		begin = conf.find_first_not_of(';',end);
+		if (begin == std::string::npos)
+			break;
+	}
 }
 
 void ConfigParser::epurString(std::string &str)
@@ -169,7 +194,7 @@ void ConfigParser::epurString(std::string &str)
 	{
 		if (str[i] == ' ' || str[i] == '\t')
 			flag = true;
-		if (str[i] != ' ' && str[i] != '\t' && str[i] != ';')
+		if (str[i] != ' ' && str[i] != '\t')
 		{
 			if (flag)
 				res.push_back(32);

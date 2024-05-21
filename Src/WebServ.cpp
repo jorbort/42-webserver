@@ -17,7 +17,8 @@ Server::Server(std::string &path)
 	}
 	catch (std::exception &e)
 	{
-		throw std::invalid_argument("can't open config file");
+		// throw std::invalid_argument("can't open config file");
+		std::cout<< e.what() << std::endl;
 	}
 }
 Server::~Server()
