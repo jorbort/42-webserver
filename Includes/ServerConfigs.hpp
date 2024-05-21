@@ -25,11 +25,19 @@ class ServerConfigs
 	public:
 
 		ServerConfigs();
-		// ServerConfigs( ServerConfigs const & src );
 		~ServerConfigs();
 		void initErrorPages(void);
-		// ServerConfigs &		operator=( ServerConfigs const & rhs );
 
+		void setListen(int port);
+		void addLocation(Location &location);
+		void setName(std::string &name);
+		void setBodySize(unsigned long number);
+		void setIndex(std::string &path);
+		void setRoot(std::string &path);
+		void setSocket(int fd);
+		void toggleAutoindex();
+		void addErrorPage(int key, std::string &value);
+		
 };
 
 #endif 
