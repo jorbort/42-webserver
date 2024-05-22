@@ -3,7 +3,16 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <cstdlib>
 
+
+
+std::string trim(const std::string& str)
+{
+    size_t first = str.find_first_not_of(" \t\n\r");
+    size_t last = str.find_last_not_of(" \t\n\r");
+    return (first == std::string::npos || last == std::string::npos) ? "" : str.substr(first, last - first + 1);
+}
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
@@ -143,7 +152,7 @@ void ConfigParser::ParseConfig()
 		getline(file, line);
 		if (line[0] != '\n' && !line.empty() && line[0] != '#')
 		{
-			if (line[line.length() - 1] == '{')
+			if (line == "{")
 				line += "\n";
 			epurString(line);
 			configfile.append(line);
@@ -177,7 +186,6 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		 	break;
 		line = conf.substr(begin, end - begin);
 		vect.push_back(line);
-		std::cout << line << std::endl;
 		begin = conf.find_first_not_of(';',end);
 		if (begin == std::string::npos)
 			break;
@@ -186,14 +194,21 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	for(; it != vect.end(); it++)
 	{
 		std::string tmp  = *it;
-		//std::cout << tmp << std::endl;
-		if (tmp == "{")
-			continue;
-		std::cout << tmp.substr( tmp.find(" ") + 1, tmp.length() -1) << std::endl;
-		if (!tmp.compare(0,6,"listen"))
+		if (tmp.substr(0,7) == "{listen")
 		{
-			std::cout << tmp.substr( 8, tmp.length() -1) << std::endl;
-			server.setListen(tmp.substr( 6, tmp.length() -1));
+			server.setListen(tmp.substr(7));
+		}
+		if (tmp.substr(0,4) == "host")
+		{
+			server.setHost(tmp.substr(tmp.find(" ")));
+		}
+		if (tmp.substr(0,11) == "server_name")
+		{
+			server.setName(tmp.substr(tmp.find(" ")));
+		}
+		if (tmp.substr(0,10) == "error_page")
+		{
+			server.addErrorPage(tmp.substr(tmp.find(" ") + 1));
 		}
 	}
 }
@@ -221,6 +236,8 @@ void ConfigParser::epurString(std::string &str)
 	}
 	str = res;
 }
+
+
 
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
