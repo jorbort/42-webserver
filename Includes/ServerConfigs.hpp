@@ -6,7 +6,7 @@
 # include <vector>
 # include "Location.hpp"
 # include <map>
-//# include "WebServ.hpp" 
+//# include "WebServ.hpp"
 
 class ServerConfigs
 {
@@ -28,16 +28,16 @@ class ServerConfigs
 		~ServerConfigs();
 		void initErrorPages(void);
 
-		void setListen(int port);
-		void addLocation(Location &location);
-		void setName(std::string &name);
+		void setListen(const std::string &port);
+		void addLocation(const Location &location);
+		void setName(const std::string &name);
 		void setBodySize(unsigned long number);
 		void setIndex(std::string &path);
 		void setRoot(std::string &path);
 		void setSocket(int fd);
 		void toggleAutoindex();
 		void addErrorPage(int key, std::string &value);
-		
+
 };
 
-#endif 
+#endif

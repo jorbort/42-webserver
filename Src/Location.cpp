@@ -1,4 +1,4 @@
-#include "Includes/Location.hpp"
+#include "../Includes/Location.hpp"
 
 Location::Location()
 {
@@ -7,5 +7,5 @@ Location::Location()
 
 Location::~Location()
 {
-	
+
 }

@@ -1,4 +1,7 @@
-#include "Includes/ServerConfigs.hpp"
+#include "../Includes/ServerConfigs.hpp"
+#include <stdexcept>
+#define MAX_PORT 65535
+#include <exception>
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
@@ -75,6 +78,14 @@ void ServerConfigs::initErrorPages()
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
+
+void ServerConfigs::setListen(const std::string &port)
+{
+	int listen = std::atoi(port.c_str());
+	if (listen < 0 || listen > MAX_PORT)
+		throw std::out_of_range("listen port must be number between 0 and 65535");
+	this->listen = listen;
+}
 
 
 /* ************************************************************************** */

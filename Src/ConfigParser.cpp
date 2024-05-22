@@ -168,6 +168,7 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	std::string::size_type begin = 0;
 	std::string::size_type end;
 	std::string line = "";
+	std::vector<std::string> vect;
 
 	while (1)
 	{
@@ -175,10 +176,25 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		if (end  == std::string::npos)
 		 	break;
 		line = conf.substr(begin, end - begin);
-		std::cout <<line << std::endl;
+		vect.push_back(line);
+		std::cout << line << std::endl;
 		begin = conf.find_first_not_of(';',end);
 		if (begin == std::string::npos)
 			break;
+	}
+	std::vector<std::string>::iterator it = vect.begin();
+	for(; it != vect.end(); it++)
+	{
+		std::string tmp  = *it;
+		//std::cout << tmp << std::endl;
+		if (tmp == "{")
+			continue;
+		std::cout << tmp.substr( tmp.find(" ") + 1, tmp.length() -1) << std::endl;
+		if (!tmp.compare(0,6,"listen"))
+		{
+			std::cout << tmp.substr( 8, tmp.length() -1) << std::endl;
+			server.setListen(tmp.substr( 6, tmp.length() -1));
+		}
 	}
 }
 
