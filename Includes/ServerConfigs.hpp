@@ -15,7 +15,7 @@ class ServerConfigs
 		unsigned int hostIp;
 		std::vector<Location> locations;
 		std::vector<std::string> serverName;
-		unsigned long ClientMaxBodySize;
+		long ClientMaxBodySize;
 		std::string index;
 		std::string root;
 		struct sockaddr_in *_serverAddress;
@@ -32,7 +32,7 @@ class ServerConfigs
 		void setListen(const std::string &port);
 		void addLocation(const Location &location);
 		void setName(const std::string &name);
-		void setBodySize(unsigned long number);
+		void setBodySize(const std::string &number);
 		void setIndex(const std::string &path);
 		void setRoot(const std::string &path);
 		void setHost(const std::string &host);

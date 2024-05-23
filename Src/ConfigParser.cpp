@@ -54,31 +54,6 @@ ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 ** --------------------------------- METHODS ----------------------------------
 // */
 
-// void ConfigParser::findConfigs()
-// {
-// 	std::string key;
-// 	std::string value;
-// 	std::string line;
-// 	std::vector<std::string>::iterator vBegin = _ConfFile.begin() , vEnd = _ConfFile.end();
-// 	bool bracket = false;
-// 	int bracketCount = 0;
-
-// 	for (; vBegin != vEnd; vBegin++)
-// 	{
-// 		line = *vBegin;
-// 		if (line[line.length()] == '{')
-// 		{
-// 			bracket = true;
-// 			bracketCount++;
-// 		}
-// 		if (!line.compare(0,6, "listen"))
-// 		{
-// 			_ConfOptions["listen"] = line.substr(line.find(" ") + 1, (line.length()));
-// 		}
-// 	}
-// 	std::cout << _ConfOptions["listen"] << std::endl;
-//}
-
 void ConfigParser::splitServers(std::string &configfile)
 {
 	size_t start = 0;
@@ -194,6 +169,7 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	for(; it != vect.end(); it++)
 	{
 		std::string tmp  = *it;
+		
 		if (tmp.substr(0,7) == "{listen")
 		{
 			server.setListen(tmp.substr(7));
@@ -209,6 +185,18 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		if (tmp.substr(0,10) == "error_page")
 		{
 			server.addErrorPage(tmp.substr(tmp.find(" ") + 1));
+		}
+		if (tmp.substr(0,20) == "client_max_body_size")
+		{
+			server.setBodySize(tmp.substr(tmp.find(" ") + 1));
+		}
+		if (tmp.substr(0,4) == "root")
+		{
+			server.setRoot(tmp.substr(tmp.find(" ") + 1));
+		}
+		if (tmp.substr(0,5) == "index")
+		{
+			server.setIndex(tmp.substr(tmp.find(" ") + 1));
 		}
 	}
 }
