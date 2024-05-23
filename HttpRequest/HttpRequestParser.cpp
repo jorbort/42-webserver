@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/22 00:38:01 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/24 00:35:42 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 	size_t 						bytes_read = 0;
 	unsigned int 				i = 0;
 	
-	if (req_str.empty()){
+	if (req_str.empty() || check_request_str(req_str.c_str())){
 		request_class._RequestState = ERROR;
 		return;
 	}
@@ -36,18 +36,16 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 		if (line.empty() && lines.size() != 0)
 			break;
 		if (line.empty() && lines.size() == 0 && bytes_read > 1){
-		request_class._RequestState = ERROR;
-		return;
+			request_class._RequestState = ERROR;
+			return;
 		}
 		if (!line.empty())
 			lines.push_back(line);
 	}
-	if (lines.size() == 0){
+	if (lines.size() == 0 || invalid_CRLF(*lines.end())){
 		request_class._RequestState = ERROR;
 		return;
 	}
-	if (bytes_read < req_str.length())
-		parseBody(request_class, req_str.c_str() + bytes_read, req_str.c_str() + req_str.size());
 	request_class._method = lines[0].substr(0, lines[0].find(' '));
 	if (request_class._method == "GET")
 		request_class._RequestMethod = GET;
@@ -70,11 +68,29 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 		std::string value = lines[i].substr(lines[i].find(' ') + 1);
 		request_class._headers[key] = value;
 	}
+	if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") !=request_class._headers.end()))
+		parseBody(request_class, req_str.c_str() + bytes_read, req_str.c_str() + req_str.size());
 }
-//check for strange characters in line
-// check for double RCLF in lines that are not seprating body
-// check for body headers and control
 // improve headers mapping
+
+bool	HttpRequestParser::check_request_str(const char *str){
+	int i = 0;
+	
+	while(str[i])
+	{
+		if (!isChar(str[i]))
+			return 1;
+		i++;
+	}
+	return 0;
+}
+bool	HttpRequestParser::invalid_CRLF(const std::string &str){
+	if(str.find("\r\n"))
+		return 1;
+	else
+		return 0;
+}
+
 
 void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, const char *end){
 	while(begin != end)
