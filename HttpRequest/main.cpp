@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/24 00:21:12 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/24 17:54:04 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int main(void)
 	
 	const std::string Request2 = 	
 						"\n"
-						"POST /uri HTTP/1.1\r\n\r\n"
+						"POST /uri HTTP/1.1\r\n"
 						"Host: api.example.com\r\n"
 						"Content-Type: application/json\r\n"
 						"Authorization: Bearer YOUR_ACCESS_TOKEN\r\n"

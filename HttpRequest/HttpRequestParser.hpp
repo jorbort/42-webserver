@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:20:15 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/24 00:21:45 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/24 16:34:32 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ class HttpRequestParser
 		void	parseBody(HttpRequest &request, const char *begin, const char *end);
 		bool	check_request_str(const char *str);
 		bool	invalid_CRLF(const std::string &str);
+		bool	check_method(HttpRequest &request);
 		bool	isChar(int c);
 		bool	isControl(int c);
 		bool	isSpecial(int c);
