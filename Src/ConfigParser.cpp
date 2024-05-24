@@ -61,11 +61,11 @@ void ConfigParser::splitServers(std::string &configfile)
 
 	if (configfile.find("server",0) == std::string::npos)
 		throw std::invalid_argument("no server found in the file");
-	while (start != end && start < configfile.length())
+	while (start != end && start < configfile.length() -1)
 	{
 		start = serverBegin(start, configfile);
 		end = serverEnd(start, configfile);
-		if (start == end)
+		if (end == std::string::npos)
 			throw std::invalid_argument("invalid server scope");
 		this->_ConfFile.push_back(configfile.substr(start, end - start + 1));
 		this->nOfServers++;
@@ -96,21 +96,23 @@ size_t ConfigParser::serverBegin(size_t start, std::string &configfile)
 
 size_t ConfigParser::serverEnd(size_t start, std::string &configfile)
 {
-	size_t i;
-	size_t scopes = 0;
+    if (start >= configfile.size() || configfile[start] != '{') {
+        return std::string::npos;
+    }
 
-	for (i = start + 1; configfile[i]; i++)
-	{
-		if (configfile[i] == '{')
-			scopes++;
-		if (configfile[i] == '}')
-		{
-			if (!scopes)
-				return (i);
-			scopes--;
-		}
-	}
-	return (start);
+    int braceCount = 1;
+
+    for (size_t i = start + 1; i < configfile.size(); ++i) {
+        if (configfile[i] == '{') {
+            ++braceCount;
+        } else if (configfile[i] == '}') {
+            --braceCount;
+            if (braceCount == 0) {
+                return i;
+            }
+        }
+    }
+    return std::string::npos;
 }
 
 void ConfigParser::ParseConfig()
@@ -127,10 +129,15 @@ void ConfigParser::ParseConfig()
 		getline(file, line);
 		if (line[0] != '\n' && !line.empty() && line[0] != '#')
 		{
-			if (line == "{")
-				line += "\n";
 			epurString(line);
-			configfile.append(line);
+			if (line[line.length()-1] == '{' || line[0] == '}')
+			{
+				configfile.append( line + "\n");
+			}
+			else
+			{
+				configfile.append(line);
+			}
 		}
 	}
 	file.close();
@@ -170,7 +177,8 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	{
 		std::string tmp  = *it;
 		
-		if (tmp.substr(0,7) == "{listen")
+		std::cout << tmp << std::endl;
+		if (tmp.substr(0,6) == "listen")
 		{
 			server.setListen(tmp.substr(7));
 		}
@@ -198,6 +206,11 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		{
 			server.setIndex(tmp.substr(tmp.find(" ") + 1));
 		}
+		if (tmp.substr(0,9) == "autoindex")
+		{
+			server.toggleAutoindex();
+		}
+
 	}
 }
 

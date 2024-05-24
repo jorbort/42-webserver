@@ -81,6 +81,8 @@ void ServerConfigs::initErrorPages()
 
 void ServerConfigs::setListen(const std::string &port)
 {
+	if (port.length() > 5)
+		throw std::out_of_range("listen port must be number between 0 and 65535");
 	int listen = std::atoi(port.c_str());
 	if (listen < 0 || listen > MAX_PORT)
 		throw std::out_of_range("listen port must be number between 0 and 65535");
@@ -201,6 +203,13 @@ void ServerConfigs::setRoot(const std::string &root)
 void ServerConfigs::setIndex(const std::string &index)
 {
 	this->index = index;
+}
+void ServerConfigs::toggleAutoindex(void)
+{
+	if (this->autoindex == false)
+		this->autoindex = true;
+	else if (this->autoindex == true)
+		throw std::invalid_argument("Error repeated argument, autoindex");
 }
 
 /* ************************************************************************** */
