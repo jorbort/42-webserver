@@ -177,7 +177,7 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	{
 		std::string tmp  = *it;
 		
-		std::cout << tmp << std::endl;
+		
 		if (tmp.substr(0,6) == "listen")
 		{
 			server.setListen(tmp.substr(7));
@@ -210,7 +210,29 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		{
 			server.toggleAutoindex();
 		}
+		if (tmp.substr(0,8) == "location")
+		{
+			Location location;
+			size_t start = tmp.find(" ") + 1;
+			size_t end = tmp.find_first_of("{");
+			if( end == std::string::npos)
+				throw std::invalid_argument("invalid scope in location");
+			//location.setName(tmp.substr(start, tmp.find_first_of("{") - start));
+			start = end + 2;
+			if (tmp.substr(start,4) == "root")
+				location.setRoot(tmp.substr(start + 5));
+			
+			while(42)
+			{
+				it++;
+				tmp = *it;
+				if (tmp.substr(0,13) == "allow_methods")
+				{
+					location.addMethods(tmp.substr(tmp.find(" ") + 1));
+				}
 
+			}
+		}
 	}
 }
 
