@@ -161,7 +161,7 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	std::string line = "";
 	std::vector<std::string> vect;
 
-	while (1)
+	while (42)
 	{
 		end = conf.find_first_of(';' ,begin);
 		if (end  == std::string::npos)
@@ -230,7 +230,8 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 				{
 					location.addMethods(tmp.substr(tmp.find(" ") + 1));
 				}
-
+				if (*it == "}" )
+					break;
 			}
 		}
 	}

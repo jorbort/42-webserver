@@ -7,7 +7,6 @@ class Location
 {
 	protected:
 		std::string name;
-		std::string address;
 		std::string root;
 		std::vector<std::string> allowed_methods;
 		bool autoindex;
@@ -18,12 +17,11 @@ class Location
 		Location();
 		~Location();
 
-		void setAddress(const std::string &address);
 		void setRoot(const std::string &root);
 		void addMethods(const std::string &methods);
 		void toggleAutoIndex();
 		void addCgiPath(const std::string &cgi);
-		void setPath(const std::string &path);
+		void setPath(void);
 		void setName(const std::string &name);
 
 		std::string &getAdress(void);
