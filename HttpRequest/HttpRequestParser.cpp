@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/27 09:51:58 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/28 00:15:10 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 	std::istringstream			Req(req_str);
 	std::string					line;
 	size_t 						bytes_read = 0;
+	
 	
 	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
 		request_class._RequestState = ERROR;
@@ -50,11 +51,13 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 	parseFirstLine(request_class, lines[0]);
 	parseHeaders(request_class, lines);
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
-		parseBody(request_class, req_str.c_str() + bytes_read, req_str.c_str() + req_str.size());
+		std::cout << bytes_read << req_str.size() << std::endl;
+		parseBody(request_class, req_str.c_str() + bytes_read, req_str.c_str() + req_str.size() + 8);
 }
 // improve headers mapping
 // body parsing ...
 // check for correct sintaxis in header
+// check for bodys null characters how to implement
 
 void	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::string &str){
 	request_class._method = str.substr(0, str.find(' '));

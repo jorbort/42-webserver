@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/27 09:36:10 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/28 00:08:39 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ int main(void)
 						"Content-Type: application/json\r\n"
 						"Authorization: Bearer YOUR_ACCESS_TOKEN\r\n"
 						"\r\n"
-						"{\"key1\": \"value1\", \"key2\": \"value2\"}";
+						"{\"key1\"\0: \"value1\", \"key2\": \"value2\"}";
 
 	HttpRequest request;
 	HttpRequestParser Request_parser;
