@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:28:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/24 18:00:23 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/27 09:56:58 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ std::ostream& operator<<(std::ostream &out, const HttpRequest &request){
 	out << "URI: " << request.getURI() << std::endl;
 	out << "Version: " << request.getVersion() << std::endl;
 	out << "Headers: " << std::endl;
-	for (std::map<std::string, std::string>::iterator it = headers.begin(); it != headers.end(); it++){
+	for (std::map<std::string, std::string>::reverse_iterator it = headers.rbegin(); it != headers.rend(); it++){
 		out << it->first << ": " << it->second << std::endl;
 	}
 	out << "Body: " << std::endl;

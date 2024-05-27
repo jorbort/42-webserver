@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:20:15 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/24 16:34:32 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/27 09:52:44 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 #include "HttpRequest.hpp"
 
 enum State_Parse{
@@ -43,6 +44,9 @@ class HttpRequestParser
 		bool	check_request_str(const char *str);
 		bool	invalid_CRLF(const std::string &str);
 		bool	check_method(HttpRequest &request);
+		void	parseFirstLine(HttpRequest &request, const std::string &str);
+		void	parseHeaders(HttpRequest &request, const std::vector<std::string>	&lines);
+				
 		bool	isChar(int c);
 		bool	isControl(int c);
 		bool	isSpecial(int c);

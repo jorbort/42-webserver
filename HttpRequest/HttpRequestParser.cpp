@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/24 18:01:18 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/27 09:51:58 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 	std::istringstream			Req(req_str);
 	std::string					line;
 	size_t 						bytes_read = 0;
-	unsigned int 				i = 0;
 	
 	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
 		request_class._RequestState = ERROR;
@@ -36,47 +35,58 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 			line.erase(line.length() - 1);
 		if (line.empty() && lines.size() != 0)
 			break;
-		if (line.empty() && lines.size() == 0 && bytes_read > 1){
+		if (line.empty() && lines.size() == 0 && bytes_read > 2){
 			request_class._RequestState = ERROR;
 			return;
 		}
 		if (!line.empty())
 			lines.push_back(line);
 	}
-	if (lines.size() == 0){
+	if (lines.empty()){
 		request_class._RequestState = ERROR;
 		std::cout << "2" << std::endl;
 		return;
 	}
-	request_class._method = lines[0].substr(0, lines[0].find(' '));
-	if (check_method(request_class)){
-		request_class._RequestState = ERROR;
-		std::cout << "3" << std::endl;
-		return;
-	}
-	request_class._URI = lines[i].substr(lines[0].find(request_class._method) + request_class._method.size() + 1, lines[0].find(' '));
-	request_class._version = lines[i].substr(lines[0].find(request_class._URI) + request_class._URI.size() + 1, lines[0].size());
-	i++;		
-	for (; i  < lines.size(); i++){
-		if (lines[i] == "\r")
-			break;
-		std::string key = lines[i].substr(0, lines[i].find(':'));
-		std::string value = lines[i].substr(lines[i].find(' ') + 1);
-		request_class._headers[key] = value;
-	}
+	parseFirstLine(request_class, lines[0]);
+	parseHeaders(request_class, lines);
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
 		parseBody(request_class, req_str.c_str() + bytes_read, req_str.c_str() + req_str.size());
 }
 // improve headers mapping
 // body parsing ...
 // check for correct sintaxis in header
-// check 
+
+void	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::string &str){
+	request_class._method = str.substr(0, str.find(' '));
+	if (check_method(request_class)){
+		request_class._RequestState = ERROR;
+		std::cout << "3" << std::endl;
+		return;
+	}
+	request_class._URI = str.substr(str.find(request_class._method) + request_class._method.size() + 1, str.find(' '));
+	// check URI
+	request_class._version = str.substr(str.find(request_class._URI) + request_class._URI.size() + 1, str.size());
+	if (request_class._version.compare("HTTP/1.1")){
+		request_class._RequestState = ERROR;
+		std::cout << "6" << std::endl;
+		return;
+	}
+}
+
+void	HttpRequestParser::parseHeaders(HttpRequest &request, const std::vector<std::string>	&lines){
+	for (unsigned int i = 1; i  < lines.size(); i++){
+		std::string key = lines[i].substr(0, lines[i].find(':'));
+		std::string value = lines[i].substr(lines[i].find(' ') + 1);
+		request._headers[key] = value;
+	}
+}
+
+
 
 bool	HttpRequestParser::check_request_str(const char *str){
 	int i = 0;
 	
-	while(str[i])
-	{
+	while(str[i])	{
 		if (!isChar(str[i]))
 			return 1;
 		i++;
@@ -118,34 +128,29 @@ void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin,
 }
 
 // Check if a byte is an HTTP character.
-bool HttpRequestParser::isChar(int c)
-{
-return c >= 0 && c <= 127;
+bool HttpRequestParser::isChar(int c){
+	return c >= 0 && c <= 127;
 }
 
 // Check if a byte is an HTTP control character.
-bool HttpRequestParser::isControl(int c)
-{
-return (c >= 0 && c <= 31) || (c == 127);
+bool HttpRequestParser::isControl(int c){
+	return (c >= 0 && c <= 31) || (c == 127);
 }
 
 // Check if a byte is defined as an HTTP special character.
-bool HttpRequestParser::isSpecial(int c)
-{
-switch (c)
-{
-case '(': case ')': case '<': case '>': case '@':
-case ',': case ';': case ':': case '\\': case '"':
-case '/': case '[': case ']': case '?': case '=':
-case '{': case '}': case ' ': case '\t':
-return true;
-default:
-return false;
-}
+bool HttpRequestParser::isSpecial(int c){
+	switch (c){
+		case '(': case ')': case '<': case '>': case '@':
+		case ',': case ';': case ':': case '\\': case '"':
+		case '/': case '[': case ']': case '?': case '=':
+		case '{': case '}': case ' ': case '\t':
+			return true;
+		default:
+			return false;
+	}
 }
 
 // Check if a byte is a digit.
-bool HttpRequestParser::isDigit(int c)
-{
-return c >= '0' && c <= '9';
+bool HttpRequestParser::isDigit(int c){
+	return c >= '0' && c <= '9';
 }

@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/24 17:54:04 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/27 09:36:10 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int main(void)
 	// const char* Request = "GET / HTTP/1.1\r\nHost: www.google.com\r\n\r\n";
 	
 	const std::string Request2 = 	
-						"\n"
+						"\r\n"
 						"POST /uri HTTP/1.1\r\n"
 						"Host: api.example.com\r\n"
 						"Content-Type: application/json\r\n"
