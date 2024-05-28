@@ -6,13 +6,13 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:28:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/28 00:11:50 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/28 18:53:15 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest() : _RequestState(INCOMPLETE), _RequestMethod(NONE){}
+HttpRequest::HttpRequest() : _RequestState(INCOMPLETE), _RequestMethod(NONE), _chunked(0), _ContentLength(0){}
 
 HttpRequest::~HttpRequest(){}
 

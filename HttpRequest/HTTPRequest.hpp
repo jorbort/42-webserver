@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:37:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/27 09:45:26 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/28 18:51:17 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ class HttpRequest
 		std::string							_version;
 		std::map<std::string, std::string>	_headers;
 		std::vector<uint8_t>				_body;
+		bool								_chunked;
+		unsigned int						_ContentLength;
 
 		HttpRequest();
 		~HttpRequest();

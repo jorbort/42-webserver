@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/28 00:15:10 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/28 19:33:03 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,12 +52,11 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 	parseHeaders(request_class, lines);
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
 		std::cout << bytes_read << req_str.size() << std::endl;
-		parseBody(request_class, req_str.c_str() + bytes_read, req_str.c_str() + req_str.size() + 8);
+		parseBody(request_class, req_str.c_str() + bytes_read, request_class._ContentLength);
 }
 // improve headers mapping
-// body parsing ...
 // check for correct sintaxis in header
-// check for bodys null characters how to implement
+// check for bodys null characters how to implement = full request size needed from server;
 
 void	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::string &str){
 	request_class._method = str.substr(0, str.find(' '));
@@ -76,15 +75,23 @@ void	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::st
 	}
 }
 
-void	HttpRequestParser::parseHeaders(HttpRequest &request, const std::vector<std::string>	&lines){
+void	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vector<std::string>	&lines){
 	for (unsigned int i = 1; i  < lines.size(); i++){
 		std::string key = lines[i].substr(0, lines[i].find(':'));
 		std::string value = lines[i].substr(lines[i].find(' ') + 1);
-		request._headers[key] = value;
+		request_class._headers[key] = value;
+	}
+	if (request_class._RequestMethod == POST){
+		if (request_class._headers.find("Content-Length") != request_class._headers.end())
+		{
+			request_class._ContentLength = atoi(request_class._headers.find("Content-Length")->second.c_str());
+		}
+		else if (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()){
+			if (request_class._headers.find("Transfer-Encoding")->second == "chunked")
+				request_class._chunked = true;
+		}
 	}
 }
-
-
 
 bool	HttpRequestParser::check_request_str(const char *str){
 	int i = 0;
@@ -103,7 +110,7 @@ size_t pos = 0;
 
 while ((pos = str.find("\r\n\r\n", pos)) != std::string::npos) {
 	count++;
-	pos += 2; // Move ahead by 2 characters to avoid finding the same sequence again
+	pos += 4; // Move ahead by 4 characters to avoid finding the same sequence again
 }
 if (count > 1)
 	return 1;
@@ -124,9 +131,13 @@ bool	HttpRequestParser::check_method(HttpRequest &request_class){
 	return 0;
 }
 
-void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, const char *end){
-	while(begin != end){
+// void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, const char *end){
+void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, unsigned int contentlength){
+	unsigned i = 0;
+
+	while(i <= contentlength){
 		request_class._body.push_back(*begin++);
+		i++;
 	}
 }
 

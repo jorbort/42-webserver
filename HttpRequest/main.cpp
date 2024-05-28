@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/28 00:08:39 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/28 19:31:29 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,8 @@ int main(void)
 						"Host: api.example.com\r\n"
 						"Content-Type: application/json\r\n"
 						"Authorization: Bearer YOUR_ACCESS_TOKEN\r\n"
+						// "Content-Length: 36\r\n"
+						"Transfer-Encoding: chunked\r\n"
 						"\r\n"
 						"{\"key1\"\0: \"value1\", \"key2\": \"value2\"}";
 
@@ -37,7 +39,19 @@ int main(void)
 	std::cout << request << std::endl;
 	if (request._RequestState == ERROR)
 		std::cout << "ERROR: BAD REQUEST" << std::endl;
+	std::cout << request._ContentLength << std::endl;
+	std::cout << std::boolalpha << request._chunked << std::endl;
 
 	return 0;
 }
 
+//     if( strcasecmp(h.name.c_str(), "Content-Length") == 0 )
+//                         {
+//                             contentSize = atoi(h.value.c_str());
+//                             req.content.reserve( contentSize );
+//                         }
+//                         else if( strcasecmp(h.name.c_str(), "Transfer-Encoding") == 0 )
+//                         {
+//                             if(strcasecmp(h.value.c_str(), "chunked") == 0)
+//                                 chunked = true;
+//                         }

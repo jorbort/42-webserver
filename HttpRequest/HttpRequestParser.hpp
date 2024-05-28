@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:20:15 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/27 09:52:44 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/28 19:20:39 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,8 @@ class HttpRequestParser
 		
 		// void	parseRequest(HttpRequest &request, const char *begin, const char *end);
 		void	parseRequest(HttpRequest &request, const std::string &req);
-		void	parseBody(HttpRequest &request, const char *begin, const char *end);
+		// void	parseBody(HttpRequest &request, const char *begin, const char *end);
+		void	parseBody(HttpRequest &request, const char *begin, unsigned int contentlength);
 		bool	check_request_str(const char *str);
 		bool	invalid_CRLF(const std::string &str);
 		bool	check_method(HttpRequest &request);
