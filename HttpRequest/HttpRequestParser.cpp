@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/28 19:33:03 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/31 00:46:00 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,13 +18,13 @@ HttpRequestParser::HttpRequestParser() : State(PushMethod){
 HttpRequestParser::~HttpRequestParser(){}
 
 // void	HttpRequestParser::parseRequest(HttpRequest &request_class, const char *begin, const char *end){
-void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::string &req_str){
-	std::vector<std::string>	lines;
-	std::istringstream			Req(req_str);
+void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_str, size_t len){
 	std::string					line;
+	std::string 				req_str = original_str;
+	std::istringstream			Req(req_str);
+	std::vector<std::string>	lines;
 	size_t 						bytes_read = 0;
-	
-	
+		
 	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
 		request_class._RequestState = ERROR;
 		std::cout << "1" << std::endl;
@@ -52,7 +52,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, const std::stri
 	parseHeaders(request_class, lines);
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
 		std::cout << bytes_read << req_str.size() << std::endl;
-		parseBody(request_class, req_str.c_str() + bytes_read, request_class._ContentLength);
+		parseBody(request_class, original_str + bytes_read, len - bytes_read);
 }
 // improve headers mapping
 // check for correct sintaxis in header
@@ -132,10 +132,10 @@ bool	HttpRequestParser::check_method(HttpRequest &request_class){
 }
 
 // void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, const char *end){
-void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, unsigned int contentlength){
-	unsigned i = 0;
+void	HttpRequestParser::parseBody(HttpRequest &request_class, char *begin, size_t contentlength){
+	size_t i = 0;
 
-	while(i <= contentlength){
+	while(i < contentlength){
 		request_class._body.push_back(*begin++);
 		i++;
 	}
