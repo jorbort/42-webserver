@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/31 01:05:23 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/31 18:54:50 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ int main(void)
 	Request_parser.parseRequest(request, Request2, sizeof(Request2) / sizeof(char));
 	
 	std::cout << request << std::endl;
-	if (request._RequestState == ERROR)
+	if (request._ErrorCode != 0)
 		std::cout << "ERROR: BAD REQUEST" << std::endl;
 	std::cout << request._ContentLength << std::endl;
 	std::cout << std::boolalpha << request._chunked << std::endl;

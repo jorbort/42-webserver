@@ -6,15 +6,19 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:28:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/28 18:53:15 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/05/31 17:33:48 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest() : _RequestState(INCOMPLETE), _RequestMethod(NONE), _chunked(0), _ContentLength(0){}
+HttpRequest::HttpRequest() : _ErrorCode(0), _RequestMethod(NONE), _chunked(0), _ContentLength(0){}
 
 HttpRequest::~HttpRequest(){}
+
+int HttpRequest::getErrorCode() const{
+	return(_ErrorCode);
+}
 
 std::string	HttpRequest::getMethod() const{
 	return (_method);
@@ -76,7 +80,7 @@ std::ostream& operator<<(std::ostream &out, const HttpRequest &request){
 	for (std::vector<uint8_t>::iterator it = body.begin(); it != body.end(); it++){
 		out << *it;
 	}
-
+	out << std::endl << "Error Code: " << request.getErrorCode() << std::endl;
 	return (out);
 }
 

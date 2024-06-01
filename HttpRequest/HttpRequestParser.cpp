@@ -6,13 +6,29 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/31 00:46:00 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/01 06:04:39 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequestParser.hpp"
 
-HttpRequestParser::HttpRequestParser() : State(PushMethod){
+HttpRequestParser::HttpRequestParser(){
+	_RealHeaders.push_back("Host");
+	_RealHeaders.push_back("User-Agent");
+	_RealHeaders.push_back("Accept");
+	_RealHeaders.push_back("Accept-Encoding");
+	_RealHeaders.push_back("Accept-Language");
+	_RealHeaders.push_back("Content-Type");
+	_RealHeaders.push_back("Authorization");
+	_RealHeaders.push_back("Cache-Control");
+	_RealHeaders.push_back("Connection");
+	_RealHeaders.push_back("Cookie");
+	_RealHeaders.push_back("Referer");
+	_RealHeaders.push_back("Range");
+	_RealHeaders.push_back("Content-Length");
+	_RealHeaders.push_back("Expect");
+	_RealHeaders.push_back("Origin");
+	_RealHeaders.push_back("Transfer-Encoding");
 }
 
 HttpRequestParser::~HttpRequestParser(){}
@@ -26,7 +42,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	size_t 						bytes_read = 0;
 		
 	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
-		request_class._RequestState = ERROR;
+		request_class._ErrorCode = 400;
 		std::cout << "1" << std::endl;
 		return;
 	}
@@ -37,19 +53,21 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 		if (line.empty() && lines.size() != 0)
 			break;
 		if (line.empty() && lines.size() == 0 && bytes_read > 2){
-			request_class._RequestState = ERROR;
+			request_class._ErrorCode = 400;
 			return;
 		}
 		if (!line.empty())
 			lines.push_back(line);
 	}
 	if (lines.empty()){
-		request_class._RequestState = ERROR;
+		request_class._ErrorCode = 400;
 		std::cout << "2" << std::endl;
 		return;
 	}
 	parseFirstLine(request_class, lines[0]);
 	parseHeaders(request_class, lines);
+	// check for host header if not present return error 400;
+	
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
 		std::cout << bytes_read << req_str.size() << std::endl;
 		parseBody(request_class, original_str + bytes_read, len - bytes_read);
@@ -61,7 +79,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 void	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::string &str){
 	request_class._method = str.substr(0, str.find(' '));
 	if (check_method(request_class)){
-		request_class._RequestState = ERROR;
+		request_class._ErrorCode = 405;
 		std::cout << "3" << std::endl;
 		return;
 	}
@@ -69,16 +87,24 @@ void	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::st
 	// check URI
 	request_class._version = str.substr(str.find(request_class._URI) + request_class._URI.size() + 1, str.size());
 	if (request_class._version.compare("HTTP/1.1")){
-		request_class._RequestState = ERROR;
+		request_class._ErrorCode = 505;
 		std::cout << "6" << std::endl;
 		return;
 	}
 }
 
+// insert headers into map
+// check if header already exists and if its a real header
+// check in case of post for body lenght or tranfer encoding chunked
 void	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vector<std::string>	&lines){
 	for (unsigned int i = 1; i  < lines.size(); i++){
 		std::string key = lines[i].substr(0, lines[i].find(':'));
 		std::string value = lines[i].substr(lines[i].find(' ') + 1);
+		if ((std::find(_RealHeaders.begin(), _RealHeaders.end(), key) == _RealHeaders.end()) || (request_class._headers.find(key) != request_class._headers.end())){
+			request_class._ErrorCode = 400;
+			std::cout << "helloo" << std::endl;
+			return;
+		}
 		request_class._headers[key] = value;
 	}
 	if (request_class._RequestMethod == POST){
