@@ -153,27 +153,56 @@ void ConfigParser::ParseConfig()
 	//	compareServers(); -->to-do
 }
 
+std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
+{
+  std::vector<std::string> lines;
+  std::string::size_type begin = 0;
+  std::string::size_type end;
+  std::string line;
+
+  while(42)
+  {
+    end = conf.find_first_of(';',begin);
+    if (end == std::string::npos)
+      break;
+    line = conf.substr(begin, end - begin);
+    lines.push_back(line);
+    begin = conf.find_first_not_of(';',end);
+    if (begin == std::string::npos)
+      break;
+  }
+  return (lines);
+}
+
+void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vector<std::string>::iterator &end, ServerConfigs & server)
+{
+  Location location;
+  std::string tmp = *it;
+  std::string::size_type start = tmp.find(" " ) + 1;
+  std::string::size_type pathEnd = tmp.find_first_of("{");
+  if (pathEnd == std::string::npos)
+    throw std::invalid_argument("invalid scope in location");
+  location.setName(tmp.substr(start, pathEnd - start));
+  ++it;
+  while (it != end)
+  {
+    tmp = *it;
+    if (tmp.substr(0,4) == "root")
+      location.setRoot(tmp.substr(tmp.find(" ") + 1));
+    else if (tmp.substr(0,13) == "allow_methods")
+      location.addMethods(tmp.substr(tmp.find(" ") + 1));
+    ++it;
+  }
+  server.addLocation(location);
+}
+
+
 void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 {
-	(void)server;
-	std::string::size_type begin = 0;
-	std::string::size_type end;
-	std::string line = "";
-	std::vector<std::string> vect;
+	std::vector<std::string> vect = splitConfigLines(conf);
 
-	while (42)
-	{
-		end = conf.find_first_of(';' ,begin);
-		if (end  == std::string::npos)
-		 	break;
-		line = conf.substr(begin, end - begin);
-		vect.push_back(line);
-		begin = conf.find_first_not_of(';',end);
-		if (begin == std::string::npos)
-			break;
-	}
 	std::vector<std::string>::iterator it = vect.begin();
-	for(; it != vect.end(); it++)
+	while (it != vect.end())
 	{
 		std::string tmp  = *it;
 		
@@ -212,28 +241,14 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		}
 		if (tmp.substr(0,8) == "location")
 		{
-			Location location;
-			size_t start = tmp.find(" ") + 1;
-			size_t end = tmp.find_first_of("{");
-			if( end == std::string::npos)
-				throw std::invalid_argument("invalid scope in location");
-			//location.setName(tmp.substr(start, tmp.find_first_of("{") - start));
-			start = end + 2;
-			if (tmp.substr(start,4) == "root")
-				location.setRoot(tmp.substr(start + 5));
-			
-			while(42)
-			{
-				it++;
-				tmp = *it;
-				if (tmp.substr(0,13) == "allow_methods")
-				{
-					location.addMethods(tmp.substr(tmp.find(" ") + 1));
-				}
-				if (*it == "}" )
-					break;
-			}
+      std::vector<std::string>::iterator locationEnd = it;
+      while (locationEnd != vect.end() && *locationEnd != "}")
+        ++locationEnd;
+      if (locationEnd == vect.end())
+        throw std::invalid_argument("invalid scope in locations");
+      parseLocation(it, locationEnd, server);   
 		}
+    ++it;
 	}
 }
 

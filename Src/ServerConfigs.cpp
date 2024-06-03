@@ -212,4 +212,10 @@ void ServerConfigs::toggleAutoindex(void)
 		throw std::invalid_argument("Error repeated argument, autoindex");
 }
 
+void ServerConfigs::addLocation(const Location &location)
+{
+  this->locations.push_back(location);
+}
+
+
 /* ************************************************************************** */

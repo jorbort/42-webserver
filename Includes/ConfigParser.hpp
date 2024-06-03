@@ -36,6 +36,8 @@ class ConfigParser
 		size_t serverEnd(size_t start, std::string &configfile);
 		void compareServers();
 		//void defaultConf(void);
+    std::vector<std::string> splitConfigLines(const std::string &conf);
+    void parseLocation (std::vector<std::string>::iterator &it, std::vector<std::string>::iterator &end, ServerConfigs &server);
 };
 
 
