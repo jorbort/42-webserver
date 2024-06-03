@@ -6,7 +6,7 @@
 /*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/01 06:04:39 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/03 19:30:32 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,13 +97,24 @@ void	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::st
 // check if header already exists and if its a real header
 // check in case of post for body lenght or tranfer encoding chunked
 void	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vector<std::string>	&lines){
+	std::string key;
+	std::string value;
+
 	for (unsigned int i = 1; i  < lines.size(); i++){
-		std::string key = lines[i].substr(0, lines[i].find(':'));
-		std::string value = lines[i].substr(lines[i].find(' ') + 1);
-		if ((std::find(_RealHeaders.begin(), _RealHeaders.end(), key) == _RealHeaders.end()) || (request_class._headers.find(key) != request_class._headers.end())){
-			request_class._ErrorCode = 400;
-			std::cout << "helloo" << std::endl;
-			return;
+		if (lines[i].find(": ") != std::string::npos){
+			key = lines[i].substr(0, lines[i].find(':'));
+			value = lines[i].substr(lines[i].find(' ') + 1);
+		}
+		else if (lines[i].find(":") != std::string::npos){
+			key = lines[i].substr(0, lines[i].find(':'));
+			value = lines[i].substr(lines[i].find(':') + 1);
+		}
+		if ((std::find(_RealHeaders.begin(), _RealHeaders.end(), key) == _RealHeaders.end())
+			|| (request_class._headers.find(key) != request_class._headers.end())
+			|| containsMoreThanOne(lines[i], ':') || isValidHeaderValue(lines[i])){
+				request_class._ErrorCode = 400;
+				std::cout << "helloo" << std::endl;
+				return;
 		}
 		request_class._headers[key] = value;
 	}
@@ -117,6 +128,8 @@ void	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vect
 				request_class._chunked = true;
 		}
 	}
+	if (request_class._headers.find("Host") == request_class._headers.end())
+		request_class._ErrorCode = 400;
 }
 
 bool	HttpRequestParser::check_request_str(const char *str){
@@ -193,4 +206,19 @@ bool HttpRequestParser::isSpecial(int c){
 // Check if a byte is a digit.
 bool HttpRequestParser::isDigit(int c){
 	return c >= '0' && c <= '9';
+}
+
+bool HttpRequestParser::containsMoreThanOne(const std::string& str, char ch) {
+    return std::count(str.begin(), str.end(), ch) > 1;
+}
+
+bool	HttpRequestParser::isValidHeaderValue(const std::string& str){
+	int i = 0;
+	
+	while(str[i])	{
+		if (!isprint(str[i]))
+			return 1;
+		i++;
+	}
+	return 0;
 }
