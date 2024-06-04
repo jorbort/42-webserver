@@ -6,7 +6,7 @@
 /*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/04 13:26:44 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/04 16:22:44 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 		std::cout << "2" << std::endl;
 		return;
 	}
-	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines))
+	if (parseFirstLine(request_class, lines[0]) || parseURI(request_class) || parseHeaders(request_class, lines))
 		return;
 		
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
@@ -72,8 +72,6 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 		parseBody(request_class, original_str + bytes_read, len - bytes_read);
 }
 // Need to implement Folding?
-// 
-
 // check for bodys null characters how to implement = full request size needed from server;
 
 bool	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::string &str){
@@ -84,7 +82,6 @@ bool	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::st
 		return 1;
 	}
 	request_class._URI = str.substr(str.find(request_class._method) + request_class._method.size() + 1, str.find(' '));
-	// check URI
 	request_class._version = str.substr(str.find(request_class._URI) + request_class._URI.size() + 1, str.size());
 	if (request_class._version.compare("HTTP/1.1")){
 		request_class._ErrorCode = 505;
@@ -106,7 +103,7 @@ bool	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vect
 			key = lines[i].substr(0, lines[i].find(':'));
 			value = cleanWSpaces(lines[i].substr(lines[i].find(':') + 1));
 		if ((std::find(_RealHeaders.begin(), _RealHeaders.end(), key) == _RealHeaders.end())
-			|| (request_class._headers.find(key) != request_class._headers.end())
+			|| (request_class._headers.find(key) != request_class._headers.end()) || value.empty()
 			|| containsMoreThanOne(lines[i], ':') || isValidHeaderValue(lines[i])){
 				request_class._ErrorCode = 400;
 				std::cout << "helloo" << std::endl;
@@ -128,6 +125,15 @@ bool	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vect
 		request_class._ErrorCode = 400;
 		return 1;
 	}
+	return 0;
+}
+
+bool HttpRequestParser::parseURI(HttpRequest &request_class){
+	HttpRequest &rq = request_class;
+	std::string uri = rq.getURI();
+
+
+
 	return 0;
 }
 

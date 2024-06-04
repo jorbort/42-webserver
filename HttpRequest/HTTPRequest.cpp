@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
+/*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:28:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/05/31 17:33:48 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/04 16:18:39 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
-HttpRequest::HttpRequest() : _ErrorCode(0), _RequestMethod(NONE), _chunked(0), _ContentLength(0){}
+HttpRequest::HttpRequest() : _ErrorCode(0), _RequestMethod(NONE), _chunked(0), _ContentLength(0), _URI_tcpPort(0){}
 
 HttpRequest::~HttpRequest(){}
 

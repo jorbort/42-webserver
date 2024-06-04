@@ -6,7 +6,7 @@
 /*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/04 13:19:35 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/04 16:25:14 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,22 @@
 #include "HttpRequestParser.hpp"
 #include "HttpRequest.hpp"
 
+// GET / HTTP/1.1
+// User-Agent: -
+// Host: hello.com
+// Accept: */*
+// Referer: http://base64.guru/tools/http-request-online
+// Content-Type: application/json
+// Authorization: Bearer YOUR_ACCESS_TOKEN
+// Content-Length: 36
+
 int main(void)
 {
 	// const char* Request = "GET / HTTP/1.1\r\nHost: www.google.com\r\n\r\n";
 	
 	char Request2[30000] = 	
 						{"\r\n"
-						"POST /uri HTTP/1.1\r\n"
+						"POST /docs/web/error_pages HTTP/1.1\r\n"
 						"Host: 		api.example.com\r\n"
 						"Content-Type: application/json				\r\n"
 						"Authorization: Bearer YOUR_ACCESS_TOKEN\r\n"
@@ -44,17 +53,6 @@ int main(void)
 
 	return 0;
 }
-
-//     if( strcasecmp(h.name.c_str(), "Content-Length") == 0 )
-//                         {
-//                             contentSize = atoi(h.value.c_str());
-//                             req.content.reserve( contentSize );
-//                         }
-//                         else if( strcasecmp(h.name.c_str(), "Transfer-Encoding") == 0 )
-//                         {
-//                             if(strcasecmp(h.value.c_str(), "chunked") == 0)
-//                                 chunked = true;
-//                         }
 // #include <iostream>
 // #include <sys/stat.h>
 
