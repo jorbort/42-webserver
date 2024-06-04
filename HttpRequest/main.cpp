@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
+/*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/03 19:39:08 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/04 13:19:35 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@ int main(void)
 	char Request2[30000] = 	
 						{"\r\n"
 						"POST /uri HTTP/1.1\r\n"
-						"Host:api.example.com\r\n"
-						"Content-Type: application/json\r\n"
+						"Host: 		api.example.com\r\n"
+						"Content-Type: application/json				\r\n"
 						"Authorization: Bearer YOUR_ACCESS_TOKEN\r\n"
 						"Content-Length: 36\r\n"
 						"Transfer-Encoding: chunked\r\n"

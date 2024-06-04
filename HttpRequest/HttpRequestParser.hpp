@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequestParser.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: juan-anm < juan-anm@student.42barcelona    +#+  +:+       +#+        */
+/*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/16 00:20:15 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/03 19:30:36 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/04 13:22:56 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,11 @@ class HttpRequestParser
 		bool								check_request_str(const char *str);
 		bool								invalid_CRLF(const std::string &str);
 		bool								check_method(HttpRequest &request);
-		void								parseFirstLine(HttpRequest &request, const std::string &str);
-		void								parseHeaders(HttpRequest &request, const std::vector<std::string>	&lines);
+		bool								parseFirstLine(HttpRequest &request, const std::string &str);
+		bool								parseHeaders(HttpRequest &request, const std::vector<std::string>	&lines);
 		bool								containsMoreThanOne(const std::string& str, char ch);
 		bool								isValidHeaderValue(const std::string& str);
+		std::string							cleanWSpaces(const std::string& str);
 
 		bool								isChar(int c);
 		bool								isControl(int c);
