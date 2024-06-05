@@ -5,12 +5,20 @@
 #include <vector>
 #include <cstdlib>
 
-
+std::string removeNewline(std::string str) {
+    std::string newStr;
+    for (std::string::iterator it = str.begin(); it != str.end(); ++it) {
+        if (*it != '\n') {
+            newStr += *it;
+        }
+    }
+    return newStr;
+}
 
 std::string trim(const std::string& str)
 {
-    size_t first = str.find_first_not_of(" \t\n\r");
-    size_t last = str.find_last_not_of(" \t\n\r");
+    size_t first = str.find_first_not_of(" \t");
+    size_t last = str.find_last_not_of(" \t");
     return (first == std::string::npos || last == std::string::npos) ? "" : str.substr(first, last - first + 1);
 }
 
@@ -54,48 +62,69 @@ ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 ** --------------------------------- METHODS ----------------------------------
 // */
 
-void ConfigParser::splitServers(std::string &configfile)
-{
-	size_t start = 0;
-	size_t end = 1;
 
-	if (configfile.find("server",0) == std::string::npos)
-		throw std::invalid_argument("no server found in the file");
-	while (start != end && start < configfile.length() -1)
-	{
-		start = serverBegin(start, configfile);
-		end = serverEnd(start, configfile);
-		if (end == std::string::npos)
-			throw std::invalid_argument("invalid server scope");
-		this->_ConfFile.push_back(configfile.substr(start, end - start + 1));
-		this->nOfServers++;
-		start = end + 1;
-	}
-}
+void ConfigParser::splitServers(const std::vector<std::string>& configLines) {
+    nOfServers = 0;
+    size_t start = 0;
+    size_t end = 1;
+    std::string configfile;
 
-size_t ConfigParser::serverBegin(size_t start, std::string &configfile)
-{
-	size_t i;
-	for (i = start ; configfile[i];i++)
-	{
-		if (configfile[i] == 's')
+    for (size_t i = 0; i < configLines.size(); ++i) {
+        configfile += configLines[i] ;
+    }
+
+    if (configfile.find("server", 0) == std::string::npos)
+        throw std::invalid_argument("no server found in the file");
+
+    while (start != std::string::npos) {
+        start = serverBegin(start, configLines);
+		if (start == std::string::npos)
 			break;
-	}
-	if (!configfile[i])
-		return (start);
-	if (configfile.compare(i , 6, "server") != 0)
-		throw std::invalid_argument("wrong character in server scope {");
-	i += 6;
-	while (configfile[i] && isspace(configfile[i]))
-		i++;
-	if (configfile[i] == '{')
-		return (i);
-	else
-		throw std::invalid_argument("wrong character in server scope {");
+        end = serverEnd(start, configLines);
+        if (end == std::string::npos)
+            throw std::invalid_argument("invalid server scope");
+        _ConfFile.push_back(configfile.substr(start, end - start + 1));
+        ++nOfServers;
+        start = end + 1;
+    }
 }
 
-size_t ConfigParser::serverEnd(size_t start, std::string &configfile)
-{
+size_t ConfigParser::serverBegin(size_t start, const std::vector<std::string>& configLines) {
+    size_t i;
+    std::string configfile;
+
+    for (size_t j = 0; j < configLines.size(); ++j) {
+        configfile += configLines[j] + "\n";
+    }
+
+    for (i = start; i < configfile.size(); ++i) {
+        if (configfile[i] == 's')
+            break;
+    }
+
+    if (i >= configfile.size())
+        return std::string::npos;
+
+    if (configfile.compare(i, 6, "server") != 0)
+        throw std::invalid_argument("wrong character in server scope {");
+
+    i += 6;
+    while (i < configfile.size() && isspace(configfile[i]))
+        ++i;
+
+    if (configfile[i] == '{')
+        return i;
+    else
+        throw std::invalid_argument("wrong character in server scope {");
+}
+
+size_t ConfigParser::serverEnd(size_t start, const std::vector<std::string>& configLines) {
+    std::string configfile;
+
+    for (size_t j = 0; j < configLines.size(); ++j) {
+        configfile += configLines[j] + "\n";
+    }
+
     if (start >= configfile.size() || configfile[start] != '{') {
         return std::string::npos;
     }
@@ -115,36 +144,31 @@ size_t ConfigParser::serverEnd(size_t start, std::string &configfile)
     return std::string::npos;
 }
 
+
 void ConfigParser::ParseConfig()
 {
 	std::ifstream file;
 	std::string line = "";
-	std::string configfile = "";
+	std::vector<std::string> configfile ;
 
 	file.open(this->getpath().c_str(), std::ios::in );
 	if (file.is_open() == false)
 		throw std::invalid_argument("");
-	while (!file.eof())
+	while (std::getline(file,line))
 	{
-		getline(file, line);
-		if (line[0] != '\n' && !line.empty() && line[0] != '#')
+		while (std::getline(file, line))
 		{
-			epurString(line);
-			if (line[line.length()-1] == '{' || line[0] == '}')
-			{
-				configfile.append( line + "\n");
-			}
-			else
-			{
-				configfile.append(line);
-			}
-		}
+        	line = trim(line);
+        	if (line.empty() || line[0] == '#') {
+            	continue;
+        }
+        configfile.push_back(line + "\n");
+    }
 	}
 	file.close();
 	splitServers(configfile);
 	for (size_t i = 0; i < this->nOfServers ; i++)
 	{
-
 		ServerConfigs server;
 		createServer(this->_ConfFile[i], server);
 		// this->_servers.push_back(server);
@@ -162,15 +186,22 @@ std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
 
   while(42)
   {
-    end = conf.find_first_of(';',begin);
+    end = conf.find_first_of('\n',begin);
     if (end == std::string::npos)
       break;
     line = conf.substr(begin, end - begin);
     lines.push_back(line);
-    begin = conf.find_first_not_of(';',end);
+    begin = conf.find_first_not_of('\n',end);
     if (begin == std::string::npos)
       break;
   }
+	// if (begin != std::string::npos && begin < conf.length()){
+    //    	 end = conf.find_last_of('}');
+    //     	if (end != std::string::npos && end >= begin) {
+    //         	line = conf.substr(begin, end - begin + 1);
+    //         	lines.push_back(line);
+	// 		}
+	// }
   return (lines);
 }
 
@@ -186,13 +217,47 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
   ++it;
   while (it != end)
   {
-    tmp = *it;
-    if (tmp.substr(0,4) == "root")
-      location.setRoot(tmp.substr(tmp.find(" ") + 1));
-    else if (tmp.substr(0,13) == "allow_methods")
-      location.addMethods(tmp.substr(tmp.find(" ") + 1));
-    ++it;
+	//std::cout << *it << std::endl;
+    // tmp = *it;
+	// tmp = removeNewline(tmp);
+	// //std::cout << trim(tmp.substr(0,tmp.find(" ")));
+
+    // if (trim(tmp.substr(0,tmp.find(" "))) == "root"){
+    // 	location.setRoot(tmp.substr(tmp.find(" ") + 1));
+	// }
+    // else if (tmp.substr(0,tmp.find(" ")) == "allow_methods"){
+
+    //   location.addMethods(tmp.substr(tmp.find(" ") + 1));
+	// }
+	 ++it;
+
+        std::string line = *it;
+        line = trim(line);
+        if (line.empty()) {
+            continue;
+        }
+        std::string key = line.substr(0, line.find(" "));
+        std::string value = line.substr(line.find(" ") + 1);
+        if (key == "root") {
+            location.setRoot(value);
+        } else if (key == "allow_methods") {
+            location.addMethods(value);
+        // } else if (key == "autoindex") {
+        //     location.setAutoindex(value == "on" ? true : false);
+        // } else if (key == "index") {
+        //     location.setIndex(value);
+        // } else if (key == "upload_store") {
+        //     location.setUploadStore(value);
+        // } else if (key == "cgi_path") {
+        //     location.setCgiPath(value);
+        // } else if (key == "cgi_ext") {
+        //     location.setCgiExt(value);
+        // }
   }
+	//++it;
+  
+}
+	//std::cout << *it << std::endl;
   server.addLocation(location);
 }
 
@@ -204,8 +269,9 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	std::vector<std::string>::iterator it = vect.begin();
 	while (it != vect.end())
 	{
-		std::string tmp  = *it;
+		std::string tmp  = removeNewline(*it);
 		
+		epurString(tmp);
 		
 		if (tmp.substr(0,6) == "listen")
 		{
@@ -229,7 +295,9 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		}
 		if (tmp.substr(0,4) == "root")
 		{
-			server.setRoot(tmp.substr(tmp.find(" ") + 1));
+			size_t start = tmp.find(" ") + 1;
+			size_t end = tmp.find(";", start);
+			server.setRoot(tmp.substr(start,end - start));
 		}
 		if (tmp.substr(0,5) == "index")
 		{
@@ -239,17 +307,37 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		{
 			server.toggleAutoindex();
 		}
-		if (tmp.substr(0,8) == "location")
+		if (tmp.substr(0,tmp.find(" ") ) == "location")
 		{
-      std::vector<std::string>::iterator locationEnd = it;
-      while (locationEnd != vect.end() && *locationEnd != "}")
-        ++locationEnd;
-      if (locationEnd == vect.end())
-        throw std::invalid_argument("invalid scope in locations");
-      parseLocation(it, locationEnd, server);   
+
+      		std::vector<std::string>::iterator locationEnd = it;
+      		
+			findLocationEnd(locationEnd, vect);
+      		parseLocation(it, locationEnd, server);
 		}
-    ++it;
+    	++it;
 	}
+	}
+
+void ConfigParser::findLocationEnd(std::vector<std::string>::iterator &locationEnd, std::vector<std::string> &vect)
+{
+    int braceCount = 0;
+    while (locationEnd != vect.end()) {
+        for (size_t j = 0; j < (*locationEnd).size(); ++j) {
+            if ((*locationEnd)[j] == '{') {
+                ++braceCount;
+            } else if ((*locationEnd)[j] == '}') {
+                --braceCount;
+                if (braceCount == 0) {
+                    return;
+                }
+            }
+        }
+        ++locationEnd;
+    }
+    if (braceCount != 0) {
+        throw std::invalid_argument("invalid scope in locations");
+    }
 }
 
 void ConfigParser::epurString(std::string &str)
@@ -258,13 +346,13 @@ void ConfigParser::epurString(std::string &str)
 	int i = 0;
 	bool flag = false;
 
-	while (str[i] == ' ' || str[i] == '\t')
+	while (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
 		i++;
 	while (str[i])
 	{
 		if (str[i] == ' ' || str[i] == '\t')
 			flag = true;
-		if (str[i] != ' ' && str[i] != '\t')
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
 		{
 			if (flag)
 				res.push_back(32);
