@@ -16,11 +16,13 @@ Location::~Location()
 void Location::setName(const std::string &name)
 {
 	this->name = name;
+	std::cout << name <<std::endl;
 }
 
 void Location::setRoot(const std::string &root)
 {
 	this->root = root;
+	//std::cout <<root<< std::endl;
 }
 
 void Location::setPath(void)
@@ -46,15 +48,16 @@ void Location::addMethods(const std::string &str)
 		size_t end = str.find(" ",begin);
 		if(end == std::string::npos)
 		{
+			end = str.find(";");
 			line = str.substr(begin, end - begin);
-			if (line != "GET" && line != "POST" && line != "DELETE" && line != "HEAD")
+			if (line != "GET" && line != "POST" && line != "DELETE" )
 				throw std::invalid_argument("Invalid http method");
 			else
 				this->allowed_methods.push_back(line);
 			break;
 		}
 		line = str.substr(begin, end - begin);
-		if (line != "GET" && line != "POST" && line != "DELETE" && line != "HEAD")
+		if (line != "GET" && line != "POST" && line != "DELETE")
 			throw std::invalid_argument("Invalid http method");
 		else
 			this->allowed_methods.push_back(line);
@@ -62,7 +65,7 @@ void Location::addMethods(const std::string &str)
 		if (begin == std::string::npos)
 			break;	
 	}
-	std::vector<std::string>::iterator itb = this->allowed_methods.begin();
-	for (;itb != this->allowed_methods.end(); itb++)
-		std::cout << *itb << std::endl;
+	//std::vector<std::string>::iterator itb = this->allowed_methods.begin();
+	// for (;itb != this->allowed_methods.end(); itb++)
+	// 	std::cout << *itb << std::endl;
 }
