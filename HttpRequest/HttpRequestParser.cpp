@@ -6,7 +6,7 @@
 /*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/04 16:22:44 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/05 16:39:35 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,20 +75,32 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 // check for bodys null characters how to implement = full request size needed from server;
 
 bool	HttpRequestParser::parseFirstLine(HttpRequest &request_class, const std::string &str){
-	request_class._method = str.substr(0, str.find(' '));
-	if (check_method(request_class)){
-		request_class._ErrorCode = 405;
-		std::cout << "3" << std::endl;
-		return 1;
-	}
-	request_class._URI = str.substr(str.find(request_class._method) + request_class._method.size() + 1, str.find(' '));
-	request_class._version = str.substr(str.find(request_class._URI) + request_class._URI.size() + 1, str.size());
-	if (request_class._version.compare("HTTP/1.1")){
-		request_class._ErrorCode = 505;
-		std::cout << "6" << std::endl;
-		return 1;
-	}
-	return 0;
+size_t method_end = str.find(" ");
+    if (method_end == std::string::npos) {
+        request_class._ErrorCode = 400; // Bad Request
+        return 1;
+    }
+	request_class._method = str.substr(0, method_end);
+    if (check_method(request_class)) {
+        request_class._ErrorCode = 405; // Method Not Allowed
+        std::cout << "3" << std::endl;
+        return 1;
+    }
+    size_t uri_start = method_end + 1;
+    size_t uri_end = str.find(" ", uri_start);
+    if (uri_end == std::string::npos) {
+        request_class._ErrorCode = 400; // Bad Request
+        return 1;
+    }
+    request_class._URI = str.substr(uri_start, uri_end - uri_start);
+    size_t version_start = uri_end + 1;
+    request_class._version = str.substr(version_start, str.end()); 
+    if (request_class._version.compare("HTTP/1.1") != 0) {
+        request_class._ErrorCode = 505; // HTTP Version Not Supported
+        std::cout << "6" << std::endl;
+        return 1;
+    }
+    return 0;
 }
 
 // insert headers into map
@@ -132,8 +144,9 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 	HttpRequest &rq = request_class;
 	std::string uri = rq.getURI();
 
-
-
+	request_class._URI_path = uri.substr(uri.find(request_class._headers.find("Host")->second));
+	std::cout << request_class._URI_path << std::endl;
+	//  working 
 	return 0;
 }
 
@@ -205,6 +218,7 @@ bool	HttpRequestParser::isValidHeaderValue(const std::string& str){
 }
 
 // clean leading and trailing isspaces from string
+// 3.2.  Header Fields RFC7230 OWS
 std::string	HttpRequestParser::cleanWSpaces(const std::string& str){
 	std::string::size_type start = 0;
 

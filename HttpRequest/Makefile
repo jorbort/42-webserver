@@ -12,7 +12,7 @@ $(NAME)			: $(OBJS)
 	g++ -o $@ $^
 
 $(OBJDIR)/%.o	: %.cpp
-	g++ -c $< -o $@
+	g++ -c $< -o $@ -g
 
 clean			:
 	rm -rf $(OBJDIR)
