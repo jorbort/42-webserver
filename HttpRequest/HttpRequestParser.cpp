@@ -6,7 +6,7 @@
 /*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/06 19:58:08 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/07 00:17:36 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,6 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 	std::string uri = rq.getURI();
 
 	size_t Host_end = uri.find(request_class._headers.find("Host")->second);
-	std::cout << uri << std::endl;
 	if (Host_end != std::string::npos){
 		uri.erase(Host_end, request_class._headers.find("Host")->second.length());
 	}
@@ -153,16 +152,26 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 		request_class._URI_tcpPort = atol(uri.substr(1,4).c_str());
 		uri.erase(0,5);
 	}
-	if (uri[0] == '/')
-	{
-		size_t path_end = uri.find('?');
-		if (path_end == std::string::npos)
-			path_end = uri.find(' ');
-		request_class._URI_path = uri.substr(0 , path_end);
+	if (uri[0] == '/'){
+		std::cout << uri << std::endl;
+		size_t path_start = uri.find('?');
+		request_class._URI_path = uri.substr(0 , path_start);
+		if (path_start != std::string::npos)
+		{
+			fill:
+				size_t path_end = uri.find('=');
+				std::string key = uri.substr(path_start + 1, (path_end - path_start) - 1);
+				path_start = uri.find('&', path_end);
+				std::string value = uri.substr(path_end + 1, (path_end - path_start) - 1);
+				request_class._URI_query[key] = value;
+				std::cout << key << " " << value << std::endl;
+				if ((path_start != std::string::npos))
+					goto fill;
+		}
 	}
 
 	// request_class._URI_path = uri.substr(uri.find(request_class._headers.find("Host")->second));
-	std::cout << "HLELELEL"<<uri << std::endl;
+	std::cout << "HLELELEL" << uri << std::endl;
 	std::cout << request_class._URI_path << std::endl;
 	std::cout << request_class._URI_tcpPort << std::endl;
 	//  working 
