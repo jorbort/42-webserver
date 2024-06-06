@@ -6,7 +6,7 @@
 /*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/05 16:39:35 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/06 19:58:08 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 		std::cout << "2" << std::endl;
 		return;
 	}
-	if (parseFirstLine(request_class, lines[0]) || parseURI(request_class) || parseHeaders(request_class, lines))
+	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines) || parseURI(request_class))
 		return;
 		
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
@@ -94,7 +94,7 @@ size_t method_end = str.find(" ");
     }
     request_class._URI = str.substr(uri_start, uri_end - uri_start);
     size_t version_start = uri_end + 1;
-    request_class._version = str.substr(version_start, str.end()); 
+    request_class._version = str.substr(version_start); 
     if (request_class._version.compare("HTTP/1.1") != 0) {
         request_class._ErrorCode = 505; // HTTP Version Not Supported
         std::cout << "6" << std::endl;
@@ -144,8 +144,27 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 	HttpRequest &rq = request_class;
 	std::string uri = rq.getURI();
 
-	request_class._URI_path = uri.substr(uri.find(request_class._headers.find("Host")->second));
+	size_t Host_end = uri.find(request_class._headers.find("Host")->second);
+	std::cout << uri << std::endl;
+	if (Host_end != std::string::npos){
+		uri.erase(Host_end, request_class._headers.find("Host")->second.length());
+	}
+	if (uri[0] == ':'){
+		request_class._URI_tcpPort = atol(uri.substr(1,4).c_str());
+		uri.erase(0,5);
+	}
+	if (uri[0] == '/')
+	{
+		size_t path_end = uri.find('?');
+		if (path_end == std::string::npos)
+			path_end = uri.find(' ');
+		request_class._URI_path = uri.substr(0 , path_end);
+	}
+
+	// request_class._URI_path = uri.substr(uri.find(request_class._headers.find("Host")->second));
+	std::cout << "HLELELEL"<<uri << std::endl;
 	std::cout << request_class._URI_path << std::endl;
+	std::cout << request_class._URI_tcpPort << std::endl;
 	//  working 
 	return 0;
 }
