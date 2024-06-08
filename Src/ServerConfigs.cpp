@@ -1,5 +1,6 @@
 #include "../Includes/ServerConfigs.hpp"
 #include <stdexcept>
+#include <vector>
 #define MAX_PORT 65535
 #include <exception>
 #include <cstdlib>
@@ -13,7 +14,7 @@ ServerConfigs::ServerConfigs()
 {
 	this->listen = 0;
 	this->autoindex = false;
-	this->ClientMaxBodySize = 300000000;
+	this->clientMaxBodySize = 300000000;
 	this->index = "";
 	this->_fd = 0;
 	this->root = "";
@@ -94,9 +95,9 @@ void ServerConfigs::setHost(const std::string &host)
 	int octet[4];
 	size_t start = 0;
 	size_t end;
-	
+
 	if (host.length() > 16 || host.length() < 7)
-		throw std::invalid_argument("invalid ip format"); 
+		throw std::invalid_argument("invalid ip format");
 	for (int i = 0 ; i < 4; ++i)
 	{
 		end = host.find('.',start);
@@ -111,12 +112,12 @@ void ServerConfigs::setHost(const std::string &host)
 			throw std::invalid_argument("ip address must becomposed of numbers in ranges from 0 to 255");
 	}
 	u_int32_t ip = (octet[0] << 24) | (octet[1] << 16) | (octet[2] << 8) | octet[3];
-	hostIp = htonl(ip);
+	this->hostIp = htonl(ip);
 }
 void ServerConfigs::setName(const std::string &name)
 {
 	size_t begin = 1;
-	size_t end; 
+	size_t end;
 	while(42)
 	{
 		end = name.find(" ", begin);
@@ -157,7 +158,7 @@ void ServerConfigs::addErrorPage(const std::string &errors)
 			break;
 		}
 		value = errors.substr(begin, end - begin);
-		this->_errorPages[key] = value; 
+		this->_errorPages[key] = value;
 		begin = end + 1;
 	}
 }
@@ -183,9 +184,9 @@ void ServerConfigs::setBodySize(const std::string &number)
 	{
 		num = std::atoi(number.substr(0, number.size()).c_str());
 	}
-	this->ClientMaxBodySize = num;
+	this->clientMaxBodySize = num;
 
-	
+
 }
 
 void ServerConfigs::setRoot(const std::string &root)
@@ -208,13 +209,65 @@ void ServerConfigs::toggleAutoindex(void)
 {
 	if (this->autoindex == false)
 		this->autoindex = true;
-	else if (this->autoindex == true)
+	else
 		throw std::invalid_argument("Error repeated argument, autoindex");
 }
 
 void ServerConfigs::addLocation(const Location &location)
 {
   this->locations.push_back(location);
+}
+
+int ServerConfigs::getListen(void) const
+{
+    return this->listen;
+}
+
+std::vector<Location> ServerConfigs::getLocations(void) const
+{
+    return this->locations;
+}
+
+std::vector<std::string> ServerConfigs::getServerName(void) const
+{
+    return this->serverName;
+}
+
+long ServerConfigs::getClientMaxBodySize(void) const
+{
+    return this->clientMaxBodySize;
+}
+
+std::string ServerConfigs::getIndex(void) const
+{
+    return this->index;
+}
+
+std::string ServerConfigs::getRoot(void) const
+{
+    return this->root;
+}
+
+struct sockaddr_in *ServerConfigs::getServerAddress(void) const
+{
+    return this->_serverAddress;
+}
+int ServerConfigs::getSocket(void) const
+{
+    return this->_fd;
+}
+
+bool ServerConfigs::getAutoindex(void) const
+{
+    return this->autoindex;
+}
+
+const std::string &ServerConfigs::getErrorPage(int error) const
+{
+    const std::map<int,std::string>::const_iterator it = this->_errorPages.find(error);
+    if (it == this->_errorPages.end())
+        return ("not implemented");
+    return it->second;
 }
 
 

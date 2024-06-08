@@ -22,7 +22,6 @@ void Location::setName(const std::string &name)
 void Location::setRoot(const std::string &root)
 {
 	this->root = root;
-	//std::cout <<root<< std::endl;
 }
 
 void Location::setPath(void)
@@ -63,9 +62,29 @@ void Location::addMethods(const std::string &str)
 			this->allowed_methods.push_back(line);
 		begin = end + 1;
 		if (begin == std::string::npos)
-			break;	
+			break;
 	}
-	//std::vector<std::string>::iterator itb = this->allowed_methods.begin();
-	// for (;itb != this->allowed_methods.end(); itb++)
-	// 	std::cout << *itb << std::endl;
+}
+
+void Location::addCgiPath(const std::string &cgi)
+{
+    this->cgiPath.push_back(cgi);
+}
+
+void Location::setCgiExtension(const std::string &ext)
+{
+    if(ext == ".py")
+        this->cgiExtensions.push_back(".py");
+    if(ext == ".sh")
+        this->cgiExtensions.push_back(".sh");
+}
+
+void Location::setIndex(const std::string &index)
+{
+    this->index = index;
+}
+
+void Location::setUploadPath(const std::string &upload)
+{
+    this->uploadPath = upload;
 }

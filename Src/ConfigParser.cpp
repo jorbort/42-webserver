@@ -195,13 +195,6 @@ std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
     if (begin == std::string::npos)
       break;
   }
-	// if (begin != std::string::npos && begin < conf.length()){
-    //    	 end = conf.find_last_of('}');
-    //     	if (end != std::string::npos && end >= begin) {
-    //         	line = conf.substr(begin, end - begin + 1);
-    //         	lines.push_back(line);
-	// 		}
-	// }
   return (lines);
 }
 
@@ -217,18 +210,6 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
   ++it;
   while (it != end)
   {
-	//std::cout << *it << std::endl;
-    // tmp = *it;
-	// tmp = removeNewline(tmp);
-	// //std::cout << trim(tmp.substr(0,tmp.find(" ")));
-
-    // if (trim(tmp.substr(0,tmp.find(" "))) == "root"){
-    // 	location.setRoot(tmp.substr(tmp.find(" ") + 1));
-	// }
-    // else if (tmp.substr(0,tmp.find(" ")) == "allow_methods"){
-
-    //   location.addMethods(tmp.substr(tmp.find(" ") + 1));
-	// }
 	 ++it;
 
         std::string line = *it;
@@ -242,7 +223,7 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
             location.setRoot(value);
         } else if (key == "allow_methods") {
             location.addMethods(value);
-        // } else if (key == "autoindex") {
+         }// else if (key == "autoindex") {
         //     location.setAutoindex(value == "on" ? true : false);
         // } else if (key == "index") {
         //     location.setIndex(value);
@@ -254,11 +235,10 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
         //     location.setCgiExt(value);
         // }
   }
-	//++it;
-  
-}
-	//std::cout << *it << std::endl;
-  server.addLocation(location);
+
+    if (!location.checkLocation())
+        throw std::invalid_argument("conflicting information in  location cannot set up server ");;
+    server.addLocation(location);
 }
 
 
@@ -270,9 +250,9 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	while (it != vect.end())
 	{
 		std::string tmp  = removeNewline(*it);
-		
+
 		epurString(tmp);
-		
+
 		if (tmp.substr(0,6) == "listen")
 		{
 			server.setListen(tmp.substr(7));
@@ -287,7 +267,7 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		}
 		if (tmp.substr(0,10) == "error_page")
 		{
-			server.addErrorPage(tmp.substr(tmp.find(" ") + 1));
+		    server.addErrorPage(tmp.substr(tmp.find(" ") + 1));
 		}
 		if (tmp.substr(0,20) == "client_max_body_size")
 		{
@@ -311,7 +291,7 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		{
 
       		std::vector<std::string>::iterator locationEnd = it;
-      		
+
 			findLocationEnd(locationEnd, vect);
       		parseLocation(it, locationEnd, server);
 		}

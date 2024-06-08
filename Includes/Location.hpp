@@ -13,6 +13,8 @@ class Location
 		std::string index;
 		std::vector<std::string> cgiPath;
 		std::string path;
+		std::vector<std::string> cgiExtensions;
+		std::string uploadPath;
 	public:
 		Location();
 		~Location();
@@ -23,6 +25,11 @@ class Location
 		void addCgiPath(const std::string &cgi);
 		void setPath(void);
 		void setName(const std::string &name);
+		void setCgiExtension(const std::string &ext);
+		void setIndex(const std::string &index);
+		void setUploadPath(const std::string &uploadPath);
+
+		bool checkLocation(void);
 
 		std::string &getAdress(void);
 		std::string &getRoot(void);

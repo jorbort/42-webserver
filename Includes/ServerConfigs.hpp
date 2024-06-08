@@ -13,9 +13,9 @@ class ServerConfigs
 	private:
 		int listen;
 		unsigned int hostIp;
+		long clientMaxBodySize;
 		std::vector<Location> locations;
 		std::vector<std::string> serverName;
-		long ClientMaxBodySize;
 		std::string index;
 		std::string root;
 		struct sockaddr_in *_serverAddress;
@@ -39,6 +39,17 @@ class ServerConfigs
 		void setSocket(int fd);
 		void toggleAutoindex();
 		void addErrorPage(const std::string &errors);
+
+		int getListen() const;
+		std::vector<Location> getLocations() const;
+		std::vector<std::string> getServerName() const;
+		long getClientMaxBodySize() const;
+		std::string getIndex() const;
+		std::string getRoot() const;
+		struct sockaddr_in *getServerAddress() const;
+		int getSocket() const;
+		bool getAutoindex() const;
+		const std::string &getErrorPage(int key) const;
 
 };
 
