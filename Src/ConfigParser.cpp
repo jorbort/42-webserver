@@ -236,8 +236,8 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
         // }
   }
 
-    if (!location.checkLocation())
-        throw std::invalid_argument("conflicting information in  location cannot set up server ");;
+    // if (!location.checkLocation())
+    //     throw std::invalid_argument("conflicting information in  location cannot set up server ");;   ---falta implementar checkLocation
     server.addLocation(location);
 }
 
