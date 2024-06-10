@@ -265,8 +265,6 @@ bool ServerConfigs::getAutoindex(void) const
 const std::string &ServerConfigs::getErrorPage(int error) const
 {
     const std::map<int,std::string>::const_iterator it = this->_errorPages.find(error);
-    // if (it == this->_errorPages.end())
-    //     return ("not implemented");
     return it->second;
 }
 
