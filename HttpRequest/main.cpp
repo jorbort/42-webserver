@@ -6,7 +6,7 @@
 /*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/10 18:38:04 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/10 19:43:37 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/11 17:37:34 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 // Content-Type: application/json
 // Authorization: Bearer YOUR_ACCESS_TOKEN
 // Content-Length: 36
+// "Hello World" in a URI would be encoded as Hello%20World.
 
 int main(void)
 {
@@ -30,8 +31,8 @@ int main(void)
 	
 	char Request2[30000] = 	
 						{"\r\n"
-						// "POST api.example.com:80.7/docs/web/error_pages?Name=Juan&BarManolo HTTP/1.1\r\n"
-						"POST /docs/web/error_pages?Name=Juan&BarManolo HTTP/1.1\r\n"
+						// "POST api.example.com:80.7/docs/web/error_pages?Name=Juan&Bar=Manolo HTTP/1.1\r\n"
+						"POST /docs/web/error_pages?Name=Juan&Bar=Manolo HTTP/1.1\r\n"
 						"Host: 		api.example.com\r\n"
 						"Content-Type: application/json				\r\n"
 						"Authorization: Bearer YOUR_ACCESS_TOKEN\r\n"

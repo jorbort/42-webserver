@@ -6,7 +6,7 @@
 /*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/10 19:49:25 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/06/11 17:36:34 by juan-anm         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,17 +161,21 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 		uri.erase(0, request_class._URI_path.length());
 		if ((path_start = uri.find('?')) != std::string::npos)
 		{
-			fill:
-				size_t path_end = uri.find('=');
-				std::string key = uri.substr(path_start + 1, (path_end - path_start) - 1);
-				path_start = uri.find('&');
-				std::string value = uri.substr(path_end + 1, (path_start - path_end) - 1);
-				request_class._URI_query[key] = value;
-				if ((path_start != std::string::npos)){
-					uri.erase(0, path_start);
-					path_start = 0;
-					goto fill;
+			std::string temp;
+			std::stringstream ss(uri);
+			while (getline(ss, temp, '&'))
+			{
+				std::cout << temp << std::endl;
+				size_t path_end = temp.find('=');
+				if (path_end == std::string::npos || temp.find('=') != temp.rfind('=')){
+					request_class._ErrorCode = 400;
+					return 1;
 				}
+				std::string key = temp.substr(path_start + 1, (path_end - path_start) - 1);
+				path_start = temp.find('&');
+				std::string value = temp.substr(path_end + 1, (path_start - path_end) - 1);
+				request_class._URI_query[key] = value;
+			}
 		}
 	}
 
