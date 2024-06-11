@@ -207,7 +207,6 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
   if (pathEnd == std::string::npos)
     throw std::invalid_argument("invalid scope in location");
   location.setName(tmp.substr(start, pathEnd - start));
-  ++it;
   while (it != end)
   {
 	 ++it;
@@ -219,23 +218,25 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
         }
         std::string key = line.substr(0, line.find(" "));
         std::string value = line.substr(line.find(" ") + 1);
+        epurString(value);
         if (key == "root") {
             location.setRoot(value);
         } else if (key == "allow_methods") {
             location.addMethods(value);
-         }// else if (key == "autoindex") {
-        //     location.setAutoindex(value == "on" ? true : false);
-        // } else if (key == "index") {
-        //     location.setIndex(value);
-        // } else if (key == "upload_store") {
-        //     location.setUploadStore(value);
-        // } else if (key == "cgi_path") {
-        //     location.setCgiPath(value);
-        // } else if (key == "cgi_ext") {
-        //     location.setCgiExt(value);
-        // }
+         } else if (key == "autoindex") {
+            location.toggleAutoIndex();
+        } else if (key == "index") {
+            location.setIndex(value);
+        } else if (key == "upload_store") {
+            location.setUploadPath(value);
+        } else if (key == "cgi_path") {
+            location.addCgiPath(value);
+            location.setCgiExtension(value);
+        }
   }
-
+    std::cout << "--------------" << std::endl;
+    std::cout << location ;
+    std::cout << "--------------" << std::endl;
     // if (!location.checkLocation())
     //     throw std::invalid_argument("conflicting information in  location cannot set up server ");;   ---falta implementar checkLocation
     server.addLocation(location);
@@ -252,44 +253,43 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		std::string tmp  = removeNewline(*it);
 
 		epurString(tmp);
-
+        
 		if (tmp.substr(0,6) == "listen")
-		{
+		{           
 			server.setListen(tmp.substr(7));
 		}
 		if (tmp.substr(0,4) == "host")
-		{
+		{           
 			server.setHost(tmp.substr(tmp.find(" ")));
 		}
 		if (tmp.substr(0,11) == "server_name")
-		{
+		{           
 			server.setName(tmp.substr(tmp.find(" ")));
 		}
 		if (tmp.substr(0,10) == "error_page")
-		{
+		{           
 		    server.addErrorPage(tmp.substr(tmp.find(" ") + 1));
 		}
 		if (tmp.substr(0,20) == "client_max_body_size")
-		{
+		{           
 			server.setBodySize(tmp.substr(tmp.find(" ") + 1));
 		}
 		if (tmp.substr(0,4) == "root")
-		{
+		{           
 			size_t start = tmp.find(" ") + 1;
 			size_t end = tmp.find(";", start);
 			server.setRoot(tmp.substr(start,end - start));
 		}
 		if (tmp.substr(0,5) == "index")
-		{
+		{           
 			server.setIndex(tmp.substr(tmp.find(" ") + 1));
 		}
 		if (tmp.substr(0,9) == "autoindex")
-		{
+		{           
 			server.toggleAutoindex();
 		}
 		if (tmp.substr(0,tmp.find(" ") ) == "location")
-		{
-
+		{            
       		std::vector<std::string>::iterator locationEnd = it;
 
 			findLocationEnd(locationEnd, vect);

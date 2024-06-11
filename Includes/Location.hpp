@@ -31,10 +31,14 @@ class Location
 
 		bool checkLocation(void);
 
-		std::string &getAdress(void);
-		std::string &getRoot(void);
-		std::string::iterator &getMethods(void);
-		bool getAutoindex();
-		std::string &getCgiPath(std::string &ext);
-		std::string &getPath(void);
+		const std::string &getName(void) const;
+		const std::string &getRoot(void) const ;
+		std::vector<std::string>::iterator getMethods(void);
+		bool isAutoindex(void);
+		std::vector<std::string>::iterator getCgiPath(void);
+		const std::string &getPath(void) const;
+		const std::string &getUPloadPath(void) const;
+		const std::string &getIndex(void) const;
 };
+
+std::ostream & operator<<(std::ostream &stream, const Location &loc);
