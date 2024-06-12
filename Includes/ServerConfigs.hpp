@@ -20,7 +20,7 @@ class ServerConfigs
 		std::string root;
 		struct sockaddr_in *_serverAddress;
 		int _fd;
-		bool autoindex;
+		int autoindex;
 		std::map<int, std::string> _errorPages;
 
 	public:
@@ -37,10 +37,11 @@ class ServerConfigs
 		void setRoot(const std::string &path);
 		void setHost(const std::string &host);
 		void setSocket(int fd);
-		void toggleAutoindex();
+		void toggleAutoindex(const std::string &status);
 		void addErrorPage(const std::string &errors);
 
 		int getListen() const;
+		unsigned int getHostIp() const;
 		std::vector<Location> getLocations() const;
 		std::vector<std::string> getServerName() const;
 		long getClientMaxBodySize() const;
@@ -48,7 +49,7 @@ class ServerConfigs
 		std::string getRoot() const;
 		struct sockaddr_in *getServerAddress() const;
 		int getSocket() const;
-		bool getAutoindex() const;
+		int getAutoindex() const;
 		const std::string &getErrorPage(int key) const;
 
 };

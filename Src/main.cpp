@@ -1,6 +1,7 @@
 #include "../Includes/Logger.hpp"
 #include "../Includes/WebServ.hpp"
 #include "../Includes/ConfigParser.hpp"
+#include <iostream>
 
 int main(int argc, char **argv)
 {
@@ -19,22 +20,24 @@ int main(int argc, char **argv)
 		}
 		catch(std::exception &e)
 		{
-			Logger::print("Error", e.what());
+			(void)e;
 			return (1);
 		}
 	}
-	// else if (argc == 1)
-	// {
-	// 	try
-	// 	{
-	// 		webServer = Server();
-	// 	}
-	// 	catch (std::exception &e)
-	// 	{
-	// 		Logger::print("Error", e.what());
-	// 		return (1);
-	// 	}
-	// }
+	else if (argc == 1)
+	{
+	   std::string arg = "config/default.conf";
+;
+		try
+		{
+			webServer = Server(arg);
+		}
+		catch (std::exception &e)
+		{
+			(void)e;
+			return (1);
+		}
+	}
 	// try
 	// {
 	// 	webServer.RunServer();

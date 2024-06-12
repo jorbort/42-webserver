@@ -1,11 +1,14 @@
 #include "../Includes/WebServ.hpp"
 #include "../Includes/Location.hpp"
+#include <cstddef>
 #include <stdexcept>
+#include <string>
+#include <sstream>
 
 
 Location::Location()
 {
-	this->autoindex = false;
+	this->autoindex = -1;
 }
 
 Location::~Location()
@@ -28,12 +31,19 @@ void Location::setPath(void)
 	this->path = this->root + this->name;
 }
 
-void Location::toggleAutoIndex(void)
+void Location::toggleAutoIndex(const std::string &status)
 {
-	if (this->autoindex )
+	if (this->autoindex != -1)
 		throw std::invalid_argument("repeated parameter autoindex");
 	else
-		this->autoindex = true;
+	{
+		if (status == "on")
+			this->autoindex = 1;
+		else if (status == "off")
+			this->autoindex = 0;
+		else
+			throw std::invalid_argument("invalid autoindex argument");
+	}
 }
 
 void Location::addMethods(const std::string &str)
@@ -66,15 +76,28 @@ void Location::addMethods(const std::string &str)
 
 void Location::addCgiPath(const std::string &cgi)
 {
-    this->cgiPath.push_back(cgi);
+	std::string invalidChars = "\0 \t\n\r*?[]()&|;<>''\"`\\$!' '";
+    std::istringstream iss(cgi);
+	std::string value;
+	while (iss >> value)
+	{
+		if (value.find_first_of(invalidChars) != std::string::npos) {
+        	throw std::invalid_argument("Invalid character found in string");
+    	}
+		this->cgiPath.push_back(value);
+	}
 }
 
 void Location::setCgiExtension(const std::string &ext)
 {
-    if(ext == ".py")
-        this->cgiExtensions.push_back(".py");
-    if(ext == ".sh")
-        this->cgiExtensions.push_back(".sh");
+	std::istringstream iss(ext);
+    std::string value;
+    while (iss >> value)
+    {
+        if(value != ".py" && value != ".sh")
+            throw std::invalid_argument("Invalid cgi extension");
+        this->cgiExtensions.push_back(value);
+    }
 }
 
 void Location::setIndex(const std::string &index)
@@ -100,16 +123,16 @@ const std::string &Location::getRoot(void) const
 {
 	return (this->root);
 }
-std::vector<std::string>::iterator Location::getMethods(void) 
+std::vector<std::string>::iterator Location::getMethods(void)
 {
 	const std::vector<std::string>::iterator it = this->allowed_methods.begin();
 	return (it);
 }
-bool Location::isAutoindex(void)
+int Location::isAutoindex(void)
 {
 	return (this->autoindex);
 }
-std::vector<std::string>::iterator Location::getCgiPath(void) 
+std::vector<std::string>::iterator Location::getCgiPath(void)
 {
 	std::vector<std::string>::iterator it = this->cgiPath.begin();
 	return (it);
@@ -135,4 +158,43 @@ std::ostream & operator<<(std::ostream &stream,  Location const &loc)
 	stream << loc.getIndex() << " ";
 	stream << loc.getUPloadPath() << std::endl;
 	return (stream);
+}
+
+bool Location::checkLocation(void)
+{
+	this->setPath();
+	if (this->getName().empty())
+	{
+		return (false);
+	}	
+	else if (this->getRoot().empty())
+	{
+		return (false);
+	}	
+	else if (this->getPath().empty())
+	{
+		return (false);
+	}	
+	else if (this->getIndex().empty())
+	{
+		this->index = "docs/web/index.html";
+	}	
+	else if (this->allowed_methods.empty())
+	{
+		this->allowed_methods.push_back("GET");
+		this->allowed_methods.push_back("POST");
+	}
+	else if (this->cgiPath.empty())
+	{
+		this->cgiPath.push_back("/bin/bash");
+		this->cgiPath.push_back("/usr/bin/python3");
+		this->cgiExtensions.push_back(".sh");
+		this->cgiExtensions.push_back(".py");
+	}
+	else if (this->isAutoindex() == -1)
+	{
+		this->toggleAutoIndex("off");
+	}
+
+	return (true);
 }

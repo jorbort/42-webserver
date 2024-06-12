@@ -9,7 +9,7 @@ class Location
 		std::string name;
 		std::string root;
 		std::vector<std::string> allowed_methods;
-		bool autoindex;
+		int autoindex;
 		std::string index;
 		std::vector<std::string> cgiPath;
 		std::string path;
@@ -21,7 +21,7 @@ class Location
 
 		void setRoot(const std::string &root);
 		void addMethods(const std::string &methods);
-		void toggleAutoIndex();
+		void toggleAutoIndex(const std::string &status);
 		void addCgiPath(const std::string &cgi);
 		void setPath(void);
 		void setName(const std::string &name);
@@ -34,7 +34,7 @@ class Location
 		const std::string &getName(void) const;
 		const std::string &getRoot(void) const ;
 		std::vector<std::string>::iterator getMethods(void);
-		bool isAutoindex(void);
+		int isAutoindex(void);
 		std::vector<std::string>::iterator getCgiPath(void);
 		const std::string &getPath(void) const;
 		const std::string &getUPloadPath(void) const;

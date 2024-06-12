@@ -13,11 +13,12 @@
 ServerConfigs::ServerConfigs()
 {
 	this->listen = 0;
-	this->autoindex = false;
+	this->autoindex = -1;
 	this->clientMaxBodySize = 300000000;
 	this->index = "";
 	this->_fd = 0;
 	this->root = "";
+	this->hostIp = 0;
 	this->initErrorPages();
 }
 
@@ -184,12 +185,20 @@ void ServerConfigs::setIndex(const std::string &index)
 {
 	this->index = index;
 }
-void ServerConfigs::toggleAutoindex(void)
+void ServerConfigs::toggleAutoindex(const std::string &status)
 {
-	if (this->autoindex == false)
-		this->autoindex = true;
-	else
+	if (this->autoindex != -1)
 		throw std::invalid_argument("Error repeated argument, autoindex");
+	
+	else
+	{
+		if (status == "on")
+			this->autoindex = 1;
+		else if (status == "off")
+			this->autoindex = 0;
+		else
+			throw std::invalid_argument("invalid autoindex argument");
+	}
 }
 
 void ServerConfigs::addLocation(const Location &location)
@@ -236,7 +245,7 @@ int ServerConfigs::getSocket(void) const
     return this->_fd;
 }
 
-bool ServerConfigs::getAutoindex(void) const
+int ServerConfigs::getAutoindex(void) const
 {
     return this->autoindex;
 }
@@ -246,6 +255,3 @@ const std::string &ServerConfigs::getErrorPage(int error) const
     const std::map<int,std::string>::const_iterator it = this->_errorPages.find(error);
     return it->second;
 }
-
-
-/* ************************************************************************** */

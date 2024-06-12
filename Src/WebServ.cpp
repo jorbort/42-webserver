@@ -1,24 +1,25 @@
 #include "../Includes/WebServ.hpp"
+#include <stdexcept>
 
 
 #define MAX_EVENTS 10000
 
 Server::Server(void)
 {
-	//this->conf.defaultConf();
+
 }
 
 Server::Server(std::string &path)
 {
-	conf.setConfPath(path);
+    conf.setConfPath(path);
 	try
 	{
 		conf.ParseConfig();
 	}
 	catch (std::exception &e)
 	{
-		// throw std::invalid_argument("can't open config file");
-		std::cout<< e.what() << std::endl;
+		Logger::print("Error", e.what());
+		throw std::invalid_argument(" ");
 	}
 }
 Server::~Server()

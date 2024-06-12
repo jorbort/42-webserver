@@ -5,17 +5,21 @@ CC = c++
 OBJS = $(SRC:.cpp=.o)
 HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp Includes/ServerConfigs.hpp Includes/Location.hpp
 
-debug-leaks:
-	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes ./$(NAME) /home/jbortolo/Desktop/42-webserver/config/test.conf
-
-run:
-	@./$(NAME) /home/jbortolo/Desktop/42-webserver/config/test.conf
 
 %.o: %.cpp
 	$(CC) -I. $(CFLAG) -c $< -o $@
 
+
 $(NAME): $(OBJS) $(HEADER) Makefile
 	$(CC) $(CFLAG) $(OBJS) -o $(NAME)
+
+
+debug-leaks:
+	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes ./$(NAME) /home/jbortolo/Desktop/42-webserver/config/test.conf
+
+run:
+	@  ./$(NAME) config/test.conf
+
 
 clean:
 	@find . -name '*.o' -type f -delete

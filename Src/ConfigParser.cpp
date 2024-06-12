@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <cstdlib>
+#include <stack>
+#include "../Includes/Logger.hpp"
 
 std::string removeNewline(std::string str) {
     std::string newStr;
@@ -64,29 +66,46 @@ ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 
 
 void ConfigParser::splitServers(const std::vector<std::string>& configLines) {
-    nOfServers = 0;
-    size_t start = 0;
-    size_t end = 1;
+	nOfServers = 0;
     std::string configfile;
 
     for (size_t i = 0; i < configLines.size(); ++i) {
         configfile += configLines[i] ;
     }
-
     if (configfile.find("server", 0) == std::string::npos)
         throw std::invalid_argument("no server found in the file");
 
+    std::stack<size_t> serverBlockStack;
+    size_t start = 0;
     while (start != std::string::npos) {
-        start = serverBegin(start, configLines);
-		if (start == std::string::npos)
-			break;
-        end = serverEnd(start, configLines);
-        if (end == std::string::npos)
+        start = configfile.find("server", start);
+        if (start == std::string::npos)
+            break;
+
+        size_t blockStart = configfile.find("{", start);
+        if (blockStart == std::string::npos)
             throw std::invalid_argument("invalid server scope");
+
+        serverBlockStack.push(blockStart);
+
+        size_t end = blockStart;
+        while (!serverBlockStack.empty()) {
+            size_t nextEnd = configfile.find_first_of("{}", end + 1);
+   			if (nextEnd == std::string::npos || nextEnd == end) {
+        		throw std::invalid_argument("Unmatched braces in server configuration");
+    		}
+    		end = nextEnd;
+    		if (configfile[end] == '{') {
+        		serverBlockStack.push(end);
+    		} else {
+        		serverBlockStack.pop();
+    		}
+        }
         _ConfFile.push_back(configfile.substr(start, end - start + 1));
         ++nOfServers;
         start = end + 1;
     }
+
 }
 
 size_t ConfigParser::serverBegin(size_t start, const std::vector<std::string>& configLines) {
@@ -153,7 +172,7 @@ void ConfigParser::ParseConfig()
 
 	file.open(this->getpath().c_str(), std::ios::in );
 	if (file.is_open() == false)
-		throw std::invalid_argument("");
+		throw std::invalid_argument("failed to open file");
 	while (std::getline(file,line))
 	{
 		while (std::getline(file, line))
@@ -171,10 +190,12 @@ void ConfigParser::ParseConfig()
 	{
 		ServerConfigs server;
 		createServer(this->_ConfFile[i], server);
-		// this->_servers.push_back(server);
+		//checkServer(server);
+		this->_servers.push_back(server);
 	}
+	Logger::printTrain();
 	//if (this->nOfServers > 1)
-	//	compareServers(); -->to-do
+	//	compareServers(); 
 }
 
 std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
@@ -207,38 +228,39 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
   if (pathEnd == std::string::npos)
     throw std::invalid_argument("invalid scope in location");
   location.setName(tmp.substr(start, pathEnd - start));
-  while (it != end)
-  {
-	 ++it;
-
+	while (it != end)
+	{
+		++it;
         std::string line = *it;
         line = trim(line);
         if (line.empty()) {
             continue;
         }
-        std::string key = line.substr(0, line.find(" "));
-        std::string value = line.substr(line.find(" ") + 1);
-        epurString(value);
-        if (key == "root") {
+		epurString(line);
+        std::string::size_type spacePos = line.find(" ");
+		std::string key = spacePos != std::string::npos ? line.substr(0, spacePos) : line;
+		std::string value = spacePos != std::string::npos ? line.substr(spacePos + 1) : "";
+		if (key != "}" && (value.empty() || value.find_first_not_of(' ') == std::string::npos)) {
+    		throw std::invalid_argument("Invalid value");
+		}
+		if (key == "root") {
             location.setRoot(value);
         } else if (key == "allow_methods") {
             location.addMethods(value);
          } else if (key == "autoindex") {
-            location.toggleAutoIndex();
+            location.toggleAutoIndex(value);
         } else if (key == "index") {
             location.setIndex(value);
         } else if (key == "upload_store") {
             location.setUploadPath(value);
-        } else if (key == "cgi_path") {
+        } else if (key == "cgi_path") { 
             location.addCgiPath(value);
+        }else if (key == "cgi_ext") {
             location.setCgiExtension(value);
         }
-  }
-    std::cout << "--------------" << std::endl;
-    std::cout << location ;
-    std::cout << "--------------" << std::endl;
-    // if (!location.checkLocation())
-    //     throw std::invalid_argument("conflicting information in  location cannot set up server ");;   ---falta implementar checkLocation
+	}
+    if (!location.checkLocation())
+        throw std::invalid_argument("conflicting information in  location cannot set up server ");
     server.addLocation(location);
 }
 
@@ -248,56 +270,65 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 	std::vector<std::string> vect = splitConfigLines(conf);
 
 	std::vector<std::string>::iterator it = vect.begin();
-	while (it != vect.end())
+	for(; it != vect.end(); ++it)
 	{
 		std::string tmp  = removeNewline(*it);
-
 		epurString(tmp);
-        
-		if (tmp.substr(0,6) == "listen")
-		{           
-			server.setListen(tmp.substr(7));
+
+		std::string::size_type spacePos = tmp.find(" ");
+        std::string key = spacePos != std::string::npos ? tmp.substr(0, spacePos) : tmp;
+        std::string value = spacePos != std::string::npos ? tmp.substr(spacePos + 1) : "";
+		
+		if ((key[key.length() -1] != '}' && key[key.length() -1] != '{') && (value.empty() || value.find_first_not_of(' ') == std::string::npos)) {
+			throw std::invalid_argument("Invalid value");
 		}
-		if (tmp.substr(0,4) == "host")
-		{           
-			server.setHost(tmp.substr(tmp.find(" ")));
-		}
-		if (tmp.substr(0,11) == "server_name")
-		{           
-			server.setName(tmp.substr(tmp.find(" ")));
-		}
-		if (tmp.substr(0,10) == "error_page")
-		{           
-		    server.addErrorPage(tmp.substr(tmp.find(" ") + 1));
-		}
-		if (tmp.substr(0,20) == "client_max_body_size")
-		{           
-			server.setBodySize(tmp.substr(tmp.find(" ") + 1));
-		}
-		if (tmp.substr(0,4) == "root")
-		{           
-			size_t start = tmp.find(" ") + 1;
-			size_t end = tmp.find(";", start);
-			server.setRoot(tmp.substr(start,end - start));
-		}
-		if (tmp.substr(0,5) == "index")
-		{           
-			server.setIndex(tmp.substr(tmp.find(" ") + 1));
-		}
-		if (tmp.substr(0,9) == "autoindex")
-		{           
-			server.toggleAutoindex();
-		}
-		if (tmp.substr(0,tmp.find(" ") ) == "location")
-		{            
+		 if (key == "listen")
+        {
+			if (server.getListen() != 0)
+				throw std::invalid_argument("Error repeated argument, listen");
+            server.setListen(value);
+        }
+        else if (key == "host")
+        {
+            if (server.getHostIp() != 0)
+				throw std::invalid_argument("Error repeated argument, host");
+			server.setHost(value);
+        }
+        else if (key == "server_name")
+        {
+            server.setName(value);
+        }
+        else if (key == "error_page")
+        {
+            server.addErrorPage(value);
+        }
+        else if (key == "client_max_body_size")
+        {
+            server.setBodySize(value);
+        }
+        else if (key == "root")
+        {
+            size_t end = value.find(";");
+            server.setRoot(value.substr(0, end));
+        }
+        else if (key == "index")
+        {
+            server.setIndex(value);
+        }
+        else if (key == "autoindex")
+        {
+            size_t end = value.find(";");
+            server.toggleAutoindex(value.substr(0, end));
+        }
+		if (key == "location")
+		{
       		std::vector<std::string>::iterator locationEnd = it;
 
 			findLocationEnd(locationEnd, vect);
       		parseLocation(it, locationEnd, server);
 		}
-    	++it;
 	}
-	}
+}
 
 void ConfigParser::findLocationEnd(std::vector<std::string>::iterator &locationEnd, std::vector<std::string> &vect)
 {
@@ -332,7 +363,7 @@ void ConfigParser::epurString(std::string &str)
 	{
 		if (str[i] == ' ' || str[i] == '\t')
 			flag = true;
-		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n')
+		if (str[i] != ' ' && str[i] != '\t' && str[i] != '\n' && !(str[i] == ';' && str[i+1] == '\0'))
 		{
 			if (flag)
 				res.push_back(32);
@@ -344,12 +375,6 @@ void ConfigParser::epurString(std::string &str)
 	str = res;
 }
 
-
-
-/*
-** --------------------------------- ACCESSOR ---------------------------------
-*/
-
 void ConfigParser::setConfPath(std::string &path)
 {
 	this->configPath = path;
@@ -359,6 +384,3 @@ std::string &ConfigParser::getpath(void)
 {
 	return (this->configPath);
 }
-
-
-/* ************************************************************************** */
