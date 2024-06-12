@@ -296,7 +296,9 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
         }
         else if (key == "server_name")
         {
-            server.setName(value);
+            if (!server.getServerName().empty())
+				throw std::invalid_argument("Error repeated argument, server_name");
+			server.setName(value);
         }
         else if (key == "error_page")
         {
@@ -308,11 +310,15 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
         }
         else if (key == "root")
         {
+			if (!server.getRoot().empty())
+				throw std::invalid_argument("Error repeated argument, root");
             size_t end = value.find(";");
             server.setRoot(value.substr(0, end));
         }
         else if (key == "index")
         {
+			if (!server.getIndex().empty())
+				throw std::invalid_argument("Error repeated argument, index");
             server.setIndex(value);
         }
         else if (key == "autoindex")
