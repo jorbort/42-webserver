@@ -190,12 +190,12 @@ void ConfigParser::ParseConfig()
 	{
 		ServerConfigs server;
 		createServer(this->_ConfFile[i], server);
-		//checkServer(server);
+		server.checkServer(server);
 		this->_servers.push_back(server);
 	}
-	Logger::printTrain();
-	//if (this->nOfServers > 1)
-	//	compareServers(); 
+	// Logger::printTrain();
+	if (this->nOfServers > 1)
+		compareServers(); 
 }
 
 std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
@@ -389,4 +389,25 @@ void ConfigParser::setConfPath(std::string &path)
 std::string &ConfigParser::getpath(void)
 {
 	return (this->configPath);
+}
+
+void ConfigParser::compareServers(void)
+{
+	size_t i = 0;
+
+	while (i < this->nOfServers -1)
+    {
+	    size_t j = i +1;
+        while (j < this->nOfServers)
+        {
+            if (this->_servers[i].getHostIp() == this->_servers[j].getHostIp())
+                throw std::invalid_argument("there cannot be two servers with the same ip");
+            if (this->_servers[i].getListen() == this->_servers[j].getListen())
+                throw std::invalid_argument("there cannot be to servers listening to the same port");
+            if (this->_servers[i].getServerName() == this->_servers[j].getServerName())
+                throw std::invalid_argument("there cannot be two servers with the same name");
+            j++;
+        }
+        i++;    
+    }
 }

@@ -51,7 +51,8 @@ class ServerConfigs
 		int getSocket() const;
 		int getAutoindex() const;
 		const std::string &getErrorPage(int key) const;
-
+		void checkServer(ServerConfigs &server);
+		void compareServers(void);
 };
 
 #endif

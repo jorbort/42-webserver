@@ -165,8 +165,6 @@ void ServerConfigs::setBodySize(const std::string &number)
 		num = std::atoi(number.substr(0, number.size()).c_str());
 	}
 	this->clientMaxBodySize = num;
-
-
 }
 
 void ServerConfigs::setRoot(const std::string &root)
@@ -252,6 +250,25 @@ int ServerConfigs::getAutoindex(void) const
 
 const std::string &ServerConfigs::getErrorPage(int error) const
 {
+	static std::string nullstr; 
     const std::map<int,std::string>::const_iterator it = this->_errorPages.find(error);
-    return it->second;
+    if (it == _errorPages.end())
+		return (nullstr);
+	return it->second;
 }
+
+unsigned int ServerConfigs::getHostIp() const
+{
+	return this->hostIp;
+}
+
+void ServerConfigs::checkServer(ServerConfigs &server)
+{
+	if (server.getHostIp() == 0)
+		server.setHost("127.0.0.1");
+	if (server.getListen() == 0)
+		server.setListen("4242");
+	if (server.getRoot().empty())
+		server.setRoot("docs/web");
+}
+
