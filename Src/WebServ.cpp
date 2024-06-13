@@ -36,6 +36,69 @@ void Server::initCluster(void)
 			i++;
 	}
 }
+
+bool Server::isServerSocket(int fd)
+{
+    for (size_t i = 0; i < conf.nOfServers; i++)
+    {
+        if (conf._servers[i].getSocket() == fd)
+            return true;
+    }
+    return false;
+}
+
+void Server::acceptNewConnection(int fd,int epolFd)
+{
+	struct sockaddr_in clientAddr;
+	socklen_t clientAddrLen = sizeof(clientAddr);
+	int clientFd = accept(fd,(struct sockaddr *)&clientAddr,&clientAddrLen);
+	if (clientFd == -1)
+		throw std::runtime_error("Error: accept failed");
+	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) == -1)
+		throw std::runtime_error("Error: fcntl failed");
+	struct epoll_event event;
+	event.events = EPOLLIN;
+	event.data.fd = clientFd;
+	if (epoll_ctl(epolFd, EPOLL_CTL_ADD, clientFd, &event) == -1)
+		throw std::runtime_error("Error: epoll_ctl failed to add fd"); 	
+}
+
+ssize_t Server::readClientData(int clientFd, char *&requestString) {
+    char buffer[1024];
+	long bufferSize = 1024;
+    ssize_t bytesRead;
+	ssize_t totalBytesRead = 0;
+
+    while ((bytesRead = read(clientFd, buffer, sizeof(buffer))) > 0) {
+    	if (totalBytesRead + bytesRead > bufferSize){
+	  		bufferSize *= 2;
+	  		char *newBuffer = new char[bufferSize];
+	  		memcpy(newBuffer,requestString,totalBytesRead);
+	  		delete[] requestString;
+	  		requestString = newBuffer;
+		}
+		memcpy(requestString + totalBytesRead, buffer, bytesRead);
+		totalBytesRead += bytesRead;
+		if (totalBytesRead > 4 && memcmp(requestString + totalBytesRead - 4, "\r\n\r\n", 4) == 0){
+			break;
+		}
+    }
+	if (bytesRead == -1){
+		delete [] requestString;
+		requestString = NULL;
+		return bytesRead;
+	}
+	if (totalBytesRead < bufferSize){
+		requestString[totalBytesRead] = '\0';
+	}else{
+		char *newBuffer = new char[bufferSize + 1];
+		memcpy(newBuffer,requestString,totalBytesRead);
+		newBuffer[totalBytesRead] = '\0';
+		delete[] requestString;
+		requestString = newBuffer;
+	}
+    return totalBytesRead;
+}
 void Server::RunServer(void)
 {
 	int newSocket;
@@ -54,15 +117,38 @@ void Server::RunServer(void)
 	Logger::printTrain();
 	while(42)
 	{
-		int nfds = epoll_wait(epollFd, events, MAX_EVENTS, -1);
+		int nfds = epoll_wait(epollFd, events, MAX_EVENTS, 300000);
 		if (nfds == -1)
 			throw std::runtime_error("Error: epoll_wait failed");
 		for(int n = 0 ; n < nfds; ++n)
 		{
-			//faltaimplementar esta parte correctamente
-			//if (events[n].data.fd == conf)
+			if (isServerSocket(events[n].data.fd))
+			{
+				acceptNewConnection(events[n].data.fd, epollFd);
+			}
+			else
+			{
+				char * requestString = NULL;
+				ssize_t requestSize = readClientData(events[n].data.fd, requestString);
+				if (requestSize == 0)
+				{
+					close(events[n].data.fd);
+					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
+				}else if (requestSize == -1)
+				{
+					close(events[n].data.fd);
+					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
+				}else{
+					//hettpRequestParser va aqui 
+				}
+			}
 		}
 	}
+	for (size_t i = 0; i < conf.nOfServers; i++)
+	{
+		close(conf._servers[i].getSocket());
+	}
+	close(epollFd);
 }
 
 

@@ -33,6 +33,9 @@ class Server
 		int makeSocket(sockaddr_in &port, int portlen);
 		void RunServer(void);
 		void initCluster(void);
+		bool isServerSocket(int fd);
+		void acceptNewConnection(int fd, int epollFd);
+		ssize_t readClientData(int clientFd,char *&requestString);
 	class SocketException : std::exception
 	{
 		const char* what() const throw();
