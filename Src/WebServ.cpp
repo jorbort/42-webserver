@@ -27,37 +27,54 @@ Server::~Server()
 
 }
 
-// int Server::makeSocket(sockaddr_in &port, int portlen)
-// {
-// 	int n =  socket(AF_INET, SOCK_STREAM, 0);
-// 	port.sin_family = AF_INET;
-// 	port.sin_port = htons(std::atoi(conf.getValue("listen").c_str()));
-// 	port.sin_addr.s_addr = INADDR_ANY;
-// 	memset(port.sin_zero, '\0', sizeof(port.sin_zero));
-// 	if (bind(n, (struct sockaddr *) &port, portlen) == -1)
-// 		return -1;
-// 	if (listen(n, 10) < 0)
-// 		return -1;
-// 	return (n);
-// }
+void Server::initCluster(void)
+{
+	size_t i = 0;
+	while (i < this->conf.nOfServers)
+	{
+			this->conf._servers[i].initSocket();
+			i++;
+	}
+}
+void Server::RunServer(void)
+{
+	int newSocket;
+	int eventCount;
+	int epollFd = epoll_create1(0);
+	if (epollFd < 0)
+		throw SocketException();
+	struct epoll_event event, events[MAX_EVENTS];
+	event.events = EPOLLIN;
+	for (size_t i = 0; i < conf.nOfServers;i++)
+	{
+		event.data.fd = conf._servers[i].getSocket();
+		if (epoll_ctl(epollFd, EPOLL_CTL_ADD, conf._servers[i].getSocket(), &event) == -1)
+			throw std::runtime_error("epoll_ctl failed to add fd");
+	}
+	Logger::printTrain();
+	while(42)
+	{
+		int nfds = epoll_wait(epollFd, events, MAX_EVENTS, -1);
+		if (nfds == -1)
+			throw std::runtime_error("Error: epoll_wait failed");
+		for(int n = 0 ; n < nfds; ++n)
+		{
+			//faltaimplementar esta parte correctamente
+			//if (events[n].data.fd == conf)
+		}
+	}
+}
+
 
 // void Server::RunServer(void)
 // {
 // 	int new_socket;
 // 	int epoll_fd = epoll_create1(0);
 // 	int eventCount;
-// 	sockaddr_in port;
-// 	int portlen = sizeof(port);
-
 // 	std::string response = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-// 	this->sfd = makeSocket(port, portlen);
-// 	if (this->sfd == -1)
-// 		throw SocketException();
 // 	if (epoll_fd < 0)
 // 		throw SocketException();
-
 // 	struct epoll_event event, events[MAX_EVENTS];
-
 // 	event.events = EPOLLIN;
 // 	event.data.fd = this->sfd;
 

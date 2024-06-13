@@ -1,10 +1,13 @@
 #include "../Includes/ServerConfigs.hpp"
 #include <stdexcept>
 #include <vector>
+#include <fcntl.h>
 #define MAX_PORT 65535
 #include <exception>
 #include <cstdlib>
 #include <arpa/inet.h>
+#include <string.h>
+#include <sys/socket.h>
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
@@ -12,7 +15,7 @@
 
 ServerConfigs::ServerConfigs()
 {
-	this->listen = 0;
+	this->port = 0;
 	this->autoindex = -1;
 	this->clientMaxBodySize = 300000000;
 	this->index = "";
@@ -67,7 +70,7 @@ void ServerConfigs::setListen(const std::string &port)
 	int listen = std::atoi(port.c_str());
 	if (listen < 0 || listen > MAX_PORT)
 		throw std::out_of_range("listen port must be number between 0 and 65535");
-	this->listen = listen;
+	this->port = listen;
 }
 
 void ServerConfigs::setHost(const std::string &host)
@@ -206,7 +209,7 @@ void ServerConfigs::addLocation(const Location &location)
 
 int ServerConfigs::getListen(void) const
 {
-    return this->listen;
+    return this->port;
 }
 
 std::vector<Location> ServerConfigs::getLocations(void) const
@@ -272,3 +275,20 @@ void ServerConfigs::checkServer(ServerConfigs &server)
 		server.setRoot("docs/web");
 }
 
+void ServerConfigs::initSocket(void)
+{
+	this->_fd = socket(AF_INET, SOCK_STREAM,0);
+	this->_serverAddress->sin_family = AF_INET;
+	this->_serverAddress->sin_port = htons(this->getListen());
+	this->_serverAddress->sin_addr.s_addr = this->getHostIp();
+	memset(this->_serverAddress->sin_zero,'\0',sizeof(this->_serverAddress->sin_zero));
+	if (bind(this->_fd, (struct sockaddr*) this->_serverAddress, sizeof(this->_serverAddress)) == -1)
+		throw std::runtime_error("failed to bind socket");
+	if (listen(this->_fd,10) < 0)
+		throw std::runtime_error("listen failed ");
+	if (this->_fd == -1)
+		throw std::runtime_error("Error: socket problems");
+	if (fcntl(_fd, F_SETFL, O_NONBLOCK) == -1) {
+        throw std::runtime_error("error fcntl failed to make socket non blocking");
+    }
+}

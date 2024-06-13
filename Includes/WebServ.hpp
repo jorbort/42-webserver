@@ -3,7 +3,7 @@
 
 
 #include <sys/socket.h>
-//#include <sys/epoll.h>
+#include <sys/epoll.h>
 #include <string>
 #include "ConfigParser.hpp"
 #include "Logger.hpp"
@@ -31,7 +31,8 @@ class Server
 
 		ConfigParser conf;
 		int makeSocket(sockaddr_in &port, int portlen);
-		//void RunServer(void);
+		void RunServer(void);
+		void initCluster(void);
 	class SocketException : std::exception
 	{
 		const char* what() const throw();

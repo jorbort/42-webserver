@@ -38,16 +38,17 @@ int main(int argc, char **argv)
 			return (1);
 		}
 	}
-	// try
-	// {
-	// 	webServer.RunServer();
+	try
+	{
+		webServer.initCluster();
+		webServer.RunServer();
 
-	// // }
-	// catch(const std::exception& e)
-	// {
-	// 	Logger::print("Error", e.what());
-	// 	return (1);
-	// }
+	}
+	catch(const std::exception& e)
+	{
+		Logger::print("Error", e.what());
+		return (1);
+	}
 
 return (0);
 }

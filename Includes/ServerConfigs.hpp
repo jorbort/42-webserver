@@ -11,7 +11,7 @@
 class ServerConfigs
 {
 	private:
-		int listen;
+		int port;
 		unsigned int hostIp;
 		long clientMaxBodySize;
 		std::vector<Location> locations;
@@ -51,8 +51,10 @@ class ServerConfigs
 		int getSocket() const;
 		int getAutoindex() const;
 		const std::string &getErrorPage(int key) const;
+		
 		void checkServer(ServerConfigs &server);
 		void compareServers(void);
+		void initSocket(void);
 };
 
 #endif

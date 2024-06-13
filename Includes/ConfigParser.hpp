@@ -14,10 +14,10 @@ class ConfigParser
 	private:
 		std::vector<std::string> _ConfFile;
 		std::string configPath;
-		size_t nOfServers;
-		std::vector<ServerConfigs> _servers;
 
 	public:
+		std::vector<ServerConfigs> _servers;
+		size_t nOfServers;
 
 		ConfigParser(void);
 		ConfigParser( ConfigParser const & src );
