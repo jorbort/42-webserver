@@ -18,4 +18,5 @@ class Logger
 		Logger &operator=(Logger &rhs);
 	public :
 		static void print(std::string level, std::string message);
+		static void printTrain();
 };

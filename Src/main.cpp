@@ -1,6 +1,7 @@
 #include "../Includes/Logger.hpp"
 #include "../Includes/WebServ.hpp"
 #include "../Includes/ConfigParser.hpp"
+#include <iostream>
 
 int main(int argc, char **argv)
 {
@@ -9,42 +10,39 @@ int main(int argc, char **argv)
 		Logger::print("Error", "Error : invalid amount of arguments");
 		return (1);
 	}
-	Server webServer;
+	Server *webServer;
 	if (argc == 2)
 	{
 		std::string arg = argv[1];
 		try
 		{
-				webServer = Server(arg);
+			webServer = new Server(arg);
+			webServer->RunServer();
+			delete webServer;
 		}
 		catch(std::exception &e)
 		{
-			Logger::print("Error", e.what());
+			(void)e;
 			return (1);
 		}
 	}
-	// else if (argc == 1)
-	// {
-	// 	try
-	// 	{
-	// 		webServer = Server();
-	// 	}
-	// 	catch (std::exception &e)
-	// 	{
-	// 		Logger::print("Error", e.what());
-	// 		return (1);
-	// 	}
-	// }
-	// try
-	// {
-	// 	webServer.RunServer();
-
-	// // }
-	// catch(const std::exception& e)
-	// {
-	// 	Logger::print("Error", e.what());
-	// 	return (1);
-	// }
+	else if (argc == 1)
+	{
+	   std::string arg = "config/default.conf";
+;
+		try
+		{
+			webServer = new Server(arg);
+			webServer->RunServer();
+			delete webServer;
+		}
+		catch (std::exception &e)
+		{
+			(void)e;
+			return (1);
+		}
+	}
+	
 
 return (0);
 }

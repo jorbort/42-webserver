@@ -1,16 +1,26 @@
 NAME = Webserv
-CFLAG = -Wall -Werror -Wextra -g -std=c++98 -fsanitize=address
-SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp Src/ServerConfigs.cpp Src/Location.cpp
+CFLAG = -Wall -Werror -Wextra -g -std=c++98 -fsanitize=leak
+SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp Src/ServerConfigs.cpp Src/Location.cpp \
+	HttpRequest/HTTPRequest.cpp  HttpRequest/HttpRequestParser.cpp
 CC = c++
 OBJS = $(SRC:.cpp=.o)
-HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp Includes/ServerConfigs.hpp Includes/Location.hpp
+HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp Includes/ServerConfigs.hpp Includes/Location.hpp HttpRequest/HTTPRequest.hpp HttpRequest/HttpRequestParser.hpp
 
 
 %.o: %.cpp
 	$(CC) -I. $(CFLAG) -c $< -o $@
 
+
 $(NAME): $(OBJS) $(HEADER) Makefile
 	$(CC) $(CFLAG) $(OBJS) -o $(NAME)
+
+
+debug-leaks:
+	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes ./$(NAME) /home/jbortolo/Desktop/42-webserver/config/test.conf
+
+run:
+	@  ./$(NAME) config/test.conf
+
 
 clean:
 	@find . -name '*.o' -type f -delete
