@@ -30,9 +30,11 @@ Server::~Server()
 void Server::initCluster(void)
 {
 	size_t i = 0;
+	std::cout << this->conf.nOfServers << std::endl;
 	while (i < this->conf.nOfServers)
 	{
-			this->conf._servers[i].initSocket();
+			this->conf._servers[i]->initSocket();
+			std::cout << i << std::endl;
 			i++;
 	}
 }
@@ -41,7 +43,7 @@ bool Server::isServerSocket(int fd)
 {
     for (size_t i = 0; i < conf.nOfServers; i++)
     {
-        if (conf._servers[i].getSocket() == fd)
+        if (conf._servers[i]->getSocket() == fd)
             return true;
     }
     return false;
@@ -68,6 +70,9 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 	long bufferSize = 1024;
     ssize_t bytesRead;
 	ssize_t totalBytesRead = 0;
+
+	requestString = new char[bufferSize];
+	requestString[0] = '\0';
 
     while ((bytesRead = read(clientFd, buffer, sizeof(buffer))) > 0) {
     	if (totalBytesRead + bytesRead > bufferSize){
@@ -99,10 +104,9 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 	}
     return totalBytesRead;
 }
+
 void Server::RunServer(void)
 {
-	int newSocket;
-	int eventCount;
 	int epollFd = epoll_create1(0);
 	if (epollFd < 0)
 		throw SocketException();
@@ -110,13 +114,14 @@ void Server::RunServer(void)
 	event.events = EPOLLIN;
 	for (size_t i = 0; i < conf.nOfServers;i++)
 	{
-		event.data.fd = conf._servers[i].getSocket();
-		if (epoll_ctl(epollFd, EPOLL_CTL_ADD, conf._servers[i].getSocket(), &event) == -1)
+		event.data.fd = conf._servers[i]->getSocket();
+		if (epoll_ctl(epollFd, EPOLL_CTL_ADD, conf._servers[i]->getSocket(), &event) == -1)
 			throw std::runtime_error("epoll_ctl failed to add fd");
 	}
 	Logger::printTrain();
 	while(42)
 	{
+		std::cout << "witing for connection" <<std::endl;
 		int nfds = epoll_wait(epollFd, events, MAX_EVENTS, 300000);
 		if (nfds == -1)
 			throw std::runtime_error("Error: epoll_wait failed");
@@ -140,58 +145,19 @@ void Server::RunServer(void)
 					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
 				}else{
 					//hettpRequestParser va aqui 
+					write(events[n].data.fd,requestString,requestSize);
+					std::string test = requestString;
+					std::cout << test;
 				}
 			}
 		}
 	}
 	for (size_t i = 0; i < conf.nOfServers; i++)
 	{
-		close(conf._servers[i].getSocket());
+		close(conf._servers[i]->getSocket());
 	}
 	close(epollFd);
 }
-
-
-// void Server::RunServer(void)
-// {
-// 	int new_socket;
-// 	int epoll_fd = epoll_create1(0);
-// 	int eventCount;
-// 	std::string response = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
-// 	if (epoll_fd < 0)
-// 		throw SocketException();
-// 	struct epoll_event event, events[MAX_EVENTS];
-// 	event.events = EPOLLIN;
-// 	event.data.fd = this->sfd;
-
-// 	while (42)
-// 	{
-// 		char buffer [30000] = {0};
-
-// 		Logger::print("Ok", "waiting for conection...");
-// 		if (( new_socket = accept(this->sfd,(struct sockaddr *) &port, (socklen_t *)&portlen)) < 0)
-// 		{
-// 				close(epoll_fd);
-// 				throw SocketException();
-// 		}
-// 		event.data.fd = new_socket;
-// 		if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_socket, &event))
-// 		{
-// 			close(epoll_fd);
-// 			throw SocketException();
-// 		}
-// 		eventCount = epoll_wait(epoll_fd, events, MAX_EVENTS, 30000);
-// 		for(int i = 0; i < eventCount; i++)
-// 		{
-// 			if (read(events[i].data.fd, buffer, 30000) < 0)
-// 				throw SocketException();
-// 			std::cout << buffer << std::endl;
-// 			write(new_socket, response.c_str(), response.length());
-
-// 		}
-// 	}
-// 	close(epoll_fd);
-// }
 
 Server::Server( const Server & src )
 {

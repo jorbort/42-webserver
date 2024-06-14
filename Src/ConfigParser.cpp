@@ -7,22 +7,7 @@
 #include <stack>
 #include "../Includes/Logger.hpp"
 
-std::string removeNewline(std::string str) {
-    std::string newStr;
-    for (std::string::iterator it = str.begin(); it != str.end(); ++it) {
-        if (*it != '\n') {
-            newStr += *it;
-        }
-    }
-    return newStr;
-}
 
-std::string trim(const std::string& str)
-{
-    size_t first = str.find_first_not_of(" \t");
-    size_t last = str.find_last_not_of(" \t");
-    return (first == std::string::npos || last == std::string::npos) ? "" : str.substr(first, last - first + 1);
-}
 
 /*
 ** ------------------------------- CONSTRUCTOR --------------------------------
@@ -45,6 +30,10 @@ ConfigParser::ConfigParser( const ConfigParser & src )
 
 ConfigParser::~ConfigParser()
 {
+    for (size_t i = 0; i < _servers.size(); ++i) {
+        delete [] _servers[i];
+    }
+    _servers.clear();
 }
 
 
@@ -64,9 +53,24 @@ ConfigParser &ConfigParser::operator=( ConfigParser const & rhs )
 ** --------------------------------- METHODS ----------------------------------
 // */
 
+std::string removeNewline(std::string str) {
+    std::string newStr;
+    for (std::string::iterator it = str.begin(); it != str.end(); ++it) {
+        if (*it != '\n') {
+            newStr += *it;
+        }
+    }
+    return newStr;
+}
+
+std::string trim(const std::string& str)
+{
+    size_t first = str.find_first_not_of(" \t");
+    size_t last = str.find_last_not_of(" \t");
+    return (first == std::string::npos || last == std::string::npos) ? "" : str.substr(first, last - first + 1);
+}
 
 void ConfigParser::splitServers(const std::vector<std::string>& configLines) {
-	nOfServers = 0;
     std::string configfile;
 
     for (size_t i = 0; i < configLines.size(); ++i) {
@@ -102,7 +106,7 @@ void ConfigParser::splitServers(const std::vector<std::string>& configLines) {
     		}
         }
         _ConfFile.push_back(configfile.substr(start, end - start + 1));
-        ++nOfServers;
+        this->nOfServers++;
         start = end + 1;
     }
 
@@ -185,17 +189,19 @@ void ConfigParser::ParseConfig()
     }
 	}
 	file.close();
-	splitServers(configfile);
+	this->splitServers(configfile);
 	for (size_t i = 0; i < this->nOfServers ; i++)
 	{
-		ServerConfigs server;
-		createServer(this->_ConfFile[i], server);
-		server.checkServer(server);
+		ServerConfigs *server = new ServerConfigs;
+		createServer(this->_ConfFile[i], *server);
+		server->checkServer(*server);
 		this->_servers.push_back(server);
 	}
-	// Logger::printTrain();
-	if (this->nOfServers > 1)
-		compareServers(); 
+    if (this->nOfServers > 1)
+		compareServers();
+    for (size_t i = 0 ; i < this->nOfServers; i++){
+        this->_servers[i]->initSocket();
+    }
 }
 
 std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
@@ -400,11 +406,11 @@ void ConfigParser::compareServers(void)
 	    size_t j = i +1;
         while (j < this->nOfServers)
         {
-            if (this->_servers[i].getHostIp() == this->_servers[j].getHostIp())
+            if (this->_servers[i]->getHostIp() == this->_servers[j]->getHostIp())
                 throw std::invalid_argument("there cannot be two servers with the same ip");
-            if (this->_servers[i].getListen() == this->_servers[j].getListen())
+            if (this->_servers[i]->getListen() == this->_servers[j]->getListen())
                 throw std::invalid_argument("there cannot be to servers listening to the same port");
-            if (this->_servers[i].getServerName() == this->_servers[j].getServerName())
+            if (this->_servers[i]->getServerName() == this->_servers[j]->getServerName())
                 throw std::invalid_argument("there cannot be two servers with the same name");
             j++;
         }

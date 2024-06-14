@@ -23,12 +23,8 @@ ServerConfigs::ServerConfigs()
 	this->root = "";
 	this->hostIp = 0;
 	this->initErrorPages();
+	this->_serverAddress = new struct sockaddr_in;
 }
-
-// ServerConfigs::ServerConfigs( const ServerConfigs & src )
-// {
-// }
-
 
 // /*
 // ** -------------------------------- DESTRUCTOR --------------------------------
@@ -36,6 +32,7 @@ ServerConfigs::ServerConfigs()
 
 ServerConfigs::~ServerConfigs()
 {
+	delete  _serverAddress;
 }
 
 /*
@@ -277,18 +274,23 @@ void ServerConfigs::checkServer(ServerConfigs &server)
 
 void ServerConfigs::initSocket(void)
 {
+	
 	this->_fd = socket(AF_INET, SOCK_STREAM,0);
+	std::cout << "fd: "<< this->_fd << std::endl;
+	if (this->_fd == -1)
+		throw std::runtime_error("Error: socket problems");
+	std::cout << this->getListen() << "--" << this->getHostIp() << std::endl;
 	this->_serverAddress->sin_family = AF_INET;
 	this->_serverAddress->sin_port = htons(this->getListen());
 	this->_serverAddress->sin_addr.s_addr = this->getHostIp();
 	memset(this->_serverAddress->sin_zero,'\0',sizeof(this->_serverAddress->sin_zero));
-	if (bind(this->_fd, (struct sockaddr*) this->_serverAddress, sizeof(this->_serverAddress)) == -1)
+	if (bind(this->_fd, (struct sockaddr*) this->_serverAddress, sizeof(*this->_serverAddress)) == -1)
 		throw std::runtime_error("failed to bind socket");
 	if (listen(this->_fd,10) < 0)
 		throw std::runtime_error("listen failed ");
-	if (this->_fd == -1)
-		throw std::runtime_error("Error: socket problems");
+	
 	if (fcntl(_fd, F_SETFL, O_NONBLOCK) == -1) {
         throw std::runtime_error("error fcntl failed to make socket non blocking");
     }
+	std::cout << "Listening to port number: " << this->getListen() << std::endl;
 }

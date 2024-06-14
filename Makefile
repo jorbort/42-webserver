@@ -1,5 +1,5 @@
 NAME = Webserv
-CFLAG = -Wall -Werror -Wextra -g -std=c++98 #-fsanitize=address
+CFLAG = -Wall -Werror -Wextra -g -std=c++98 -fsanitize=leak
 SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp Src/ServerConfigs.cpp Src/Location.cpp
 CC = c++
 OBJS = $(SRC:.cpp=.o)

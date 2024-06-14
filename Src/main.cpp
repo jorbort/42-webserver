@@ -10,17 +10,22 @@ int main(int argc, char **argv)
 		Logger::print("Error", "Error : invalid amount of arguments");
 		return (1);
 	}
-	Server webServer;
+	Server *webServer;
 	if (argc == 2)
 	{
 		std::string arg = argv[1];
 		try
 		{
-				webServer = Server(arg);
+			webServer = new Server(arg);
+			webServer->initCluster();
+			webServer->RunServer();
+			delete webServer;
 		}
 		catch(std::exception &e)
 		{
 			(void)e;
+			// if (webServer)
+			// 	delete webServer;
 			return (1);
 		}
 	}
@@ -30,7 +35,9 @@ int main(int argc, char **argv)
 ;
 		try
 		{
-			webServer = Server(arg);
+			webServer = new Server(arg);
+			//webServer->initCluster();
+			webServer->RunServer();
 		}
 		catch (std::exception &e)
 		{
@@ -38,17 +45,7 @@ int main(int argc, char **argv)
 			return (1);
 		}
 	}
-	try
-	{
-		webServer.initCluster();
-		webServer.RunServer();
-
-	}
-	catch(const std::exception& e)
-	{
-		Logger::print("Error", e.what());
-		return (1);
-	}
+	
 
 return (0);
 }

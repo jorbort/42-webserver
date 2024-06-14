@@ -16,7 +16,7 @@ class ConfigParser
 		std::string configPath;
 
 	public:
-		std::vector<ServerConfigs> _servers;
+		std::vector<ServerConfigs *> _servers;
 		size_t nOfServers;
 
 		ConfigParser(void);
