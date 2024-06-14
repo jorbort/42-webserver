@@ -1,5 +1,8 @@
 NAME			:=test
 SRCS			:=TestResponse.cpp Response.cpp ResponseHeader.cpp
+CFLAG			:=-Wall -Werror -Wextra -g
+EXTRAFLAG		:=-std=c++98
+DEBUGFLAG		:=-fsanitize="leak, address"
 OBJDIR			:=.objs
 OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 
@@ -9,10 +12,10 @@ $(OBJDIR)		:
 	mkdir -p $@
 
 $(NAME)			: $(OBJS)
-	g++ -o $@ $^
+	g++ $(CFLAG) $(EXTRAFLAG) $(DEBUG) -o $@ $^
 
 $(OBJDIR)/%.o	: %.cpp
-	g++ -c $< -o $@
+	g++ $(CFLAG) $(EXTRAFLAG) -c $< -o $@
 
 clean			:
 	rm -rf $(OBJDIR)
