@@ -1,5 +1,7 @@
 #include "../Includes/WebServ.hpp"
 #include <stdexcept>
+#include "../HttpRequest/HTTPRequest.hpp"
+#include "../HttpRequest/HttpRequestParser.hpp"
 
 
 #define MAX_EVENTS 10000
@@ -145,9 +147,15 @@ void Server::RunServer(void)
 					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
 				}else{
 					//hettpRequestParser va aqui 
-					write(events[n].data.fd,requestString,requestSize);
-					std::string test = requestString;
-					std::cout << test;
+					HttpRequest request;
+					HttpRequestParser Request_parser;
+					Request_parser.parseRequest(request, requestString, requestSize);
+					std::cout << request << std::endl;
+					if (request._ErrorCode != 0)
+						std::cout << "ERROR: BAD REQUEST" << std::endl;
+					std::cout << request._ContentLength << std::endl;
+					std::cout << std::boolalpha << request._chunked << std::endl;
+
 				}
 			}
 		}

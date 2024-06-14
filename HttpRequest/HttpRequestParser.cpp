@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HttpRequestParser.hpp"
+#include "../HttpRequest/HttpRequestParser.hpp"
 
 HttpRequestParser::HttpRequestParser(){
 	_RealHeaders.push_back("Host");
@@ -114,8 +114,7 @@ bool	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vect
 	for (unsigned int i = 1; i  < lines.size(); i++){
 			key = lines[i].substr(0, lines[i].find(':'));
 			value = cleanWSpaces(lines[i].substr(lines[i].find(':') + 1));
-		if ((std::find(_RealHeaders.begin(), _RealHeaders.end(), key) == _RealHeaders.end())
-			|| (request_class._headers.find(key) != request_class._headers.end()) || value.empty()
+		if ((request_class._headers.find(key) != request_class._headers.end()) || value.empty()
 			|| containsMoreThanOne(lines[i], ':') || isValidHeaderValue(lines[i])){
 				request_class._ErrorCode = 400;
 				std::cout << "helloo" << std::endl;

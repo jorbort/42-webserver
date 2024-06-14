@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTPREQUEST_HPP
-#define HTTPREQUEST_HPP
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -19,6 +18,9 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+
+#define uint8_t char
+
 
 // case 400: return "Bad Request";
 // case 401: return "Unauthorized";
@@ -89,6 +91,4 @@ class HttpRequest
 };
 
 std::ostream& operator<<(std::ostream &out, const HttpRequest &request);
-
-#endif
 

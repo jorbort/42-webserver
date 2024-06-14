@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTPREQUESTPARSER_HPP
-#define HTTPREQUESTPARSER_HPP
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -19,7 +18,8 @@
 #include <vector>
 #include <algorithm>
 #include <sys/stat.h>
-#include "HttpRequest.hpp"
+#include "../HttpRequest/HTTPRequest.hpp"
+#define uint8_t char
 
 class HttpRequestParser
 {
@@ -52,4 +52,3 @@ class HttpRequestParser
 		
 };
 
-#endif
