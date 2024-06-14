@@ -17,15 +17,12 @@ int main(int argc, char **argv)
 		try
 		{
 			webServer = new Server(arg);
-			webServer->initCluster();
 			webServer->RunServer();
 			delete webServer;
 		}
 		catch(std::exception &e)
 		{
 			(void)e;
-			// if (webServer)
-			// 	delete webServer;
 			return (1);
 		}
 	}
@@ -36,8 +33,8 @@ int main(int argc, char **argv)
 		try
 		{
 			webServer = new Server(arg);
-			//webServer->initCluster();
 			webServer->RunServer();
+			delete webServer;
 		}
 		catch (std::exception &e)
 		{
