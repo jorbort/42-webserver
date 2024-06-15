@@ -195,8 +195,11 @@ void Server::RunServer(void)
 						std::cout << "ERROR: BAD REQUEST" << std::endl;
 					std::cout << request._ContentLength << std::endl;
 					std::cout << std::boolalpha << request._chunked << std::endl;
-
+					
 				}
+				delete[] requestString;
+				requestString = NULL;
+				this->requestString = NULL;
 			}
 		}
 	}
