@@ -1,5 +1,5 @@
 NAME = Webserv
-CFLAG = -Wall -Werror -Wextra -g -std=c++98 -fsanitize=leak
+CFLAG = -Wall -Werror -Wextra -g -std=c++98 #-fsanitize=leak
 SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp Src/ServerConfigs.cpp Src/Location.cpp \
 	HttpRequest/HTTPRequest.cpp  HttpRequest/HttpRequestParser.cpp
 CC = c++
@@ -16,7 +16,7 @@ $(NAME): $(OBJS) $(HEADER) Makefile
 
 
 debug-leaks:
-	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes ./$(NAME) /home/jbortolo/Desktop/42-webserver/config/test.conf
+	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME) config/test.conf
 
 run:
 	@  ./$(NAME) config/test.conf

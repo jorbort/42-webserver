@@ -6,14 +6,53 @@
 
 #define MAX_EVENTS 10000
 
+static Server *serverInstance = NULL;
+
 Server::Server(void)
 {
+	std::string path = "config/default.conf";
+	serverInstance = this;
+	signal(SIGINT, Server::signalHandler);
+	requestString = NULL;
+
+    conf.setConfPath(path);
+	try
+	{
+		conf.ParseConfig();
+	}
+	catch (std::exception &e)
+	{
+		Logger::print("Error", e.what());
+		throw std::invalid_argument(" ");
+	}
 
 }
 
-Server::Server(std::string &path)
+void Server::signalHandler(int signum){
+	if (serverInstance != NULL)
+	{
+		for (size_t i = 0; i < serverInstance->conf.nOfServers; i++)
+		{
+			close(serverInstance->conf._servers[i]->getSocket());
+		}
+		if (serverInstance->requestString != NULL)
+			delete[] serverInstance->requestString;
+		delete serverInstance;
+		serverInstance = NULL;
+		
+	}
+	exit(signum);
+
+}
+
+Server::Server(char *path)
 {
-    conf.setConfPath(path);
+	serverInstance = this;
+	signal(SIGINT, Server::signalHandler);
+	requestString = NULL;
+
+	std::string arg = path;
+    conf.setConfPath(arg);
 	try
 	{
 		conf.ParseConfig();
@@ -104,6 +143,7 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 		delete[] requestString;
 		requestString = newBuffer;
 	}
+	this->requestString = requestString;
     return totalBytesRead;
 }
 

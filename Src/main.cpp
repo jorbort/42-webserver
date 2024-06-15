@@ -13,10 +13,9 @@ int main(int argc, char **argv)
 	Server *webServer;
 	if (argc == 2)
 	{
-		std::string arg = argv[1];
 		try
 		{
-			webServer = new Server(arg);
+			webServer = new Server(argv[1]);
 			webServer->RunServer();
 			delete webServer;
 		}
@@ -28,11 +27,9 @@ int main(int argc, char **argv)
 	}
 	else if (argc == 1)
 	{
-	   std::string arg = "config/default.conf";
-;
 		try
 		{
-			webServer = new Server(arg);
+			webServer = new Server();
 			webServer->RunServer();
 			delete webServer;
 		}
