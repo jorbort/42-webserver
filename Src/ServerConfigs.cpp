@@ -274,11 +274,17 @@ void ServerConfigs::checkServer(ServerConfigs &server)
 
 void ServerConfigs::initSocket(void)
 {
+	int optVal = 1;
 	
 	this->_fd = socket(AF_INET, SOCK_STREAM,0);
 	std::cout << "fd: "<< this->_fd << std::endl;
 	if (this->_fd == -1)
 		throw std::runtime_error("Error: socket problems");
+	
+	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal)) == -1) {
+        throw std::runtime_error("setsockopt SO_REUSEADDR failed");
+    }
+
 	std::cout << this->getListen() << "--" << this->getHostIp() << std::endl;
 	this->_serverAddress->sin_family = AF_INET;
 	this->_serverAddress->sin_port = htons(this->getListen());
