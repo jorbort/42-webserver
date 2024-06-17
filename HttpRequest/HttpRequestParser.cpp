@@ -64,6 +64,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 		std::cout << "2" << std::endl;
 		return;
 	}
+	std::cout << lines.size() << std::endl;
 	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines) || parseURI(request_class))
 		return;
 		
@@ -115,9 +116,8 @@ bool	HttpRequestParser::parseHeaders(HttpRequest &request_class, const std::vect
 			key = lines[i].substr(0, lines[i].find(':'));
 			value = cleanWSpaces(lines[i].substr(lines[i].find(':') + 1));
 		if ((request_class._headers.find(key) != request_class._headers.end()) || value.empty()
-			|| containsMoreThanOne(lines[i], ':') || isValidHeaderValue(lines[i])){
+			|| isValidHeaderValue(lines[i])){
 				request_class._ErrorCode = 400;
-				std::cout << "helloo" << std::endl;
 				return 1;
 		}
 		request_class._headers[key] = value;

@@ -163,7 +163,7 @@ void Server::RunServer(void)
 	Logger::printTrain();
 	while(42)
 	{
-		std::cout << "witing for connection" <<std::endl;
+		std::cout << "waiting for connection" <<std::endl;
 		int nfds = epoll_wait(epollFd, events, MAX_EVENTS, 300000);
 		if (nfds == -1)
 			throw std::runtime_error("Error: epoll_wait failed");
