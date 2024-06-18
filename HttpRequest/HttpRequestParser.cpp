@@ -67,7 +67,10 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	std::cout << lines.size() << std::endl;
 	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines) || parseURI(request_class))
 		return;
-		
+	if(!directoryExists((request_class._URI_path).c_str())){
+		request_class._ErrorCode = 404;
+	return;
+	}
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
 	std::cout << bytes_read << "bytes read " << req_str.size() << "req_str.size" << " " << len << " len"<< std::endl;
 		parseBody(request_class, original_str + bytes_read, len - bytes_read);
@@ -289,4 +292,16 @@ bool HttpRequestParser::isSpecial(int c){
 // Check if a byte is a digit.
 bool HttpRequestParser::isDigit(int c){
 	return c >= '0' && c <= '9';
+}
+
+
+bool HttpRequestParser::directoryExists(const char* path) {
+    struct stat info;
+
+    if (stat(path, &info) != 0)
+        return false;
+    else if (info.st_mode & S_IFDIR)
+        return true;
+    else
+        return false;
 }
