@@ -2,3 +2,4 @@
 /.zed
 *.o
 Webserv
+/.objs

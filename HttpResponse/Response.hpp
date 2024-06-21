@@ -2,7 +2,7 @@
 
 #include <string>
 #include "ResponseHeader.hpp"
-#include "../HttpRequest/HTTPRequest.hpp"
+#include "HTTPRequest.hpp"
 
 class Response : public ResponseHeader {
 	public:

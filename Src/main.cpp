@@ -1,6 +1,6 @@
-#include "../Includes/Logger.hpp"
-#include "../Includes/WebServ.hpp"
-#include "../Includes/ConfigParser.hpp"
+#include "Logger.hpp"
+#include "WebServ.hpp"
+#include "ConfigParser.hpp"
 #include <iostream>
 
 int main(int argc, char **argv)

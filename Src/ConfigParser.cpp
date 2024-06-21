@@ -1,11 +1,11 @@
-#include "../Includes/ConfigParser.hpp"
+#include "ConfigParser.hpp"
 #include <fstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <cstdlib>
 #include <stack>
-#include "../Includes/Logger.hpp"
+#include "Logger.hpp"
 
 
 

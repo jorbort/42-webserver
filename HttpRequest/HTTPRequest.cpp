@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../HttpRequest/HTTPRequest.hpp"
+#include "HTTPRequest.hpp"
 
 HttpRequest::HttpRequest() : _ErrorCode(0), _RequestMethod(NONE), _URI_tcpPort(0), _chunked(0), _ContentLength(0) {}
 

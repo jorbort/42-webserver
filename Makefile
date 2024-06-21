@@ -1,21 +1,61 @@
-NAME = Webserv
-CFLAG = -Wall -Werror -Wextra -g -std=c++98 #-fsanitize=leak
-SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp Src/ServerConfigs.cpp Src/Location.cpp \
-	HttpRequest/HTTPRequest.cpp  HttpRequest/HttpRequestParser.cpp \
-	HttpResponse/Response.cpp HttpResponse/ResponseHeader.cpp
-CC = c++
-OBJS = $(SRC:.cpp=.o)
-HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp Includes/ServerConfigs.hpp Includes/Location.hpp \
-         HttpRequest/HTTPRequest.hpp HttpRequest/HttpRequestParser.hpp HttpResponse/Response.hpp HttpResponse/ResponseHeader.hpp
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: junghwle <junghwle@student.42barcel>       +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/06/03 14:32:42 by junghwle          #+#    #+#              #
+#    Updated: 2023/12/23 02:33:45 by junghwle         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
+NAME			:=Webserv
 
-%.o: %.cpp
-	$(CC) -I. $(CFLAG) -c $< -o $@
+SRCS			:=ConfigParser.cpp Location.cpp Logger.cpp main.cpp \
+				  ServerConfigs.cpp WebServ.cpp HTTPRequest.cpp \
+				  HttpRequestParser.cpp Response.cpp ResponseHeader.cpp
+OBJDIR			:=.objs
+OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
+DEPS			:=$(OBJS:.o=.d)
 
+INCLUDE			:=-I./Includes -I./HttpRequest -I./HttpResponse
+CC				:=g++
+CFLAGS			:=-Wall -Werror -Wextra
+DEPFLAGS		:=-MMD
+EXTRAFLAGS		:=-std=c++98
+#DEBUG			:=-fsanitize=leak
 
-$(NAME): $(OBJS) $(HEADER) Makefile
-	$(CC) $(CFLAG) $(OBJS) -o $(NAME)
+all				: $(OBJDIR) $(NAME)
 
+$(NAME)			: $(OBJS) Makefile
+					$(CC) $(CFLAGS) $(EXTRAFLAGS) $(DEBUG) -o $@ $(OBJS)
+					echo "(WebServ)COMPILING $@"
+
+$(OBJDIR)/%.o	: Src/%.cpp Makefile 
+					$(CC) $(DEPFLAGS) $(CFLAGS) $(EXTRAFLAGS) $(INCLUDE) $(DEBUG) -c -o $@ $<
+					echo "(WebServ)COMPILING $@"
+
+$(OBJDIR)/%.o	: HttpRequest/%.cpp Makefile 
+					$(CC) $(DEPFLAGS) $(CFLAGS) $(EXTRAFLAGS) $(INCLUDE) $(DEBUG) -c -o $@ $<
+					echo "(WebServ)COMPILING $@"
+
+$(OBJDIR)/%.o	: HttpResponse/%.cpp Makefile 
+					$(CC) $(DEPFLAGS) $(CFLAGS) $(EXTRAFLAGS) $(INCLUDE) $(DEBUG) -c -o $@ $<
+					echo "(WebServ)COMPILING $@"
+
+$(OBJDIR)		: Makefile
+					mkdir -p $@
+
+-include $(DEPS)
+
+clean:
+	rm -rf $(OBJDIR)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean all
 
 debug-leaks:
 	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME) config/test.conf
@@ -23,19 +63,11 @@ debug-leaks:
 run:
 	@  ./$(NAME) config/test.conf
 
-
-clean:
-	@find . -name '*.o' -type f -delete
-
 git: fclean
 	@read -p "Enter commit message: " commit_message; \
     git add *; \
     git commit -m "$$commit_message"
 	git push
 
-fclean: clean
-	rm -f $(NAME)
-
-re: fclean $(NAME)
-
-.PHONY: all re clean fclean
+.PHONY: all clean fclean re debug-leaks run git
+.SILENT:

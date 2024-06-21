@@ -1,4 +1,4 @@
-#include "../Includes/ServerConfigs.hpp"
+#include "ServerConfigs.hpp"
 #include <stdexcept>
 #include <vector>
 #include <fcntl.h>

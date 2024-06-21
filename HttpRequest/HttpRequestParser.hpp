@@ -18,7 +18,7 @@
 #include <vector>
 #include <algorithm>
 #include <sys/stat.h>
-#include "../HttpRequest/HTTPRequest.hpp"
+#include "HTTPRequest.hpp"
 #define uint8_t char
 
 class HttpRequestParser

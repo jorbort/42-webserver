@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../HttpRequest/HttpRequestParser.hpp"
+#include "HttpRequestParser.hpp"
 
 HttpRequestParser::HttpRequestParser(){
 	_RealHeaders.push_back("Host");

@@ -1,5 +1,5 @@
-#include "../Includes/WebServ.hpp"
-#include "../Includes/Location.hpp"
+#include "WebServ.hpp"
+#include "Location.hpp"
 #include <cstddef>
 #include <stdexcept>
 #include <string>

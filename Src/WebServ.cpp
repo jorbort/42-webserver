@@ -1,8 +1,8 @@
-#include "../Includes/WebServ.hpp"
+#include "WebServ.hpp"
 #include <stdexcept>
-#include "../HttpRequest/HTTPRequest.hpp"
-#include "../HttpRequest/HttpRequestParser.hpp"
-#include "../HttpResponse/Response.hpp"
+#include "HTTPRequest.hpp"
+#include "HttpRequestParser.hpp"
+#include "Response.hpp"
 
 
 #define MAX_EVENTS 10000
