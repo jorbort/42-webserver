@@ -1,5 +1,4 @@
 #include <string>
-#include <unordered_map>
 
 class ResponseHeader {
 	public:
@@ -12,14 +11,15 @@ class ResponseHeader {
 			PDF, ZIP
 		};
 		//HEADER
-		static std::string	addStatusLine(int statusCode);
-		static std::string	addDateHeader(void);
-		static std::string	addServerHeader(void);
-		static std::string	addContentTypeHeader(ContentType type);
-		static std::string	addContentLengthHeader(int contentLength);
-		static std::string	addLastModified(void);
+		std::string	addStatusLine(int statusCode);
+		std::string	addDateHeader(void);
+		std::string	addServerHeader(void);
+		std::string	addContentTypeHeader(ContentType type);
+		std::string	addContentLengthHeader(int contentLength);
+		std::string	addLastModified(void);
 		//utils
-		static std::string	replaceNewlines(const std::string& input);
-		static std::string	getStatusCodeDescription(int status);
-		static std::string	getContentType(ContentType type);
+		std::string	replaceNewlines(const std::string& input);
+		std::string	getStatusCodeDescription(int status);
+		std::string	getContentType(ContentType type);
+		std::string	toString(int nb);
 };

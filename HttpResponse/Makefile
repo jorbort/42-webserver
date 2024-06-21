@@ -1,7 +1,11 @@
 NAME			:=test
-SRCS			:=TestResponse.cpp Response.cpp ResponseHeader.cpp
+SRCS			:=TestResponse.cpp Response.cpp ResponseHeader.cpp HTTPRequest.cpp HttpRequestParser.cpp
 OBJDIR			:=.objs
 OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
+CFLAG			:=-Wall -Werror -Wextra -g
+EXTRAFLAG		:=-std=c++98
+DEBUGFLAG		:=-fsanitize="leak, address"
+INCLUDES		:=-I. -I../HttpRequest -I../Includes
 
 all				: $(OBJDIR) $(NAME)
 
@@ -9,10 +13,13 @@ $(OBJDIR)		:
 	mkdir -p $@
 
 $(NAME)			: $(OBJS)
-	g++ -o $@ $^
+	g++ $(CFLAG) $(EXTRAFLAG) $(INCLUDES) $(DEBUG) -o $@ $^
 
 $(OBJDIR)/%.o	: %.cpp
-	g++ -c $< -o $@
+	g++ $(CFLAG) $(EXTRAFLAG) $(INCLUDES) -c $< -o $@
+
+$(OBJDIR)/%.o	: ../HttpRequest/%.cpp
+	g++ $(CFLAG) $(EXTRAFLAG) $(INCLUDES) -c $< -o $@
 
 clean			:
 	rm -rf $(OBJDIR)

@@ -2,6 +2,7 @@
 #include <string>
 #include <ctime>
 #include <unistd.h>
+#include <sstream>
 
 ResponseHeader::~ResponseHeader() {}
 
@@ -9,7 +10,7 @@ std::string	ResponseHeader::addStatusLine(int statusCode) {
 	std::string statusLine;
 
 	statusLine += "HTTP/1.1 ";
-	statusLine += std::to_string(statusCode);
+	statusLine += toString(statusCode);
 	statusLine += ' ';
 	statusLine += getStatusCodeDescription(statusCode);
 	statusLine += "\r\n";
@@ -53,7 +54,7 @@ std::string	ResponseHeader::addContentLengthHeader(int length) {
 	std::string contentLength;
 
 	contentLength = "Content-Length: ";
-	contentLength += std::to_string(length);
+	contentLength += toString(length);
 	contentLength += "\r\n";;
 	return contentLength;
 }
@@ -146,4 +147,10 @@ std::string	ResponseHeader::getContentType(ContentType type) {
 		case ZIP:           return "application/zip";
 		default:            return "Unsupported Content Type";
 	}
+}
+
+std::string	ResponseHeader::toString(int nb) {
+	std::ostringstream temp;
+    temp << nb;
+    return temp.str();
 }

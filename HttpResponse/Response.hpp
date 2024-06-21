@@ -1,16 +1,23 @@
+#pragma once
+
 #include <string>
-#include <unordered_map>
 #include "ResponseHeader.hpp"
+#include "HTTPRequest.hpp"
 
 class Response : public ResponseHeader {
 	public:
 		~Response();
 
+		std::string createResponse(HttpRequest &request);
 		//Response for each method
-		static std::string createGETresponse(int fd);
+		std::string createGETresponse(int fd);
 		//Response for errors
-		static std::string create404NotFoundResponse(void);
+		std::string create404NotFoundResponse(void);
 	private:
 		//body for GET
-		static void	setBody(std::string &body, size_t &contentLength, int fd, size_t maxBodySize);
+		void	setBody(std::string &body, size_t &contentLength, int fd, size_t maxBodySize);
+		void	run_execve(const char *uri);
+		bool	isDirectory(const char *path);
+		bool	isCGI(const char *extension);
+		bool	isProcessableCGI(const char *extension);
 };
