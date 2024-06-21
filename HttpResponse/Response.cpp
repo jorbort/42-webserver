@@ -22,7 +22,8 @@ std::string Response::createResponse(HttpRequest &request) {
 		Check if URL is valid and it's file.
 		If not then return corresponding error response.
 		*/
-		uri = request.getURI().c_str();
+		uri = request._URI_path.c_str();
+		std::cout << strrchr(uri, '.') << std::endl;
 		if (strrchr(uri, '.') == NULL) {
 			//TODO create invalid uri response
 			return "Invalid uri";

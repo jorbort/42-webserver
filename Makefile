@@ -1,10 +1,12 @@
 NAME = Webserv
 CFLAG = -Wall -Werror -Wextra -g -std=c++98 #-fsanitize=leak
 SRC = Src/main.cpp Src/Logger.cpp Src/WebServ.cpp Src/ConfigParser.cpp Src/ServerConfigs.cpp Src/Location.cpp \
-	HttpRequest/HTTPRequest.cpp  HttpRequest/HttpRequestParser.cpp
+	HttpRequest/HTTPRequest.cpp  HttpRequest/HttpRequestParser.cpp \
+	HttpResponse/Response.cpp HttpResponse/ResponseHeader.cpp
 CC = c++
 OBJS = $(SRC:.cpp=.o)
-HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp Includes/ServerConfigs.hpp Includes/Location.hpp HttpRequest/HTTPRequest.hpp HttpRequest/HttpRequestParser.hpp
+HEADER = Includes/Logger.hpp Includes/WebServ.hpp Includes/ConfigParser.hpp Includes/ServerConfigs.hpp Includes/Location.hpp \
+         HttpRequest/HTTPRequest.hpp HttpRequest/HttpRequestParser.hpp HttpResponse/Response.hpp HttpResponse/ResponseHeader.hpp
 
 
 %.o: %.cpp

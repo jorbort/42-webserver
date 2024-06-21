@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include "../HttpRequest/HTTPRequest.hpp"
 #include "../HttpRequest/HttpRequestParser.hpp"
+#include "../HttpResponse/Response.hpp"
 
 
 #define MAX_EVENTS 10000
@@ -195,7 +196,9 @@ void Server::RunServer(void)
 						std::cout << "ERROR: BAD REQUEST" << std::endl;
 					std::cout << request._ContentLength << std::endl;
 					std::cout << std::boolalpha << request._chunked << std::endl;
-					
+					Response response;
+					std::string response_str = response.createResponse(request);
+					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}
 				delete[] requestString;
 				requestString = NULL;

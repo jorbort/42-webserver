@@ -16,7 +16,7 @@ void	test_GET_response(void)
 
 	request.setMethod("GET");
 	request.setVersion("HTTP/1.1");
-	request.setURI("./test.sh");
+	request.setURI("./test.html");
 	std::cout << YELLOW << "Test GET Response" << COLOR_OFF << "\n\n";
 	std::cout << response.createResponse(request) << std::endl;
 	std::cout << std::endl;

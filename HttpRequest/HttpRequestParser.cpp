@@ -67,7 +67,8 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	std::cout << lines.size() << std::endl;
 	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines) || parseURI(request_class))
 		return;
-	if(!directoryExists((request_class._URI_path).c_str())){
+	if(!isValidPath((request_class._URI_path).c_str())){
+		std::cout << "HOLA" << std::endl;
 		request_class._ErrorCode = 404;
 	return;
 	}
@@ -159,7 +160,7 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 	}
 	if (uri[0] == '/'){
 		size_t path_start = uri.find('?');
-		request_class._URI_path = uri.substr(0 , path_start);
+		request_class._URI_path = uri.substr(1 , path_start);
 		uri.erase(0, request_class._URI_path.length());
 		if ((path_start = uri.find('?')) != std::string::npos)
 		{
@@ -295,12 +296,11 @@ bool HttpRequestParser::isDigit(int c){
 }
 
 
-bool HttpRequestParser::directoryExists(const char* path) {
+bool HttpRequestParser::isValidPath(const char* path) {
     struct stat info;
-
     if (stat(path, &info) != 0)
         return false;
-    else if (info.st_mode & S_IFDIR)
+    else if (info.st_mode & (S_IFDIR | S_IFREG))
         return true;
     else
         return false;

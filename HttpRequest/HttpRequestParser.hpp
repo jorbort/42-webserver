@@ -44,7 +44,7 @@ class HttpRequestParser
 		bool								containsMoreThanOne(const std::string& str, char ch);
 		bool								isValidHeaderValue(const std::string& str);
 		std::string							cleanWSpaces(const std::string& str);
-		bool								directoryExists(const char* path);
+		bool								isValidPath(const char* path);
 
 		bool								isChar(int c);
 		bool								isControl(int c);
