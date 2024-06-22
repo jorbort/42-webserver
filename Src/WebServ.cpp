@@ -72,11 +72,9 @@ Server::~Server()
 void Server::initCluster(void)
 {
 	size_t i = 0;
-	std::cout << this->conf.nOfServers << std::endl;
 	while (i < this->conf.nOfServers)
 	{
 			this->conf._servers[i]->initSocket();
-			std::cout << i << std::endl;
 			i++;
 	}
 }
@@ -126,7 +124,7 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 		}
 		memcpy(requestString + totalBytesRead, buffer, bytesRead);
 		totalBytesRead += bytesRead;
-		if (totalBytesRead > 4 && memcmp(requestString + totalBytesRead - 4, "\r\n\r\n", 4) == 0){
+		if (strstr(requestString, "\r\n\r\n") != NULL){
 			break;
 		}
     }
@@ -191,12 +189,14 @@ void Server::RunServer(void)
 					HttpRequest request;
 					HttpRequestParser Request_parser;
 					Request_parser.parseRequest(request, requestString, requestSize);
-					std::cout << request << std::endl;
 					if (request._ErrorCode != 0)
-						std::cout << "ERROR: BAD REQUEST" << std::endl;
-					std::cout << request._ContentLength << std::endl;
-					std::cout << std::boolalpha << request._chunked << std::endl;
+						std::cout << "ERROR: BAD REQUEST 1" << std::endl;
+					//std::cout << request._ContentLength << std::endl;
+					//std::cout << std::boolalpha << request._chunked << std::endl;
 					Response response;
+					std::cout << requestSize << std::endl;
+					std::cout << request._ContentLength <<  std::endl;
+					 
 					std::string response_str = response.createResponse(request);
 					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}

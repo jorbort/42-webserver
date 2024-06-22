@@ -20,8 +20,8 @@ OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 DEPS			:=$(OBJS:.o=.d)
 
 INCLUDE			:=-I./Includes -I./HttpRequest -I./HttpResponse
-CC				:=g++
-CFLAGS			:=-Wall -Werror -Wextra
+CC				:=c++
+CFLAGS			:=-Wall -Werror -Wextra -g
 DEPFLAGS		:=-MMD
 EXTRAFLAGS		:=-std=c++98
 #DEBUG			:=-fsanitize=leak
