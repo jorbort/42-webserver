@@ -105,16 +105,13 @@ void Server::acceptNewConnection(int fd,int epolFd)
 		throw std::runtime_error("Error: epoll_ctl failed to add fd"); 	
 }
 
-ssize_t Server::readClientData(int clientFd, char *&requestString) {
+ssize_t Server::readHeader(int clientFd, char *&requestString)
+{
     char buffer[1024];
 	long bufferSize = 1024;
-    ssize_t bytesRead;
+	ssize_t bytesRead;
 	ssize_t totalBytesRead = 0;
-
-	requestString = new char[bufferSize];
-	requestString[0] = '\0';
-
-    while ((bytesRead = read(clientFd, buffer, sizeof(buffer))) > 0) {
+	while ((bytesRead = read(clientFd, buffer, sizeof(buffer))) > 0) {
     	if (totalBytesRead + bytesRead > bufferSize){
 	  		bufferSize *= 2;
 	  		char *newBuffer = new char[bufferSize];
@@ -131,6 +128,7 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 	if (bytesRead == -1){
 		delete [] requestString;
 		requestString = NULL;
+		Logger::print("Error", "Error reading from client");
 		return bytesRead;
 	}
 	if (totalBytesRead < bufferSize){
@@ -142,6 +140,72 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 		delete[] requestString;
 		requestString = newBuffer;
 	}
+	return totalBytesRead;
+}
+
+ssize_t Server::readBody(int clientFd, char *&requestString, std::string &requestChecker)
+{
+	long bytesRead = 0;
+	long contentLength = 0;
+	size_t headerSize = requestChecker.find("\r\n\r\n") + 4;
+	size_t contentLengthPos = requestChecker.find("Content-Length");
+	size_t contentLengthEnd = requestChecker.find("\r\n", contentLengthPos);
+	if (contentLengthPos != std::string::npos )
+	{
+		contentLength = std::stol(requestChecker.substr(contentLengthPos + 16, contentLengthEnd - contentLengthPos - 16));
+	}
+	else{
+		return -1;
+	}
+	char buffer[contentLength];
+	bytesRead = read(clientFd, buffer, contentLength);
+	if (bytesRead == -1)
+	{
+		delete [] requestString;
+		requestString = NULL;
+		Logger::print("Error", "Error reading from client");
+		return -1;
+	}
+	char *newBuffer = new char[headerSize + contentLength + 1];
+	memcpy(newBuffer,requestString, headerSize + contentLength);
+	memcpy(newBuffer + (headerSize + contentLength), buffer, bytesRead);
+	delete[] requestString;
+	requestString = newBuffer;
+	requestString[headerSize + contentLength] = '\0';
+	return bytesRead;
+}
+
+ssize_t Server::readClientData(int clientFd, char *&requestString) {
+    long bufferSize = 1024;
+	ssize_t bytesRead;
+	ssize_t totalBytesRead = 0;
+	std::string requestChecker = "";
+
+	requestString = new char[bufferSize];
+	requestString[0] = '\0';
+	totalBytesRead = readHeader(clientFd, requestString);
+    if (totalBytesRead == -1)
+	{
+		delete [] requestString;
+		requestString = NULL;
+		Logger::print("Error", "Error reading from client");
+		return -1;
+	}
+	requestChecker = requestString;
+	if (requestChecker.find("Content-Length") != std::string::npos)
+	{
+		int bodySize = 0;
+		bodySize = readBody(clientFd, requestString, requestChecker);
+		if ( bodySize == -1)
+		{
+			delete [] requestString;
+			requestString = NULL;
+			Logger::print("Error", "Error reading from client");
+			return -1;
+		}
+		totalBytesRead += bodySize;
+	}
+
 	this->requestString = requestString;
     return totalBytesRead;
 }
