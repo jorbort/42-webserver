@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: junghwle <junghwle@student.42barcel>       +#+  +:+       +#+         #
+#    By: jorge <jorge@student.42.fr>                +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/03 14:32:42 by junghwle          #+#    #+#              #
-#    Updated: 2023/12/23 02:33:45 by junghwle         ###   ########.fr        #
+#    Updated: 2024/06/24 17:05:19 by jorge            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ CC				:=c++
 CFLAGS			:=-Wall -Werror -Wextra -g
 DEPFLAGS		:=-MMD
 EXTRAFLAGS		:=-std=c++98
-#DEBUG			:=-fsanitize=leak
+DEBUG			:=-fsanitize=address
 
 all				: $(OBJDIR) $(NAME)
 

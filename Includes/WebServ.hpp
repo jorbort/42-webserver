@@ -39,7 +39,8 @@ class Server
 		void acceptNewConnection(int fd, int epollFd);
 		ssize_t readClientData(int clientFd,char *&requestString);
 		ssize_t readHeader(int clientFd, char *&requestString);
-		ssize_t readBody(int clientFd, char *&requestString, std::string &tequestChecker);
+		ssize_t readBody(int clientFd, char *&requestString, std::string &tequestChecker, 
+		size_t totalBytesRead);
 		static void signalHandler(int signum);
 	class SocketException : std::exception
 	{
