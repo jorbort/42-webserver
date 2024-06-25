@@ -40,7 +40,7 @@ std::string Response::createResponse(HttpRequest &request) {
 		extension = strrchr(uri, '.') + 1;
 		if (isCGI(extension)) {
 			if (!isProcessableCGI(extension)) {
-				//TODO create unprocessable cgi
+				//TODO create unprocessable cgi response
 				return "UnprocessableCGI";
 			}
 			int pfd[2];
@@ -64,12 +64,12 @@ std::string Response::createResponse(HttpRequest &request) {
 					return "Internal Server Error";
 				}
 				close(pfd[1]);
-				run_execve(uri);
+				run_execve(uri, NULL);
 				exit(-1);
 			} else {
 				close(pfd[1]);
 				fd = pfd[0];
-				response = createGETresponse(fd);
+				response = GetResponse::createGETresponse(fd);
 				close(fd);
 				return response;
 			}
@@ -94,7 +94,7 @@ std::string Response::createResponse(HttpRequest &request) {
 				}
 				return "Error opening file";
 			}
-			response = createGETresponse(fd);
+			response = GetResponse::createGETresponse(fd);
 			close(fd);
 			return response;
 		}
@@ -109,72 +109,7 @@ std::string Response::createResponse(HttpRequest &request) {
 		return "ERROR";
 }
 
-std::string Response::createGETresponse(int fd) {
-	int			statusCode;
-	size_t		maxBodySize;
-	std::string	body;
-	size_t		contentLength;
-	{
-		statusCode = 200;
-		maxBodySize = sizeof(size_t);
-		setBody(body, contentLength, fd, maxBodySize);
-	}
-
-	std::string response;
-
-	response = addStatusLine(statusCode);
-	response += addDateHeader();
-	response += addServerHeader();
-	response += addContentTypeHeader(HTML);
-	response += addContentLengthHeader(contentLength);
-	response += addLastModified();
-	response += "\r\n";
-	response += body;
-	return response;
-}
-
-std::string Response::create404NotFoundResponse(void) {
-	int			statusCode;
-	size_t		maxBodySize;
-	std::string	body;
-	size_t		contentLength;
-	{
-		int	fd = open("../docs/web/error_pages/404.html", O_RDONLY);
-		statusCode = 404;
-		maxBodySize = sizeof(size_t);
-		setBody(body, contentLength, fd, maxBodySize);
-		close(fd);
-	}
-
-	std::string	response;
-
-	response = addStatusLine(statusCode);
-	response += addDateHeader();
-	response += addContentTypeHeader(HTML);
-	response += addContentLengthHeader(contentLength);
-	response += "\r\n";
-	response += body;
-	return response;
-}
-
-void	Response::setBody(std::string &body, size_t &contentLength, int fd, size_t maxBodySize) {
-	char		buffer[1024];
-	ssize_t		bytesRead;
-	size_t		totalBytesRead;
-
-	totalBytesRead = 0;
-	while ((bytesRead = read(fd, buffer, sizeof(buffer) - 1)) > 0 &&
-			totalBytesRead < maxBodySize) {
-		buffer[bytesRead] = '\0';
-		body.append(buffer);
-		buffer[0] = '\0';
-		totalBytesRead += bytesRead;
-	}
-	//TODO add reading error handling
-	contentLength = totalBytesRead;
-}
-
-void	Response::run_execve(const char *uri) {
+void	Response::run_execve(const char *uri, char **envp) {
 	char	*cgiPath;
 	char	**args;
 	
@@ -183,7 +118,7 @@ void	Response::run_execve(const char *uri) {
 	args[0] = cgiPath;
 	args[1] = (char *)uri;
 	args[2] = NULL;
-	execve(cgiPath, args, NULL);
+	execve(cgiPath, args, envp);
 }
 
 bool	Response::isDirectory(const char *path) {
@@ -194,7 +129,9 @@ bool	Response::isDirectory(const char *path) {
 }
 
 bool	Response::isCGI(const char *extension) {
-	if (strcmp(extension, "html") == 0) {
+	if (strcmp(extension, "html") == 0 || \
+		strcmp(extension, "json") == 0 || \
+		strcmp(extension, "xml") == 0) {
 		return false;
 	} else {
 		return true;
@@ -203,7 +140,8 @@ bool	Response::isCGI(const char *extension) {
 
 bool	Response::isProcessableCGI(const char *extension) {
 	//TODO check extension based on config.
-	if (strcmp(extension, "sh") == 0)
+	if (strcmp(extension, "py") == 0 || \
+		strcmp(extension, "sh") == 0)
 		return true;
 	else
 		return false;

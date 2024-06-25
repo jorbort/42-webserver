@@ -16,7 +16,7 @@ void	test_GET_response(void)
 
 	request.setMethod("GET");
 	request.setVersion("HTTP/1.1");
-	request.setURI("./test.html");
+	request._URI_path = "./test.html";
 	std::cout << YELLOW << "Test GET Response" << COLOR_OFF << "\n\n";
 	std::cout << response.createResponse(request) << std::endl;
 	std::cout << std::endl;
@@ -27,7 +27,7 @@ void	test_404NotFound_response(void)
 	Response response;
 
 	std::cout << YELLOW << "Test 404NotFound Response" << COLOR_OFF << "\n\n";
-	std::cout << response.create404NotFoundResponse() << std::endl;
+	std::cout << ErrorResponse::create404NotFoundResponse() << std::endl;
 	std::cout << std::endl;
 }
 

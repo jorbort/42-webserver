@@ -1,5 +1,6 @@
 NAME			:=test
-SRCS			:=TestResponse.cpp Response.cpp ResponseHeader.cpp HTTPRequest.cpp HttpRequestParser.cpp
+SRCS			:=TestResponse.cpp Response.cpp ResponseHeader.cpp HTTPRequest.cpp HttpRequestParser.cpp \
+				  ErrorResponse.cpp GetResponse.cpp
 OBJDIR			:=.objs
 OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 CFLAG			:=-Wall -Werror -Wextra -g

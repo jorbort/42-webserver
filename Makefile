@@ -12,9 +12,9 @@
 
 NAME			:=Webserv
 
-SRCS			:=ConfigParser.cpp Location.cpp Logger.cpp main.cpp \
-				  ServerConfigs.cpp WebServ.cpp HTTPRequest.cpp \
-				  HttpRequestParser.cpp Response.cpp ResponseHeader.cpp
+SRCS			:=ConfigParser.cpp Location.cpp Logger.cpp main.cpp ServerConfigs.cpp WebServ.cpp \
+				  HTTPRequest.cpp HttpRequestParser.cpp \
+				  Response.cpp ResponseHeader.cpp GetResponse.cpp ErrorResponse.cpp
 OBJDIR			:=.objs
 OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 DEPS			:=$(OBJS:.o=.d)

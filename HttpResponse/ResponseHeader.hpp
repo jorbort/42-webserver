@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 
 class ResponseHeader {
@@ -11,15 +13,16 @@ class ResponseHeader {
 			PDF, ZIP
 		};
 		//HEADER
-		std::string	addStatusLine(int statusCode);
-		std::string	addDateHeader(void);
-		std::string	addServerHeader(void);
-		std::string	addContentTypeHeader(ContentType type);
-		std::string	addContentLengthHeader(int contentLength);
-		std::string	addLastModified(void);
+		static std::string	addStatusLine(int statusCode);
+		static std::string	addDateHeader(void);
+		static std::string	addServerHeader(void);
+		static std::string	addContentTypeHeader(ContentType type);
+		static std::string	addContentLengthHeader(int contentLength);
+		static std::string	addLastModified(void);
+        static void			setBody(std::string &body, size_t &contentLength, int fd, size_t maxBodySize);
 		//utils
-		std::string	replaceNewlines(const std::string& input);
-		std::string	getStatusCodeDescription(int status);
-		std::string	getContentType(ContentType type);
-		std::string	toString(int nb);
+		static std::string	replaceNewlines(const std::string& input);
+		static std::string	getStatusCodeDescription(int status);
+		static std::string	getContentType(ContentType type);
+		static std::string	toString(int nb);
 };
