@@ -25,11 +25,9 @@ std::string Response::createResponse(HttpRequest &request) {
 		uri = request._URI_path.c_str();
 		std::cout << strrchr(uri, '.') << std::endl;
 		if (strrchr(uri, '.') == NULL) {
-			//TODO create invalid uri response
-			return "Invalid uri";
+			return ErrorResponse::createErrorPage(400);
 		} else if (isDirectory(uri)) {
-			//TODO create directory uri response
-			return "Is a directory";
+			return ErrorResponse::createErrorPage(400);
 		}
 
 		/*
@@ -39,33 +37,26 @@ std::string Response::createResponse(HttpRequest &request) {
 		*/
 		extension = strrchr(uri, '.') + 1;
 		if (isCGI(extension)) {
-			if (!isProcessableCGI(extension)) {
-				//TODO create unprocessable cgi response
-				return "UnprocessableCGI";
-			}
+			if (!isProcessableCGI(extension))
+				return ErrorResponse::createErrorPage(502);
 			int pfd[2];
 			pid_t pid;
 
-			if (pipe(pfd) == -1) {
-				//TODO Internal Server Error response
-				return "Internal Server Error";
-			}
+			if (pipe(pfd) == -1)
+				return ErrorResponse::createErrorPage(500);
 			pid = fork();
 			if (pid == -1) {
-				//TODO Internal Server Error response
 				close(pfd[0]);
 				close(pfd[1]);
-				return "Internal Server Error";
+				return ErrorResponse::createErrorPage(500);
 			} else if (pid == 0) {
 				close(pfd[0]);
 				if (dup2(pfd[1], STDOUT_FILENO) == -1) {
-					//TODO Internal Server Error response
 					close(pfd[1]);
-					return "Internal Server Error";
+					return ErrorResponse::createErrorPage(500);
 				}
 				close(pfd[1]);
 				run_execve(uri, NULL);
-				exit(-1);
 			} else {
 				close(pfd[1]);
 				fd = pfd[0];
@@ -75,24 +66,15 @@ std::string Response::createResponse(HttpRequest &request) {
 			}
 		} else {
 			fd = open(uri, O_RDONLY);
-			/*
-			Check if file exists and it has right permission.
-			If not then return corresponding error response.
-			*/
 			if (fd < 0) {
-				//TODO "create invalid uri response"
 				switch (errno) {
 					case ENOENT:
-						std::cerr << "Error: El archivo '" << uri << "' no existe." << std::endl;
-						break;
+						return ErrorResponse::createErrorPage(404);
 					case EACCES:
-						std::cerr << "Error: No tiene permisos para acceder al archivo '" << uri << "'." << std::endl;
-						break;
+						return ErrorResponse::createErrorPage(403);
 					default:
-						std::cerr << "Error al abrir '" << uri << "': " << strerror(errno) << std::endl;
-						break;
+						return ErrorResponse::createErrorPage(500);
 				}
-				return "Error opening file";
 			}
 			response = GetResponse::createGETresponse(fd);
 			close(fd);
@@ -119,6 +101,8 @@ void	Response::run_execve(const char *uri, char **envp) {
 	args[1] = (char *)uri;
 	args[2] = NULL;
 	execve(cgiPath, args, envp);
+	perror("execve");
+	exit(1);
 }
 
 bool	Response::isDirectory(const char *path) {
