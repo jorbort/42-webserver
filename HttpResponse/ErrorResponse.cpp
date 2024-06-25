@@ -11,17 +11,23 @@ std::string ErrorResponse::createErrorPage(int statusCode) {
 		int fd;
 		
 		switch (statusCode) {
+			case 400:
+				fd = open("docs/web/error_pages/400.html", O_RDONLY);
+				break;
 			case 403:
-				fd = open("../docs/web/error_pages/403.html", O_RDONLY);
+				fd = open("docs/web/error_pages/403.html", O_RDONLY);
 				break ;
 			case 404:
-				fd = open("../docs/web/error_pages/404.html", O_RDONLY);
+				fd = open("docs/web/error_pages/404.html", O_RDONLY);
 				break ;
 			case 500:
-				fd = open("../docs/web/error_pages/500.html", O_RDONLY);
+				fd = open("docs/web/error_pages/500.html", O_RDONLY);
+				break ;
+			case 502:
+				fd = open("docs/web/error_pages/502.html", O_RDONLY);
 				break ;
 			default:
-				fd = open("../docs/web/error_pages/500.html", O_RDONLY);
+				fd = open("docs/web/error_pages/500.html", O_RDONLY);
 				break ;
 		}
 		maxBodySize = sizeof(size_t);

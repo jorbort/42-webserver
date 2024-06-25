@@ -27,7 +27,7 @@ void	test_404NotFound_response(void)
 	Response response;
 
 	std::cout << YELLOW << "Test 404NotFound Response" << COLOR_OFF << "\n\n";
-	std::cout << ErrorResponse::create404NotFoundResponse() << std::endl;
+	std::cout << ErrorResponse::createErrorPage(404) << std::endl;
 	std::cout << std::endl;
 }
 

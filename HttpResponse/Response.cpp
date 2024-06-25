@@ -23,7 +23,7 @@ std::string Response::createResponse(HttpRequest &request) {
 		If not then return corresponding error response.
 		*/
 		uri = request._URI_path.c_str();
-		std::cout << strrchr(uri, '.') << std::endl;
+		std::cout << uri << std::endl;
 		if (strrchr(uri, '.') == NULL) {
 			return ErrorResponse::createErrorPage(400);
 		} else if (isDirectory(uri)) {
@@ -56,7 +56,9 @@ std::string Response::createResponse(HttpRequest &request) {
 					return ErrorResponse::createErrorPage(500);
 				}
 				close(pfd[1]);
-				run_execve(uri, NULL);
+				run_execve(uri, extension, NULL);
+				perror("execve");
+				exit(1);
 			} else {
 				close(pfd[1]);
 				fd = pfd[0];
@@ -91,18 +93,23 @@ std::string Response::createResponse(HttpRequest &request) {
 		return "ERROR";
 }
 
-void	Response::run_execve(const char *uri, char **envp) {
+void	Response::run_execve(const char *uri, const char *extension, char **envp) {
 	char	*cgiPath;
 	char	**args;
 	
-	cgiPath = strdup("/bin/sh");
+	if (strcmp(extension, "sh") == 0)
+		cgiPath = strdup("/bin/bash");
+	else if (strcmp(extension, "py") == 0)
+		cgiPath = strdup("/usr/bin/python3");
+	else {
+		perror("execve");
+		exit(1);
+	}
 	args = (char **)malloc(sizeof(char *) * 3);
-	args[0] = cgiPath;
+	args[0] = strdup(cgiPath);
 	args[1] = (char *)uri;
 	args[2] = NULL;
 	execve(cgiPath, args, envp);
-	perror("execve");
-	exit(1);
 }
 
 bool	Response::isDirectory(const char *path) {
