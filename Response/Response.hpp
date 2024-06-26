@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include "ResponseHeader.hpp"
+#include "CGIHandler.hpp"
 #include "../HttpRequest/HTTPRequest.hpp"
 
 class Response : private ResponseHeader{
@@ -11,24 +12,34 @@ class Response : private ResponseHeader{
 		~Response();
 		std::string createResponse();
 
+		enum Method {
+			GET, POST, DELETE, UNKNOWN
+		};
+
+		Method	method;
+		char *	uri;
+		char *	extension;
+
 	private:
-		std::string					_method;
-		std::string 				_uri;
 		int							_statusCode;
-		char **						_envp;
 		std::map<int, std::string>	_errorPageMap;
 		std::string					_body;
 		int							_contentLength;
 		bool						_isCGI;
+		CGIHandler *				_CGIhandler;
 		int							_CGIfd;
+		std::string					_defaultErrorBody;
 
+		Method		getMethod(std::string method);
+		char *		getExtension(char *uri);
+		void		setDefaultErrorBody();
 		void		initErrorPageMap();
-		bool		isURIAcceptable(const std::string uri);
-		bool		isCGI(const std::string uri);
-		bool		isProcessableCGI(const std::string uri);
-		void		handleCGI(const std::string uri);
+		std::string	getDirName(const std::string &path);
+		bool		isURIAcceptable(const char *uri);
+		bool		isCGI(const char *extension);
+		bool		isProcessableCGI(const char *extension);
 		std::string	errorResponse();
 		std::string	getErrorPage();
-		std::string readBody(const std::string path);
+		std::string readBody(const char *path);
         std::string	readBody(const int fd);
 };
