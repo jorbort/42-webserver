@@ -4,34 +4,56 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "Response.hpp"
-#include "HTTPRequest.hpp"
+#include "../HttpRequest/HTTPRequest.hpp"
 
 #define YELLOW "\033[1;33m"
 #define COLOR_OFF "\033[0m"
 
 void	test_GET_response(void)
 {
-	Response response;
 	HttpRequest request;
 
 	request.setMethod("GET");
 	request.setVersion("HTTP/1.1");
 	request._URI_path = "./test.html";
+
+	Response response(request);
 	std::cout << YELLOW << "Test GET Response" << COLOR_OFF << "\n\n";
-	std::cout << response.createResponse(request) << std::endl;
+	std::cout << response.createResponse() << std::endl;
+	std::cout << std::endl;
+}
+
+void	test_GET_CGI_response(void)
+{
+	HttpRequest request;
+
+	request.setMethod("GET");
+	request.setVersion("HTTP/1.1");
+	request._URI_path = "./test.sh";
+
+	Response response(request);
+	std::cout << YELLOW << "Test GET CGI Response" << COLOR_OFF << "\n\n";
+	std::cout << response.createResponse() << std::endl;
 	std::cout << std::endl;
 }
 
 void	test_404NotFound_response(void)
 {
-	Response response;
+	HttpRequest request;
 
+	request.setMethod("GET");
+	request.setVersion("HTTP/1.1");
+	request._URI_path = "./noExist.html";
+
+	
+	Response response(request);
 	std::cout << YELLOW << "Test 404NotFound Response" << COLOR_OFF << "\n\n";
-	std::cout << ErrorResponse::createErrorPage(404) << std::endl;
+	std::cout << response.createResponse() << std::endl;
 	std::cout << std::endl;
 }
 
 int main(void) {
 	test_GET_response();
+	test_GET_CGI_response();
 	test_404NotFound_response();
 }

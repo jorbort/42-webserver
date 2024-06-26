@@ -1,33 +1,68 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: jorge <jorge@student.42.fr>                +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2023/06/03 14:32:42 by junghwle          #+#    #+#              #
+#    Updated: 2024/06/24 17:05:19 by jorge            ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 NAME			:=test
-SRCS			:=TestResponse.cpp Response.cpp ResponseHeader.cpp HTTPRequest.cpp HttpRequestParser.cpp \
-				  ErrorResponse.cpp GetResponse.cpp
+
+SRCS			:=Response.cpp ResponseHeader.cpp CGIHandler.cpp HTTPRequest.cpp \
+				  TestResponse.cpp
 OBJDIR			:=.objs
 OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
-CFLAG			:=-Wall -Werror -Wextra -g
-EXTRAFLAG		:=-std=c++98
-DEBUGFLAG		:=-fsanitize="leak, address"
-INCLUDES		:=-I. -I../HttpRequest -I../Includes
+DEPS			:=$(OBJS:.o=.d)
+
+INCLUDE			:=-I../HttpRequest -I.
+CC				:=c++
+CFLAGS			:=-Wall -Werror -Wextra -g
+DEPFLAGS		:=-MMD
+EXTRAFLAGS		:=-std=c++98
+DEBUG			:=-fsanitize=address
 
 all				: $(OBJDIR) $(NAME)
 
-$(OBJDIR)		:
-	mkdir -p $@
+$(NAME)			: $(OBJS) Makefile
+					$(CC) $(CFLAGS) $(EXTRAFLAGS) $(DEBUG) -o $@ $(OBJS)
+					echo "(WebServ)COMPILING $@"
 
-$(NAME)			: $(OBJS)
-	g++ $(CFLAG) $(EXTRAFLAG) $(INCLUDES) $(DEBUG) -o $@ $^
+$(OBJDIR)/%.o	: %.cpp Makefile 
+					$(CC) $(DEPFLAGS) $(CFLAGS) $(EXTRAFLAGS) $(INCLUDE) $(DEBUG) -c -o $@ $<
+					echo "(WebServ)COMPILING $@"
 
-$(OBJDIR)/%.o	: %.cpp
-	g++ $(CFLAG) $(EXTRAFLAG) $(INCLUDES) -c $< -o $@
+$(OBJDIR)/%.o	: ../HttpRequest/%.cpp Makefile 
+					$(CC) $(DEPFLAGS) $(CFLAGS) $(EXTRAFLAGS) $(INCLUDE) $(DEBUG) -c -o $@ $<
+					echo "(WebServ)COMPILING $@"
 
-$(OBJDIR)/%.o	: ../HttpRequest/%.cpp
-	g++ $(CFLAG) $(EXTRAFLAG) $(INCLUDES) -c $< -o $@
+$(OBJDIR)		: Makefile
+					mkdir -p $@
 
-clean			:
+-include $(DEPS)
+
+clean:
 	rm -rf $(OBJDIR)
 
-fclean			: clean
-	rm -rf $(NAME)
+fclean: clean
+	rm -f $(NAME)
 
-re				: fclean all
+re: fclean all
 
-.PHONY			: all clean fclean re
+debug-leaks:
+	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME) config/test.conf
+
+run:
+	@  ./$(NAME) config/test.conf
+
+git: fclean
+	@read -p "Enter commit message: " commit_message; \
+    git add *; \
+    git commit -m "$$commit_message"
+	git push
+
+.PHONY: all clean fclean re debug-leaks run git
+.SILENT:

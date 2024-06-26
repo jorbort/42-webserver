@@ -1,125 +1,177 @@
 #include "Response.hpp"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <string>
-#include <iostream>
-#include <ctime>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include <cstring>
 #include <cstdlib>
 
-Response::~Response() {}
+Response::Response(HttpRequest &request) {
+	this->method = getMethod(request._method);
+	this->uri = strdup(request._URI_path.c_str());
+	this->extension = getExtension(this->uri);
+	this->_statusCode = 200;
+	this->_isCGI = false;
+	this->_CGIhandler = NULL;
+	parseRequestBody(request._body);
+	setDefaultErrorBody();
+	initStatusPageMap();	
+}
 
-std::string Response::createResponse(HttpRequest &request) {
-	if (request.getMethod() == "GET") {
-		const char	*uri;
-		const char	*extension;
-		int			fd;
-		std::string response;
+Response::~Response() {
+	free(this->uri);
+	free(this->extension);
+	delete(this->_CGIhandler);
+}
 
-		/*
-		Check if URL is valid and it's file.
-		If not then return corresponding error response.
-		*/
-		uri = request._URI_path.c_str();
-		std::cout << uri << std::endl;
-		if (strrchr(uri, '.') == NULL) {
-			return ErrorResponse::createErrorPage(400);
-		} else if (isDirectory(uri)) {
-			return ErrorResponse::createErrorPage(400);
+std::string	Response::createResponse() {
+	if (!isURIAcceptable(this->uri))
+		return errorResponse();
+	if (isCGI(this->extension)) {
+		if (!isProcessableCGI(this->extension))
+			return errorResponse();
+		if (method != GET && method != POST) {
+			this->_statusCode = 405;
+			return errorResponse();
 		}
+		this->_isCGI = true;
+		this->_CGIhandler = new CGIHandler(*this);
+		if ((this->_statusCode = this->_CGIhandler->handleCGI()) != 200)
+			return errorResponse();
+	}
+	if (method == GET) {
+		std::string	response;
 
-		/*
-		Based on uri's extension check if uri means cgi or not.
-		If uri is cgi then check if this cgi is processable by our server.
-		If not then return corresponding error response.
-		*/
-		extension = strrchr(uri, '.') + 1;
-		if (isCGI(extension)) {
-			if (!isProcessableCGI(extension))
-				return ErrorResponse::createErrorPage(502);
-			int pfd[2];
-			pid_t pid;
+		if (this->_isCGI)
+			_body = readBody(this->_CGIhandler->fd);
+		else
+			_body = readBody(this->uri);
+		this->_contentLength = _body.size();
+		response = addStatusLine(this->_statusCode);
+		response += addDateHeader();
+		response += addContentTypeHeader(HTML);
+		response += addContentLengthHeader(this->_contentLength);
+		response += "\r\n";
+		response += this->_body;
+		return response;
+	}
+	else if (method == POST) {
+		std::string	response;
 
-			if (pipe(pfd) == -1)
-				return ErrorResponse::createErrorPage(500);
-			pid = fork();
-			if (pid == -1) {
-				close(pfd[0]);
-				close(pfd[1]);
-				return ErrorResponse::createErrorPage(500);
-			} else if (pid == 0) {
-				close(pfd[0]);
-				if (dup2(pfd[1], STDOUT_FILENO) == -1) {
-					close(pfd[1]);
-					return ErrorResponse::createErrorPage(500);
-				}
-				close(pfd[1]);
-				run_execve(uri, extension, NULL);
-				perror("execve");
-				exit(1);
-			} else {
-				close(pfd[1]);
-				fd = pfd[0];
-				response = GetResponse::createGETresponse(fd);
-				close(fd);
-				return response;
-			}
-		} else {
-			fd = open(uri, O_RDONLY);
-			if (fd < 0) {
-				switch (errno) {
-					case ENOENT:
-						return ErrorResponse::createErrorPage(404);
-					case EACCES:
-						return ErrorResponse::createErrorPage(403);
-					default:
-						return ErrorResponse::createErrorPage(500);
-				}
-			}
-			response = GetResponse::createGETresponse(fd);
-			close(fd);
-			return response;
-		}
+		if (this->_isCGI)
+			_body = readBody(this->_CGIhandler->fd);
+		else
+			_body = writeContent(this->uri);
+		this->_contentLength = _body.size();
+		response = addStatusLine(this->_statusCode);
+		response += addDateHeader();
+		response += addContentTypeHeader(HTML);
+		response += addContentLengthHeader(this->_contentLength);
+		response += "\r\n";
+		response += this->_body;
+		return response;
 	}
-	else if (request.getMethod() == "POST") {
-		return "POST";
-	}
-	else if (request.getMethod() == "DELETE") {
-		return "DELETE";
-	}
+	return "Not Implemented";
+}
+
+Response::Method	Response::getMethod(const std::string &method) {
+	if (method.compare("GET") == 0)
+		return GET;
+	else if (method.compare("POST") == 0)
+		return POST;
+	else if (method.compare("DELETE") == 0)
+		return DELETE;
 	else
-		return "ERROR";
+		return UNKNOWN;
 }
 
-void	Response::run_execve(const char *uri, const char *extension, char **envp) {
-	char	*cgiPath;
-	char	**args;
-	
-	if (strcmp(extension, "sh") == 0)
-		cgiPath = strdup("/bin/bash");
-	else if (strcmp(extension, "py") == 0)
-		cgiPath = strdup("/usr/bin/python3");
-	else {
-		perror("execve");
-		exit(1);
+char *	Response::getExtension(const char *uri) {
+	const char *tmp;
+
+	if ((tmp = strrchr(uri, '.')) == NULL)
+		return NULL;
+	return (strdup(tmp + 1));
+}
+
+void	Response::parseRequestBody(const std::vector<char> &rqBody) {
+	_requestContent = (char *)malloc(sizeof(char) * (rqBody.size() + 1));
+	_requestContentLength = rqBody.size();
+	std::vector<char>::const_iterator it = rqBody.begin();
+	int	i = 0;
+	while (it != rqBody.end()) {
+		_requestContent[i] = rqBody[i];
+		i++;
+		it++;
 	}
-	args = (char **)malloc(sizeof(char *) * 3);
-	args[0] = strdup(cgiPath);
-	args[1] = (char *)uri;
-	args[2] = NULL;
-	execve(cgiPath, args, envp);
 }
 
-bool	Response::isDirectory(const char *path) {
-   struct stat statbuf;
-   if (stat(path, &statbuf) != 0)
-       return 0;
-   return S_ISDIR(statbuf.st_mode);
+void	Response::setDefaultErrorBody() {
+	this->_defaultErrorBody = "<html>\n";
+	this->_defaultErrorBody += "  <body>\n";
+	this->_defaultErrorBody += "    <h1>\n";
+	this->_defaultErrorBody += "      500 Internal Server Error\n";
+	this->_defaultErrorBody += "    <\\h1>\n";
+	this->_defaultErrorBody += "  <\\body>\n";
+	this->_defaultErrorBody += "<\\html>";
+}
+
+void	Response::initStatusPageMap() {
+	this->_errorPageMap[200] = "../docs/web/status_pages/200.html";
+	this->_errorPageMap[201] = "../docs/web/status_pages/201.html";
+	this->_errorPageMap[400] = "../docs/web/status_pages/400.html";
+	this->_errorPageMap[403] = "../docs/web/status_pages/403.html";
+	this->_errorPageMap[404] = "../docs/web/status_pages/404.html";
+	this->_errorPageMap[405] = "../docs/web/status_pages/405.html";
+	this->_errorPageMap[500] = "../docs/web/status_pages/500.html";
+	this->_errorPageMap[502] = "../docs/web/status_pages/502.html";
+}
+
+std::string Response::getDirName(const std::string &path) {
+    size_t pos = path.find_last_of("/\\");
+    if (pos != std::string::npos) {
+        return path.substr(0, pos);
+    } else {
+        return ".";
+    }
+}
+
+bool	Response::isURIAcceptable(const char *uri) {
+	struct stat info;
+	if (stat(uri, &info) != 0) {
+		if (errno == ENOENT) {
+            std::string path_str(uri);
+            std::string dir = getDirName(path_str);
+			if (stat(dir.c_str(), &info) != 0) {
+				this->_statusCode = 404;
+				return false;
+			} else if (method != POST) {
+				this->_statusCode = 404;
+				return false;
+			} else {
+				return true;
+			}
+		}
+	} else if (info.st_mode & S_IFDIR) {
+		//Given uri points to directory.
+		if (method == POST || method == DELETE) {
+			this->_statusCode = 405;
+			return false;
+		}
+		else if (method == GET) {
+			//TODO it depends to server's configuration.
+			this->_statusCode = 403;
+			return false;
+		}
+		else {
+			this->_statusCode = 405;
+			return false;
+		}
+	}
+	return true;
 }
 
 bool	Response::isCGI(const char *extension) {
+	if (extension == NULL)
+		return false;
 	if (strcmp(extension, "html") == 0 || \
 		strcmp(extension, "json") == 0 || \
 		strcmp(extension, "xml") == 0) {
@@ -130,10 +182,85 @@ bool	Response::isCGI(const char *extension) {
 }
 
 bool	Response::isProcessableCGI(const char *extension) {
-	//TODO check extension based on config.
+	if (extension == NULL) {
+		this->_statusCode = 500;
+		return false;
+	}
 	if (strcmp(extension, "py") == 0 || \
 		strcmp(extension, "sh") == 0)
 		return true;
-	else
+	else {
+		this->_statusCode = 502;
 		return false;
+	}
+}
+
+std::string	Response::errorResponse() {
+	this->_body = readBody(getStatusPage().c_str());
+	this->_contentLength = _body.size();
+
+	std::string	response;
+
+	response = addStatusLine(this->_statusCode);
+	response += addDateHeader();
+	response += addContentTypeHeader(HTML);
+	response += addContentLengthHeader(this->_contentLength);
+	response += "\r\n";
+	response += this->_body;
+	return response;
+}
+
+std::string Response::getStatusPage() {
+	return this->_errorPageMap[this->_statusCode];
+}
+
+std::string Response::readBody(const char *path) {
+	int	fd;
+
+	if ((fd = open(path, O_RDONLY)) < 0) {
+		switch (errno) {
+			case ENOENT:
+				this->_statusCode = 404;
+				break;
+			case EACCES:
+				this->_statusCode = 403;
+				break;
+			default:
+				this->_statusCode = 500;
+		}
+		if ((fd = open(getStatusPage().c_str(), O_RDONLY)) < 0)
+			return this->_defaultErrorBody;
+	}
+	return this->readBody(fd);
+}
+
+std::string	Response::readBody(const int &fd) {
+	std::string body;
+	char		buffer[1024];
+	ssize_t		bytesRead;
+
+	while ((bytesRead = read(fd, buffer, sizeof(buffer) - 1)) > 0) {
+		buffer[bytesRead] = '\0';
+		body.append(buffer);
+		buffer[0] = '\0';
+	}
+	return body;
+}
+
+std::string	Response::writeContent(const char *path) {
+	int fd = -1;
+
+	if (access(path, F_OK) != -1) {
+		fd = open(path, O_WRONLY | O_CREAT, 0664);
+		this->_statusCode = 201;
+	} else if (access(path, W_OK) != -1) {
+		this->_statusCode = 403;		
+	} else {
+		fd = open(path, O_WRONLY | O_TRUNC);
+		this->_statusCode = 200;
+	}
+	if (fd < 0 || write(fd, this->_requestContent, this->_requestContentLength) < 0)
+		this->_statusCode = 500;
+	close(fd);
+	return readBody(this->getStatusPage().c_str());
 }

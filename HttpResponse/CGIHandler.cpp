@@ -16,7 +16,7 @@ CGIHandler::CGIHandler(Response &response) {
 	}
 	_argv = (char **)malloc(sizeof(char *) * 3);
 	_argv[0] = strdup(_cgiPath);
-	_argv[1] = response.uri;
+	_argv[1] = strdup(response.uri);
 	_argv[2] = NULL;
 	_envp = initEnvironment();
 	fd = -1;
@@ -25,15 +25,15 @@ CGIHandler::CGIHandler(Response &response) {
 CGIHandler::~CGIHandler() {
 	int	i;
 
-	delete (_cgiPath);
+	free (_cgiPath);
 	i = 0;
 	while (_argv != NULL && _argv[i] != NULL)
-		delete (_argv[i++]);
-	delete (_argv);
+		free (_argv[i++]);
+	free (_argv);
 	i = 0;
 	while (_envp != NULL && _envp[i] != NULL)
-		delete (_envp[i++]);
-	delete (_envp);
+		free (_envp[i++]);
+	free (_envp);
 	close(fd);
 }
 

@@ -19,7 +19,6 @@ class ResponseHeader {
 		static std::string	addContentTypeHeader(ContentType type);
 		static std::string	addContentLengthHeader(int contentLength);
 		static std::string	addLastModified(void);
-        static void			setBody(std::string &body, size_t &contentLength, int fd, size_t maxBodySize);
 		//utils
 		static std::string	replaceNewlines(const std::string& input);
 		static std::string	getStatusCodeDescription(int status);

@@ -68,23 +68,6 @@ std::string	ResponseHeader::addLastModified(void) {
 	return lastModified;
 }
 
-void	ResponseHeader::setBody(std::string &body, size_t &contentLength, int fd, size_t maxBodySize) {
-	char		buffer[1024];
-	ssize_t		bytesRead;
-	size_t		totalBytesRead;
-
-	totalBytesRead = 0;
-	while ((bytesRead = read(fd, buffer, sizeof(buffer) - 1)) > 0 &&
-			totalBytesRead < maxBodySize) {
-		buffer[bytesRead] = '\0';
-		body.append(buffer);
-		buffer[0] = '\0';
-		totalBytesRead += bytesRead;
-	}
-	//TODO add reading error handling
-	contentLength = totalBytesRead;
-}
-
 std::string ResponseHeader::replaceNewlines(const std::string& input) {
     std::string result;
     
