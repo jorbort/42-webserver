@@ -274,10 +274,9 @@ void Server::RunServer(void)
 						std::cout << "ERROR: BAD REQUEST 1" << std::endl;
 					//std::cout << request._ContentLength << std::endl;
 					//std::cout << std::boolalpha << request._chunked << std::endl;
-					Response response;
-					std::cout << request._ContentLength <<  std::endl;
+					Response response(request);
 
-					std::string response_str = response.createResponse(request);
+					std::string response_str = response.createResponse();
 					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}
 				delete[] requestString;

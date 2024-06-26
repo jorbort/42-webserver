@@ -20,6 +20,7 @@ Response::Response(HttpRequest &request) {
 Response::~Response() {
 	free(this->uri);
 	free(this->extension);
+	free(this->_requestContent);
 	delete(this->_CGIhandler);
 }
 
@@ -42,10 +43,10 @@ std::string	Response::createResponse() {
 		std::string	response;
 
 		if (this->_isCGI)
-			_body = readBody(this->_CGIhandler->fd);
+			this->_body = readBody(this->_CGIhandler->fd);
 		else
-			_body = readBody(this->uri);
-		this->_contentLength = _body.size();
+			this->_body = readBody(this->uri);
+		this->_contentLength = this->_body.size();
 		response = addStatusLine(this->_statusCode);
 		response += addDateHeader();
 		response += addContentTypeHeader(HTML);
@@ -58,10 +59,10 @@ std::string	Response::createResponse() {
 		std::string	response;
 
 		if (this->_isCGI)
-			_body = readBody(this->_CGIhandler->fd);
+			this->_body = readBody(this->_CGIhandler->fd);
 		else
-			_body = writeContent(this->uri);
-		this->_contentLength = _body.size();
+			this->_body = writeContent(this->uri);
+		this->_contentLength = this->_body.size();
 		response = addStatusLine(this->_statusCode);
 		response += addDateHeader();
 		response += addContentTypeHeader(HTML);
@@ -70,7 +71,22 @@ std::string	Response::createResponse() {
 		response += this->_body;
 		return response;
 	}
-	return "Not Implemented";
+	else if (method == DELETE) {
+		std::string response;
+
+		this->_body = deleteContent(this->uri);
+		this->_contentLength = this->_body.size();
+		response = addStatusLine(this->_statusCode);
+		response += addDateHeader();
+		response += addContentTypeHeader(HTML);
+		response += addContentLengthHeader(this->_contentLength);
+		response += "\r\n";
+		response += this->_body;
+		return response;
+
+	}
+	this->_statusCode = 405;
+	return errorResponse();
 }
 
 Response::Method	Response::getMethod(const std::string &method) {
@@ -95,13 +111,8 @@ char *	Response::getExtension(const char *uri) {
 void	Response::parseRequestBody(const std::vector<char> &rqBody) {
 	_requestContent = (char *)malloc(sizeof(char) * (rqBody.size() + 1));
 	_requestContentLength = rqBody.size();
-	std::vector<char>::const_iterator it = rqBody.begin();
-	int	i = 0;
-	while (it != rqBody.end()) {
+	for (int i = 0; i < _requestContentLength; i++)
 		_requestContent[i] = rqBody[i];
-		i++;
-		it++;
-	}
 }
 
 void	Response::setDefaultErrorBody() {
@@ -109,9 +120,9 @@ void	Response::setDefaultErrorBody() {
 	this->_defaultErrorBody += "  <body>\n";
 	this->_defaultErrorBody += "    <h1>\n";
 	this->_defaultErrorBody += "      500 Internal Server Error\n";
-	this->_defaultErrorBody += "    <\\h1>\n";
-	this->_defaultErrorBody += "  <\\body>\n";
-	this->_defaultErrorBody += "<\\html>";
+	this->_defaultErrorBody += "    </h1>\n";
+	this->_defaultErrorBody += "  </body>\n";
+	this->_defaultErrorBody += "</html>";
 }
 
 void	Response::initStatusPageMap() {
@@ -250,10 +261,10 @@ std::string	Response::readBody(const int &fd) {
 std::string	Response::writeContent(const char *path) {
 	int fd = -1;
 
-	if (access(path, F_OK) != -1) {
+	if (access(path, F_OK) < 0) {
 		fd = open(path, O_WRONLY | O_CREAT, 0664);
 		this->_statusCode = 201;
-	} else if (access(path, W_OK) != -1) {
+	} else if (access(path, W_OK) < 0) {
 		this->_statusCode = 403;		
 	} else {
 		fd = open(path, O_WRONLY | O_TRUNC);
@@ -262,5 +273,17 @@ std::string	Response::writeContent(const char *path) {
 	if (fd < 0 || write(fd, this->_requestContent, this->_requestContentLength) < 0)
 		this->_statusCode = 500;
 	close(fd);
+	return readBody(this->getStatusPage().c_str());
+}
+
+std::string Response::deleteContent(const char *path) {
+	if (access(path, F_OK) < 0) {
+		this->_statusCode = 404;
+	} else {
+		if (unlink(path) < 0)
+			this->_statusCode = 403;
+		else
+			this->_statusCode = 200;
+	}
 	return readBody(this->getStatusPage().c_str());
 }

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: jorge <jorge@student.42.fr>                +#+  +:+       +#+         #
+#    By: junghwle <junghwle@student.42barcel>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/06/03 14:32:42 by junghwle          #+#    #+#              #
-#    Updated: 2024/06/24 17:05:19 by jorge            ###   ########.fr        #
+#    Updated: 2024/06/27 01:20:31 by junghwle         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME			:=Webserv
 
 SRCS			:=ConfigParser.cpp Location.cpp Logger.cpp main.cpp ServerConfigs.cpp WebServ.cpp \
 				  HTTPRequest.cpp HttpRequestParser.cpp \
-				  Response.cpp ResponseHeader.cpp GetResponse.cpp ErrorResponse.cpp
+				  Response.cpp ResponseHeader.cpp CGIHandler.cpp
 OBJDIR			:=.objs
 OBJS			:=$(patsubst %.cpp, $(OBJDIR)/%.o, $(SRCS))
 DEPS			:=$(OBJS:.o=.d)

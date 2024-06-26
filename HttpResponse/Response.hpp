@@ -46,4 +46,5 @@ class Response : private ResponseHeader{
 		std::string readBody(const char *path);
         std::string	readBody(const int &fd);
 		std::string	writeContent(const char *path);
+		std::string deleteContent(const char *path);
 };
