@@ -29,7 +29,7 @@ class Response : private ResponseHeader{
 		int							_requestContentLength;
 		bool						_isCGI;
 		CGIHandler *				_CGIhandler;
-		int							_CGIfd;
+		//int							_CGIfd;
 		std::string					_defaultErrorBody;
 
 		Method		getMethod(const std::string &method);

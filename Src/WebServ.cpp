@@ -9,6 +9,27 @@
 
 static Server *serverInstance = NULL;
 
+std::string getALine(int clientFd)
+{
+	char c;
+	std::string line;
+	while(read(clientFd,&c,1) > 0)
+	{
+		if (c == '\n')
+			break;
+		if (c != '\r')
+			line += c;
+	}
+	return line;
+}
+
+long htol(std::string hex)
+{
+	long num;
+	std::istringstream(hex) >> std::hex >>  num;
+	return num;
+}
+
 long ftStrtol(const std::string &str)
 {
 	long ret = 0;
@@ -120,20 +141,21 @@ void Server::acceptNewConnection(int fd,int epolFd)
 
 ssize_t Server::readHeader(int clientFd, char *&requestString)
 {
-    char buffer[1024];
-	long bufferSize = 1024;
+    char buffer[200];
+	long bufferSize = 199;
 	ssize_t bytesRead;
 	ssize_t totalBytesRead = 0;
 	while ((bytesRead = read(clientFd, buffer, sizeof(buffer))) > 0) {
     	if (totalBytesRead + bytesRead > bufferSize){
 	  		bufferSize *= 2;
-	  		char *newBuffer = new char[bufferSize];
+	  		char *newBuffer = new char[bufferSize + 1];
 	  		memcpy(newBuffer,requestString,totalBytesRead);
 	  		delete[] requestString;
 	  		requestString = newBuffer;
 		}
 		memcpy(requestString + totalBytesRead, buffer, bytesRead);
 		totalBytesRead += bytesRead;
+		requestString[totalBytesRead] = '\0';
 		if (strstr(requestString, "\r\n\r\n") != NULL){
 			break;
 		}
@@ -192,8 +214,45 @@ ssize_t Server::readBody(int clientFd, char *&requestString, std::string &reques
 	return bytesRead;
 }
 
+ssize_t Server::readChunkedBody(int clientFd, char *&requestString,size_t totalByteRead)
+{
+	size_t chunkSize = 1;
+	std::vector<char> buffer;
+	long bytesRead;
+	//size_t headerSize = requestChecker.find("\r\n\r\n") + 4;
+	while(true)
+	{
+		chunkSize = htol(getALine(clientFd));
+		if (chunkSize == 0)
+			break;
+		buffer.resize(chunkSize);
+		bytesRead =  read(clientFd, buffer.data(), chunkSize);
+		if (bytesRead == -1)
+		{
+			delete [] requestString;
+			requestString = NULL;
+			Logger::print("Error", "Error reading from cleint");
+			return (-1);
+		}
+        char *tmpRequest = new char[totalByteRead + bytesRead + 1];
+        if (requestString) {
+            memcpy(tmpRequest, requestString, totalByteRead);
+            delete[] requestString;
+        }
+        memcpy(tmpRequest + totalByteRead, buffer.data(), bytesRead);
+        totalByteRead += bytesRead;
+        tmpRequest[totalByteRead] = '\0';
+        requestString = tmpRequest;
+        getALine(clientFd);
+    }
+	std::string line;
+    while (!(line = getALine(clientFd)).empty()) {
+    }
+    return totalByteRead;
+}
+
 ssize_t Server::readClientData(int clientFd, char *&requestString) {
-    long bufferSize = 1024;
+    long bufferSize = 280;
 	ssize_t totalBytesRead = 0;
 	std::string requestChecker = "";
 
@@ -208,7 +267,7 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 		return -1;
 	}
 	requestChecker = requestString;
-	if (requestChecker.find("Content-Length") != std::string::npos)
+	if (requestChecker.find("Content-Length") != std::string::npos && requestChecker.find("Transfer-Encoding: chunked") == std::string::npos)
 	{
 		int bodySize = 0;
 		bodySize = readBody(clientFd, requestString, requestChecker, totalBytesRead);
@@ -216,14 +275,25 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 		{
 			delete [] requestString;
 			requestString = NULL;
-			Logger::print("Error", "Error reading from client");
+			Logger::print("Error", "Error reading from client 1");
 			return -1;
 		}
 		totalBytesRead += bodySize;
 	}
-
+	else if (requestChecker.find("Transfer-Encoding: chunked 2") != std::string::npos)
+	{
+		int bodySize = 0;
+		bodySize = readChunkedBody(clientFd, requestString, totalBytesRead);
+		if (bodySize == -1)
+		{
+			delete [] requestString;
+			requestString = NULL;
+			Logger::print("Error", "Error reading fomr client");
+			return -1;
+		}
+		totalBytesRead += bodySize;
+	}
 	this->requestString = requestString;
-	
     return totalBytesRead;
 }
 
@@ -272,10 +342,8 @@ void Server::RunServer(void)
 					Request_parser.parseRequest(request, requestString, requestSize);
 					if (request._ErrorCode != 0)
 						std::cout << "ERROR: BAD REQUEST 1" << std::endl;
-					//std::cout << request._ContentLength << std::endl;
-					//std::cout << std::boolalpha << request._chunked << std::endl;
 					Response response(request);
-
+					std::cout << requestString << std::endl;
 					std::string response_str = response.createResponse();
 					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}

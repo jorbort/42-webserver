@@ -41,6 +41,8 @@ class Server
 		ssize_t readHeader(int clientFd, char *&requestString);
 		ssize_t readBody(int clientFd, char *&requestString, std::string &tequestChecker, 
 		size_t totalBytesRead);
+		ssize_t	readChunkedBody(int clientFd, char *&requestString,
+		size_t totalBytesRead);
 		static void signalHandler(int signum);
 	class SocketException : std::exception
 	{
