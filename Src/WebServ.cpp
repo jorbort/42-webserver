@@ -84,6 +84,8 @@ Server::Server(char *path)
 {
 	serverInstance = this;
 	signal(SIGINT, Server::signalHandler);
+	signal(SIGTSTP, Server::signalHandler);
+	signal(SIGTERM, Server::signalHandler);
 	requestString = NULL;
 
 	std::string arg = path;
@@ -204,12 +206,13 @@ ssize_t Server::readBody(int clientFd, char *&requestString, std::string &reques
         return -1;
     }
 
-    char *newBuffer = new char[headerSize + bytesRead + 1];
-    memcpy(newBuffer, requestString, headerSize);
-    memcpy(newBuffer + headerSize, buffer.data(), bytesRead);
+    char *newBuffer = new char[headerSize + contentLength + 1];
+    memcpy(newBuffer, requestString, totalBytesRead);
+    memcpy(newBuffer + totalBytesRead, buffer.data(), bytesRead);
 
 	delete[] requestString;
 	requestString = newBuffer;
+	std::cout << requestString << std::endl;
 	requestString[headerSize + bytesRead] = '\0';
 	return bytesRead;
 }
@@ -219,7 +222,6 @@ ssize_t Server::readChunkedBody(int clientFd, char *&requestString,size_t totalB
 	size_t chunkSize = 1;
 	std::vector<char> buffer;
 	long bytesRead;
-	//size_t headerSize = requestChecker.find("\r\n\r\n") + 4;
 	while(true)
 	{
 		chunkSize = htol(getALine(clientFd));
@@ -275,12 +277,12 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 		{
 			delete [] requestString;
 			requestString = NULL;
-			Logger::print("Error", "Error reading from client 1");
+			Logger::print("Error", "Error reading from client");
 			return -1;
 		}
 		totalBytesRead += bodySize;
 	}
-	else if (requestChecker.find("Transfer-Encoding: chunked 2") != std::string::npos)
+	else if (requestChecker.find("Transfer-Encoding: chunked") != std::string::npos)
 	{
 		int bodySize = 0;
 		bodySize = readChunkedBody(clientFd, requestString, totalBytesRead);
@@ -343,7 +345,6 @@ void Server::RunServer(void)
 					if (request._ErrorCode != 0)
 						std::cout << "ERROR: BAD REQUEST 1" << std::endl;
 					Response response(request);
-					std::cout << requestString << std::endl;
 					std::string response_str = response.createResponse();
 					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}

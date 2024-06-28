@@ -43,7 +43,6 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 		
 	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
 		request_class._ErrorCode = 400;
-		std::cout << "1" << std::endl;
 		return;
 	}
 	while (std::getline(Req, line)){
@@ -61,19 +60,17 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	}
 	if (lines.empty()){
 		request_class._ErrorCode = 400;
-		std::cout << "2" << std::endl;
 		return;
 	}
-	std::cout << lines.size() << std::endl;
 	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines) || parseURI(request_class))
 		return;
 	if(!isValidPath((request_class._URI_path).c_str())){
-		std::cout << "HOLA" << std::endl;
 		request_class._ErrorCode = 404;
 	return;
 	}
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
-	std::cout << bytes_read << "bytes read " << req_str.size() << "req_str.size" << " " << len << " len"<< std::endl;
+	
+	//std::cout << bytes_read << "bytes read " << req_str.size() << "req_str.size" << " " << len << " len"<< std::endl;
 		parseBody(request_class, original_str + bytes_read, len - bytes_read);
 }
 // Need to implement Folding?
@@ -227,9 +224,11 @@ bool	HttpRequestParser::check_method(HttpRequest &request_class){
 // void	HttpRequestParser::parseBody(HttpRequest &request_class, const char *begin, const char *end){
 void	HttpRequestParser::parseBody(HttpRequest &request_class, char *begin, size_t contentlength){
 	size_t i = 0;
-
-	while(i < contentlength){
+	(void)contentlength;
+	while(i < request_class._ContentLength){
+		std::cout << *begin << std::endl;
 		request_class._body.push_back(*begin++);
+		std::cout << i << std::endl;
 		i++;
 	}
 }
