@@ -29,7 +29,6 @@ std::string	Response::createResponse() {
     if (!strcmp(this->uri, "/")){
         free(this->uri);
         this->uri = strdup(this->server->getRoot().c_str());
-        std::cout << this->uri <<std::endl;
     }
 	if (!isURIAcceptable(this->uri))
 		return errorResponse();
@@ -181,9 +180,12 @@ bool	Response::isURIAcceptable(const char *uri) {
 			}
 			else{
 			    //funcion para ver si el uri es una location dentro del server
-				//revisar que dicha location permita el metodo get
-				//ver si tiene autoindex on/off
-				//devolvemos 403 si el autoindex esta off
+				if (isUriInServer(uri)){
+				    if(isMethodAllowed("GET") && isAutoIndex(uri)){
+						this->_statusCode = 200;
+						return true;
+					}
+				}
 				this->_statusCode = 403;
 				return false;
 			}
@@ -247,11 +249,11 @@ std::string Response::readBody(const char *path) {
 	if(!strcmp(path,this->server->getRoot().c_str())){
 		filePath = path;
 		filePath.append(server->getIndex());
-		std::cout << filePath <<std::endl;
 	}
 	else{
 	   filePath = path;
 	}
+	std::cout << filePath <<std::endl;
 	if ((fd = open(filePath.c_str(), O_RDONLY)) < 0) {
 		switch (errno) {
 			case ENOENT:
