@@ -1,11 +1,11 @@
-#include "ConfigParser.hpp"
+#include "../Includes/ConfigParser.hpp"
 #include <fstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
 #include <cstdlib>
 #include <stack>
-#include "Logger.hpp"
+#include "../Includes/Logger.hpp"
 
 
 
@@ -259,7 +259,7 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
             location.setIndex(value);
         } else if (key == "upload_store") {
             location.setUploadPath(value);
-        } else if (key == "cgi_path") { 
+        } else if (key == "cgi_path") {
             location.addCgiPath(value);
         }else if (key == "cgi_ext") {
             location.setCgiExtension(value);
@@ -284,11 +284,11 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
 		std::string::size_type spacePos = tmp.find(" ");
         std::string key = spacePos != std::string::npos ? tmp.substr(0, spacePos) : tmp;
         std::string value = spacePos != std::string::npos ? tmp.substr(spacePos + 1) : "";
-		
+
 		if ((key[key.length() -1] != '}' && key[key.length() -1] != '{') && (value.empty() || value.find_first_not_of(' ') == std::string::npos)) {
 			throw std::invalid_argument("Invalid value");
 		}
-		 if (key == "listen")
+		if (key == "listen")
         {
 			if (server.getListen() != 0)
 				throw std::invalid_argument("Error repeated argument, listen");
@@ -332,7 +332,7 @@ void ConfigParser::createServer(std::string &conf, ServerConfigs &server)
             size_t end = value.find(";");
             server.toggleAutoindex(value.substr(0, end));
         }
-		if (key == "location")
+		else if (key == "location")
 		{
       		std::vector<std::string>::iterator locationEnd = it;
 
@@ -414,6 +414,6 @@ void ConfigParser::compareServers(void)
                 throw std::invalid_argument("there cannot be two servers with the same name");
             j++;
         }
-        i++;    
+        i++;
     }
 }

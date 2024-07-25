@@ -1,4 +1,4 @@
-#include "ServerConfigs.hpp"
+#include "../Includes/ServerConfigs.hpp"
 #include <stdexcept>
 #include <vector>
 #include <fcntl.h>
@@ -187,7 +187,7 @@ void ServerConfigs::toggleAutoindex(const std::string &status)
 {
 	if (this->autoindex != -1)
 		throw std::invalid_argument("Error repeated argument, autoindex");
-	
+
 	else
 	{
 		if (status == "on")
@@ -250,7 +250,7 @@ int ServerConfigs::getAutoindex(void) const
 
 const std::string &ServerConfigs::getErrorPage(int error) const
 {
-	static std::string nullstr; 
+	static std::string nullstr;
     const std::map<int,std::string>::const_iterator it = this->_errorPages.find(error);
     if (it == _errorPages.end())
 		return (nullstr);
@@ -275,12 +275,12 @@ void ServerConfigs::checkServer(ServerConfigs &server)
 void ServerConfigs::initSocket(void)
 {
 	int optVal = 1;
-	
+
 	this->_fd = socket(AF_INET, SOCK_STREAM,0);
 	std::cout << "fd: "<< this->_fd << std::endl;
 	if (this->_fd == -1)
 		throw std::runtime_error("Error: socket problems");
-	
+
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal)) == -1) {
         throw std::runtime_error("setsockopt SO_REUSEADDR failed");
     }
@@ -294,7 +294,7 @@ void ServerConfigs::initSocket(void)
 		throw std::runtime_error("failed to bind socket");
 	if (listen(this->_fd,10) < 0)
 		throw std::runtime_error("listen failed ");
-	
+
 	if (fcntl(_fd, F_SETFL, O_NONBLOCK) == -1) {
         throw std::runtime_error("error fcntl failed to make socket non blocking");
     }

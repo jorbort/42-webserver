@@ -7,15 +7,15 @@
 
 Response::Response(HttpRequest &request, ServerConfigs *server) {
 	this->method = getMethod(request._method);
-	this->uri = strdup(request._URI_path.c_str());
+	this->uri = strdup(request._URI.c_str());
 	this->extension = getExtension(this->uri);
 	this->_statusCode = 200;
 	this->_isCGI = false;
 	this->_CGIhandler = NULL;
+	this->server = server;
 	parseRequestBody(request._body);
 	setDefaultErrorBody();
-	initStatusPageMap();	
-	this->server = server;
+	initStatusPageMap();
 }
 
 Response::~Response() {
@@ -26,6 +26,11 @@ Response::~Response() {
 }
 
 std::string	Response::createResponse() {
+    if (!strcmp(this->uri, "/")){
+        free(this->uri);
+        this->uri = strdup(this->server->getRoot().c_str());
+        std::cout << this->uri <<std::endl;
+    }
 	if (!isURIAcceptable(this->uri))
 		return errorResponse();
 	if (isCGI(this->extension)) {
@@ -169,9 +174,19 @@ bool	Response::isURIAcceptable(const char *uri) {
 			return false;
 		}
 		else if (method == GET) {
-			//TODO it depends to server's configuration.
-			this->_statusCode = 403;
-			return false;
+			//meter revicion el uri es == root del server
+			if (!strcmp(uri, server->getRoot().c_str())){
+			    this->_statusCode = 200;
+				return true;
+			}
+			else{
+			    //funcion para ver si el uri es una location dentro del server
+				//revisar que dicha location permita el metodo get
+				//ver si tiene autoindex on/off
+				//devolvemos 403 si el autoindex esta off
+				this->_statusCode = 403;
+				return false;
+			}
 		}
 		else {
 			this->_statusCode = 405;
@@ -228,8 +243,16 @@ std::string Response::getStatusPage() {
 
 std::string Response::readBody(const char *path) {
 	int	fd;
-
-	if ((fd = open(path, O_RDONLY)) < 0) {
+	std::string filePath;
+	if(!strcmp(path,this->server->getRoot().c_str())){
+		filePath = path;
+		filePath.append(server->getIndex());
+		std::cout << filePath <<std::endl;
+	}
+	else{
+	   filePath = path;
+	}
+	if ((fd = open(filePath.c_str(), O_RDONLY)) < 0) {
 		switch (errno) {
 			case ENOENT:
 				this->_statusCode = 404;
@@ -266,7 +289,7 @@ std::string	Response::writeContent(const char *path) {
 		fd = open(path, O_WRONLY | O_CREAT, 0664);
 		this->_statusCode = 201;
 	} else if (access(path, W_OK) < 0) {
-		this->_statusCode = 403;		
+		this->_statusCode = 403;
 	} else {
 		fd = open(path, O_WRONLY | O_TRUNC);
 		this->_statusCode = 200;

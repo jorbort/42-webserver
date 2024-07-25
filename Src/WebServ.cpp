@@ -1,8 +1,8 @@
-#include "WebServ.hpp"
+#include "../Includes/WebServ.hpp"
 #include <stdexcept>
-#include "HTTPRequest.hpp"
-#include "HttpRequestParser.hpp"
-#include "Response.hpp"
+#include "../HttpRequest/HTTPRequest.hpp"
+#include "../HttpRequest/HttpRequestParser.hpp"
+#include "../HttpResponse/Response.hpp"
 
 
 #define MAX_EVENTS 10000
@@ -197,7 +197,7 @@ ssize_t Server::readBody(int clientFd, char *&requestString, std::string &reques
 	}
 	std::vector<char> buffer(contentLength);
 	if (totalBytesRead == headerSize + contentLength)
-	{	return (ssize_t)contentLength;}	
+	{	return (ssize_t)contentLength;}
     bytesRead = read(clientFd, buffer.data(), contentLength);
     if (bytesRead <= 0)
     {
@@ -309,7 +309,7 @@ void Server::RunServer(void)
 	event.events = EPOLLIN;
 	for (size_t i = 0; i < conf.nOfServers;i++)
 	{
-		
+
 		event.data.fd = conf._servers[i]->getSocket();
 		if (epoll_ctl(epollFd, EPOLL_CTL_ADD, conf._servers[i]->getSocket(), &event) == -1)
 			throw std::runtime_error("epoll_ctl failed to add fd");
@@ -344,20 +344,19 @@ void Server::RunServer(void)
 				{
 					close(events[n].data.fd);
 					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
+					clientToServer.erase(events[n].data.fd);
 				}else if (requestSize == -1)
 				{
 					close(events[n].data.fd);
 					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
+					clientToServer.erase(events[n].data.fd);
 				}else{
-					//hettpRequestParser va aqui
 					HttpRequest request;
 					HttpRequestParser Request_parser;
 					Request_parser.parseRequest(request, requestString, requestSize);
 					if (request._ErrorCode != 0)
 						std::cout << "ERROR: BAD REQUEST 1" << std::endl;
-					//std::cout << server << std::endl;
 					size_t serverIndex = getServerIndex(events[n].data.fd);
-					std::cout << RED << "serverIndex: " << serverIndex << std::endl;
 					Response response(request, conf._servers[serverIndex]);
 					std::string response_str = response.createResponse();
 					write(events[n].data.fd, response_str.c_str(),response_str.size());

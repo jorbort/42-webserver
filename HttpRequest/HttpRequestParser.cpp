@@ -40,7 +40,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	std::istringstream			Req(req_str);
 	std::vector<std::string>	lines;
 	size_t 						bytes_read = 0;
-		
+
 	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
 		request_class._ErrorCode = 400;
 		return;
@@ -69,7 +69,7 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	return;
 	}
 	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
-	
+
 	//std::cout << bytes_read << "bytes read " << req_str.size() << "req_str.size" << " " << len << " len"<< std::endl;
 		parseBody(request_class, original_str + bytes_read, len - bytes_read);
 }
@@ -95,8 +95,9 @@ size_t method_end = str.find(" ");
         return 1;
     }
     request_class._URI = str.substr(uri_start, uri_end - uri_start);
+    std::cout << request_class._URI << std::endl;
     size_t version_start = uri_end + 1;
-    request_class._version = str.substr(version_start); 
+    request_class._version = str.substr(version_start);
     if (request_class._version.compare("HTTP/1.1") != 0) {
         request_class._ErrorCode = 505; // HTTP Version Not Supported
         std::cout << "6" << std::endl;
@@ -184,7 +185,7 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 
 bool	HttpRequestParser::check_request_str(const char *str){
 	int i = 0;
-	
+
 	while(str[i]){
 		if (!isChar(str[i]))
 			return 1;
@@ -241,14 +242,14 @@ bool HttpRequestParser::containsMoreThanOne(const std::string& str, char ch) {
 // check for invalid chars inside the header value string
 bool	HttpRequestParser::isValidHeaderValue(const std::string& str){
 	int i = 0;
-	
+
 	while(str[i]){
 		if (!isprint(str[i]) && !isspace(str[i]))
 			return 1;
 		i++;
 	}
 	return 0;
-	
+
 }
 
 // clean leading and trailing isspaces from string

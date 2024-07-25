@@ -22,6 +22,7 @@ class ServerConfigs
 		int _fd;
 		int autoindex;
 		std::map<int, std::string> _errorPages;
+		std::vector<std::string> serverAllowedMethods;
 
 	public:
 
@@ -51,7 +52,7 @@ class ServerConfigs
 		int getSocket() const;
 		int getAutoindex() const;
 		const std::string &getErrorPage(int key) const;
-		
+
 		void checkServer(ServerConfigs &server);
 		void compareServers(void);
 		void initSocket(void);
