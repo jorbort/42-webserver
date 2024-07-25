@@ -125,7 +125,7 @@ bool Server::isServerSocket(int fd)
     return false;
 }
 
-void Server::acceptNewConnection(int fd,int epolFd)
+void Server::acceptNewConnection(int fd,int epolFd, size_t serverIndex)
 {
 	struct sockaddr_in clientAddr;
 	socklen_t clientAddrLen = sizeof(clientAddr);
@@ -139,6 +139,7 @@ void Server::acceptNewConnection(int fd,int epolFd)
 	event.data.fd = clientFd;
 	if (epoll_ctl(epolFd, EPOLL_CTL_ADD, clientFd, &event) == -1)
 		throw std::runtime_error("Error: epoll_ctl failed to add fd");
+	clientToServer[clientFd] = serverIndex;
 }
 
 ssize_t Server::readHeader(int clientFd, char *&requestString)
@@ -308,11 +309,12 @@ void Server::RunServer(void)
 	event.events = EPOLLIN;
 	for (size_t i = 0; i < conf.nOfServers;i++)
 	{
+		
 		event.data.fd = conf._servers[i]->getSocket();
 		if (epoll_ctl(epollFd, EPOLL_CTL_ADD, conf._servers[i]->getSocket(), &event) == -1)
 			throw std::runtime_error("epoll_ctl failed to add fd");
 	}
-	Logger::printTrain();
+	//Logger::printTrain();
 	while(42)
 	{
 		std::cout << "waiting for connection" <<std::endl;
@@ -323,7 +325,16 @@ void Server::RunServer(void)
 		{
 			if (isServerSocket(events[n].data.fd))
 			{
-				acceptNewConnection(events[n].data.fd, epollFd);
+				size_t serverIndex = 0;
+				for(size_t j = 0; j < conf.nOfServers; j++)
+				{
+					if(conf._servers[j]->getSocket() == events[n].data.fd)
+					{
+						serverIndex = j;
+						break;
+					}
+				}
+				acceptNewConnection(events[n].data.fd, epollFd, serverIndex);
 			}
 			else
 			{
@@ -344,7 +355,10 @@ void Server::RunServer(void)
 					Request_parser.parseRequest(request, requestString, requestSize);
 					if (request._ErrorCode != 0)
 						std::cout << "ERROR: BAD REQUEST 1" << std::endl;
-					Response response(request);
+					//std::cout << server << std::endl;
+					size_t serverIndex = getServerIndex(events[n].data.fd);
+					std::cout << RED << "serverIndex: " << serverIndex << std::endl;
+					Response response(request, conf._servers[serverIndex]);
 					std::string response_str = response.createResponse();
 					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}
@@ -359,6 +373,13 @@ void Server::RunServer(void)
 		close(conf._servers[i]->getSocket());
 	}
 	close(epollFd);
+}
+
+size_t Server::getServerIndex(int fd){
+	std::map<int, size_t>::iterator it = clientToServer.find(fd);
+	if (it != clientToServer.end())
+		return it->second;
+	throw std::runtime_error("Error: client not found in map");
 }
 
 Server::Server( const Server & src )

@@ -23,6 +23,7 @@ class Server
 {
 	private:
 		int sfd;
+		std::map<int, size_t> clientToServer;
 	public:
 		Server(void);
 		Server(char *path);
@@ -36,7 +37,7 @@ class Server
 		void RunServer(void);
 		void initCluster(void);
 		bool isServerSocket(int fd);
-		void acceptNewConnection(int fd, int epollFd);
+		void acceptNewConnection(int fd, int epollFd, size_t serverIndex);
 		ssize_t readClientData(int clientFd,char *&requestString);
 		ssize_t readHeader(int clientFd, char *&requestString);
 		ssize_t readBody(int clientFd, char *&requestString, std::string &tequestChecker, 
@@ -44,6 +45,7 @@ class Server
 		ssize_t	readChunkedBody(int clientFd, char *&requestString,
 		size_t totalBytesRead);
 		static void signalHandler(int signum);
+		size_t getServerIndex(int fd);
 	class SocketException : std::exception
 	{
 		const char* what() const throw();

@@ -5,7 +5,7 @@
 #include <cstring>
 #include <cstdlib>
 
-Response::Response(HttpRequest &request) {
+Response::Response(HttpRequest &request, ServerConfigs *server) {
 	this->method = getMethod(request._method);
 	this->uri = strdup(request._URI_path.c_str());
 	this->extension = getExtension(this->uri);
@@ -15,6 +15,7 @@ Response::Response(HttpRequest &request) {
 	parseRequestBody(request._body);
 	setDefaultErrorBody();
 	initStatusPageMap();	
+	this->server = server;
 }
 
 Response::~Response() {

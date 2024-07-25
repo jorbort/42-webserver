@@ -5,10 +5,11 @@
 #include "ResponseHeader.hpp"
 #include "CGIHandler.hpp"
 #include "../HttpRequest/HTTPRequest.hpp"
+#include "../Includes/ServerConfigs.hpp"
 
 class Response : private ResponseHeader{
 	public:
-		Response(HttpRequest &request);
+		Response(HttpRequest &request, ServerConfigs *server);
 		~Response();
 		std::string createResponse();
 
@@ -19,6 +20,7 @@ class Response : private ResponseHeader{
 		Method	method;
 		char *	uri;
 		char *	extension;
+		ServerConfigs *server;
 
 	private:
 		int							_statusCode;
