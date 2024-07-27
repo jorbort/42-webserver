@@ -49,4 +49,7 @@ class Response : private ResponseHeader{
         std::string	readBody(const int &fd);
 		std::string	writeContent(const char *path);
 		std::string deleteContent(const char *path);
+		bool isUriInServer(const char *uri);
+		bool isMethodAllowed(std::string method, std::string location);
+		bool isAutoIndex(std::string location);
 };

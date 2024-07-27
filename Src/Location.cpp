@@ -175,16 +175,7 @@ bool Location::checkLocation(void)
 	{
 		return (false);
 	}	
-	else if (this->getIndex().empty())
-	{
-		this->index = "docs/web/index.html";
-	}	
-	else if (this->allowed_methods.empty())
-	{
-		this->allowed_methods.push_back("GET");
-		this->allowed_methods.push_back("POST");
-	}
-	else if (this->cgiPath.empty())
+	else if (this->getPath() == "cgi-bin" && this->cgiPath.empty())
 	{
 		this->cgiPath.push_back("/bin/bash");
 		this->cgiPath.push_back("/usr/bin/python3");

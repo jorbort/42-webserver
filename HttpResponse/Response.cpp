@@ -30,6 +30,12 @@ std::string	Response::createResponse() {
         free(this->uri);
         this->uri = strdup(this->server->getRoot().c_str());
     }
+	else if(this->uri[0] == '/'){
+		std::string tmp = this->uri;
+		tmp = tmp.substr(1);
+		free(this->uri);
+		this->uri = strdup(tmp.c_str());
+	}
 	if (!isURIAcceptable(this->uri))
 		return errorResponse();
 	if (isCGI(this->extension)) {
@@ -153,6 +159,7 @@ std::string Response::getDirName(const std::string &path) {
 bool	Response::isURIAcceptable(const char *uri) {
 	struct stat info;
 	if (stat(uri, &info) != 0) {
+		//aprender que esta pasando aqui
 		if (errno == ENOENT) {
             std::string path_str(uri);
             std::string dir = getDirName(path_str);
@@ -173,15 +180,13 @@ bool	Response::isURIAcceptable(const char *uri) {
 			return false;
 		}
 		else if (method == GET) {
-			//meter revicion el uri es == root del server
 			if (!strcmp(uri, server->getRoot().c_str())){
 			    this->_statusCode = 200;
 				return true;
 			}
 			else{
-			    //funcion para ver si el uri es una location dentro del server
 				if (isUriInServer(uri)){
-				    if(isMethodAllowed("GET") && isAutoIndex(uri)){
+				    if(isMethodAllowed("GET", uri) && isAutoIndex(uri)){
 						this->_statusCode = 200;
 						return true;
 					}
@@ -198,6 +203,34 @@ bool	Response::isURIAcceptable(const char *uri) {
 	return true;
 }
 
+bool Response::isAutoIndex(std::string location){
+	Location *locationObj = server->getLocation(location);
+	if (locationObj){
+		return (locationObj->isAutoindex() > 0 ? true : false);
+	}
+	return false;
+}
+
+bool Response::isMethodAllowed(std::string method, std::string location){
+	Location *locationObj = server->getLocation(location);
+	if (locationObj){
+		std::vector<std::string>::iterator it = locationObj->getMethods();
+		for (; it != locationObj->allowed_methods.end(); it++){
+			if (!method.compare(*it))
+				return true;
+		}
+	}
+	return false;
+
+}
+
+
+bool Response::isUriInServer(const char *uri){
+	Location *location = server->getLocation(uri);
+	if (location == NULL)
+		return false;
+	return true;
+}
 bool	Response::isCGI(const char *extension) {
 	if (extension == NULL)
 		return false;

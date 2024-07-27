@@ -8,7 +8,6 @@ class Location
 	protected:
 		std::string name;
 		std::string root;
-		std::vector<std::string> allowed_methods;
 		int autoindex;
 		std::string index;
 		std::vector<std::string> cgiPath;
@@ -18,6 +17,7 @@ class Location
 	public:
 		Location();
 		~Location();
+		std::vector<std::string> allowed_methods;
 
 		void setRoot(const std::string &root);
 		void addMethods(const std::string &methods);

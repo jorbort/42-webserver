@@ -4,9 +4,9 @@
 # include <iostream>
 # include <string>
 # include <vector>
+# include <map>
 # include "Location.hpp"
 # include <map>
-//# include "WebServ.hpp"
 
 class ServerConfigs
 {
@@ -14,7 +14,7 @@ class ServerConfigs
 		int port;
 		unsigned int hostIp;
 		long clientMaxBodySize;
-		std::vector<Location> locations;
+		std::map<std::string , Location*> locations;
 		std::vector<std::string> serverName;
 		std::string index;
 		std::string root;
@@ -31,7 +31,7 @@ class ServerConfigs
 		void initErrorPages(void);
 
 		void setListen(const std::string &port);
-		void addLocation(const Location &location);
+		void addLocation(Location *location);
 		void setName(const std::string &name);
 		void setBodySize(const std::string &number);
 		void setIndex(const std::string &path);
@@ -43,7 +43,7 @@ class ServerConfigs
 
 		int getListen() const;
 		unsigned int getHostIp() const;
-		std::vector<Location> getLocations() const;
+		Location *getLocation(std::string path);
 		std::vector<std::string> getServerName() const;
 		long getClientMaxBodySize() const;
 		std::string getIndex() const;

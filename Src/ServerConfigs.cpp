@@ -33,6 +33,10 @@ ServerConfigs::ServerConfigs()
 ServerConfigs::~ServerConfigs()
 {
 	delete  _serverAddress;
+	for (std::map<std::string, Location*>::iterator it = locations.begin(); it != locations.end(); ++it)
+	{
+		delete it->second;
+	}
 }
 
 /*
@@ -199,9 +203,9 @@ void ServerConfigs::toggleAutoindex(const std::string &status)
 	}
 }
 
-void ServerConfigs::addLocation(const Location &location)
+void ServerConfigs::addLocation( Location *location)
 {
-  this->locations.push_back(location);
+  this->locations[location->getPath()] = location;
 }
 
 int ServerConfigs::getListen(void) const
@@ -209,9 +213,12 @@ int ServerConfigs::getListen(void) const
     return this->port;
 }
 
-std::vector<Location> ServerConfigs::getLocations(void) const
+Location *ServerConfigs::getLocation(std::string path)
 {
-    return this->locations;
+	std::map<std::string, Location*>::iterator it = locations.find(path);
+	if (it!= locations.end())
+		return it->second;
+	return NULL;
 }
 
 std::vector<std::string> ServerConfigs::getServerName(void) const

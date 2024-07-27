@@ -227,13 +227,13 @@ std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
 
 void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vector<std::string>::iterator &end, ServerConfigs & server)
 {
-  Location location;
+  Location *location = new Location();
   std::string tmp = *it;
   std::string::size_type start = tmp.find(" " ) + 1;
   std::string::size_type pathEnd = tmp.find_first_of("{");
   if (pathEnd == std::string::npos)
     throw std::invalid_argument("invalid scope in location");
-  location.setName(tmp.substr(start, pathEnd - start));
+  location->setName(tmp.substr(start, pathEnd - start));
 	while (it != end)
 	{
 		++it;
@@ -250,22 +250,22 @@ void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vec
     		throw std::invalid_argument("Invalid value");
 		}
 		if (key == "root") {
-            location.setRoot(value);
+            location->setRoot(value);
         } else if (key == "allow_methods") {
-            location.addMethods(value);
+            location->addMethods(value);
          } else if (key == "autoindex") {
-            location.toggleAutoIndex(value);
+            location->toggleAutoIndex(value);
         } else if (key == "index") {
-            location.setIndex(value);
+            location->setIndex(value);
         } else if (key == "upload_store") {
-            location.setUploadPath(value);
+            location->setUploadPath(value);
         } else if (key == "cgi_path") {
-            location.addCgiPath(value);
+            location->addCgiPath(value);
         }else if (key == "cgi_ext") {
-            location.setCgiExtension(value);
+            location->setCgiExtension(value);
         }
 	}
-    if (!location.checkLocation())
+    if (!location->checkLocation())
         throw std::invalid_argument("conflicting information in  location cannot set up server ");
     server.addLocation(location);
 }
