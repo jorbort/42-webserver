@@ -286,7 +286,7 @@ std::string Response::readBody(const char *path) {
 	else{
 	   filePath = path;
 	}
-	std::cout << filePath <<std::endl;
+	// --->>> !![1] poner un checkeo si en un dir y hay autoindex que lo genere y retornar eso como el string 
 	if ((fd = open(filePath.c_str(), O_RDONLY)) < 0) {
 		switch (errno) {
 			case ENOENT:
