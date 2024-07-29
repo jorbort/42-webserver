@@ -6,6 +6,7 @@
 #include "CGIHandler.hpp"
 #include "../HttpRequest/HTTPRequest.hpp"
 #include "../Includes/ServerConfigs.hpp"
+#include <dirent.h>
 
 class Response : private ResponseHeader{
 	public:
@@ -52,4 +53,5 @@ class Response : private ResponseHeader{
 		bool isUriInServer(const char *uri);
 		bool isMethodAllowed(std::string method, std::string location);
 		bool isAutoIndex(std::string location);
+		std::string generateAutoIndex(std::string  filePath);
 };

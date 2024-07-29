@@ -215,6 +215,7 @@ int ServerConfigs::getListen(void) const
 
 Location *ServerConfigs::getLocation(std::string path)
 {
+
 	std::map<std::string, Location*>::iterator it = locations.find(path);
 	if (it!= locations.end())
 		return it->second;

@@ -1,5 +1,5 @@
-#include "WebServ.hpp"
-#include "Location.hpp"
+#include "../Includes/WebServ.hpp"
+#include "../Includes/Location.hpp"
 #include <cstddef>
 #include <stdexcept>
 #include <string>
@@ -28,7 +28,10 @@ void Location::setRoot(const std::string &root)
 
 void Location::setPath(void)
 {
-	this->path = this->root + this->name;
+    if (this->name[0] == '/'){
+        this->name = this->name.substr(1);
+    }
+	this->path = this->getRoot()+ this->name;
 }
 
 void Location::toggleAutoIndex(const std::string &status)
@@ -166,15 +169,15 @@ bool Location::checkLocation(void)
 	if (this->getName().empty())
 	{
 		return (false);
-	}	
+	}
 	else if (this->getRoot().empty())
 	{
 		return (false);
-	}	
+	}
 	else if (this->getPath().empty())
 	{
 		return (false);
-	}	
+	}
 	else if (this->getPath() == "cgi-bin" && this->cgiPath.empty())
 	{
 		this->cgiPath.push_back("/bin/bash");

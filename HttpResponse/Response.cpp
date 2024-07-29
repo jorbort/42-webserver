@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <cstring>
 #include <cstdlib>
+#include <cstdio>
 
 Response::Response(HttpRequest &request, ServerConfigs *server) {
 	this->method = getMethod(request._method);
@@ -231,6 +232,7 @@ bool Response::isUriInServer(const char *uri){
 		return false;
 	return true;
 }
+
 bool	Response::isCGI(const char *extension) {
 	if (extension == NULL)
 		return false;
@@ -278,17 +280,24 @@ std::string Response::getStatusPage() {
 
 std::string Response::readBody(const char *path) {
 	int	fd;
-	std::string filePath;
+	std::string filePath = "";
 	if(!strcmp(path,this->server->getRoot().c_str())){
 		filePath = path;
 		filePath.append(server->getIndex());
 	}
 	else{
-	   filePath = path;
+	    
+		filePath = path;
 	}
-	// --->>> !![1] poner un checkeo si en un dir y hay autoindex que lo genere y retornar eso como el string 
+	struct stat info;
+	if (stat(filePath.c_str(), &info) == 0 && (info.st_mode & S_IFDIR)) {
+        if (isAutoIndex(path)) {
+            return generateAutoIndex(path);
+        }
+    }
 	if ((fd = open(filePath.c_str(), O_RDONLY)) < 0) {
-		switch (errno) {
+	        perror("");
+			switch (errno) {
 			case ENOENT:
 				this->_statusCode = 404;
 				break;
@@ -298,10 +307,35 @@ std::string Response::readBody(const char *path) {
 			default:
 				this->_statusCode = 500;
 		}
-		if ((fd = open(getStatusPage().c_str(), O_RDONLY)) < 0)
+		if ((fd = open(getStatusPage().substr(1).c_str(), O_RDONLY)) < 0){
 			return this->_defaultErrorBody;
+		}
 	}
 	return this->readBody(fd);
+}
+
+std::string Response::generateAutoIndex(std::string  path){
+    DIR *dir;
+    struct dirent *ent;
+    std::stringstream body;
+
+    body << "<ul>";
+
+    if ((dir = opendir(path.c_str())) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            if (std::strcmp(ent->d_name, ".") != 0 && std::strcmp(ent->d_name, "..") != 0) {
+                std::string fullPath = path.substr(path.rfind("/") +1) + "/" + ent->d_name;
+                body << "<li><a href=\"" << fullPath << "\">" << ent->d_name << "</a></li>";
+            }
+        }
+        closedir(dir);
+    } else {
+        std::cerr << "Could not open directory: " << path << std::endl;
+    }
+
+    body << "</ul>";
+
+    return body.str();
 }
 
 std::string	Response::readBody(const int &fd) {
