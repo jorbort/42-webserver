@@ -213,7 +213,6 @@ ssize_t Server::readBody(int clientFd, char *&requestString, std::string &reques
 
 	delete[] requestString;
 	requestString = newBuffer;
-	std::cout << requestString << std::endl;
 	requestString[headerSize + bytesRead] = '\0';
 	return bytesRead;
 }
@@ -314,7 +313,6 @@ void Server::RunServer(void)
 		if (epoll_ctl(epollFd, EPOLL_CTL_ADD, conf._servers[i]->getSocket(), &event) == -1)
 			throw std::runtime_error("epoll_ctl failed to add fd");
 	}
-	//Logger::printTrain();
 	while(42)
 	{
 		std::cout << "waiting for connection" <<std::endl;
@@ -354,8 +352,6 @@ void Server::RunServer(void)
 					HttpRequest request;
 					HttpRequestParser Request_parser;
 					Request_parser.parseRequest(request, requestString, requestSize);
-					if (request._ErrorCode != 0)
-						std::cout << "ERROR: BAD REQUEST 1" << std::endl;
 					size_t serverIndex = getServerIndex(events[n].data.fd);
 					Response response(request, conf._servers[serverIndex]);
 					std::string response_str = response.createResponse();

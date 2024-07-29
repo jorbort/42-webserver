@@ -56,8 +56,9 @@ std::string	Response::createResponse() {
 
 		if (this->_isCGI)
 			this->_body = readBody(this->_CGIhandler->fd);
-		else
+		else{
 			this->_body = readBody(this->uri);
+		}
 		this->_contentLength = this->_body.size();
 		response = addStatusLine(this->_statusCode);
 		response += addDateHeader();
@@ -160,7 +161,7 @@ std::string Response::getDirName(const std::string &path) {
 bool	Response::isURIAcceptable(const char *uri) {
 	struct stat info;
 	if (stat(uri, &info) != 0) {
-		//aprender que esta pasando aqui
+		perror("");
 		if (errno == ENOENT) {
             std::string path_str(uri);
             std::string dir = getDirName(path_str);
@@ -171,6 +172,7 @@ bool	Response::isURIAcceptable(const char *uri) {
 				this->_statusCode = 404;
 				return false;
 			} else {
+				this->_statusCode = 200;
 				return true;
 			}
 		}
@@ -201,6 +203,7 @@ bool	Response::isURIAcceptable(const char *uri) {
 			return false;
 		}
 	}
+	this->_statusCode = 200;
 	return true;
 }
 
@@ -238,7 +241,8 @@ bool	Response::isCGI(const char *extension) {
 		return false;
 	if (strcmp(extension, "html") == 0 || \
 		strcmp(extension, "json") == 0 || \
-		strcmp(extension, "xml") == 0) {
+		strcmp(extension, "xml") == 0 || \
+		strcmp(extension,"ico") == 0){
 		return false;
 	} else {
 		return true;
