@@ -5,6 +5,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cstdio>
+#include <algorithm>
 
 Response::Response(HttpRequest &request, ServerConfigs *server) {
 	this->method = getMethod(request._method);
@@ -88,6 +89,7 @@ std::string	Response::createResponse() {
 		std::string response;
 
 		this->_body = deleteContent(this->uri);
+		std::cout << this->_body <<std::endl;
 		this->_contentLength = this->_body.size();
 		response = addStatusLine(this->_statusCode);
 		response += addDateHeader();
@@ -139,14 +141,14 @@ void	Response::setDefaultErrorBody() {
 }
 
 void	Response::initStatusPageMap() {
-	this->_errorPageMap[200] = "../docs/web/status_pages/200.html";
-	this->_errorPageMap[201] = "../docs/web/status_pages/201.html";
-	this->_errorPageMap[400] = "../docs/web/status_pages/400.html";
-	this->_errorPageMap[403] = "../docs/web/status_pages/403.html";
-	this->_errorPageMap[404] = "../docs/web/status_pages/404.html";
-	this->_errorPageMap[405] = "../docs/web/status_pages/405.html";
-	this->_errorPageMap[500] = "../docs/web/status_pages/500.html";
-	this->_errorPageMap[502] = "../docs/web/status_pages/502.html";
+	this->_errorPageMap[200] = "docs/web/status_pages/200.html";
+	this->_errorPageMap[201] = "docs/web/status_pages/201.html";
+	this->_errorPageMap[400] = "docs/web/status_pages/400.html";
+	this->_errorPageMap[403] = "docs/web/status_pages/403.html";
+	this->_errorPageMap[404] = "docs/web/status_pages/404.html";
+	this->_errorPageMap[405] = "docs/web/status_pages/405.html";
+	this->_errorPageMap[500] = "docs/web/status_pages/500.html";
+	this->_errorPageMap[502] = "docs/web/status_pages/502.html";
 }
 
 std::string Response::getDirName(const std::string &path) {
@@ -239,13 +241,20 @@ bool Response::isUriInServer(const char *uri){
 bool	Response::isCGI(const char *extension) {
 	if (extension == NULL)
 		return false;
-	if (strcmp(extension, "html") == 0 || \
-		strcmp(extension, "json") == 0 || \
-		strcmp(extension, "xml") == 0 || \
-		strcmp(extension,"ico") == 0){
-		return false;
-	} else {
+	std::vector<std::string> cgiExtensions ;
+	cgiExtensions.push_back("cgi");
+    cgiExtensions.push_back("pl");
+    cgiExtensions.push_back("py");
+    cgiExtensions.push_back("sh");
+    cgiExtensions.push_back("exe");
+    cgiExtensions.push_back("php");
+    cgiExtensions.push_back("rb");
+    cgiExtensions.push_back("tcl");
+	std::string ext = extension;
+	if (std::find(cgiExtensions.begin(), cgiExtensions.end() , ext) != cgiExtensions.end()){
 		return true;
+	} else {
+		return false;
 	}
 }
 
@@ -290,7 +299,7 @@ std::string Response::readBody(const char *path) {
 		filePath.append(server->getIndex());
 	}
 	else{
-	    
+
 		filePath = path;
 	}
 	struct stat info;
@@ -300,7 +309,6 @@ std::string Response::readBody(const char *path) {
         }
     }
 	if ((fd = open(filePath.c_str(), O_RDONLY)) < 0) {
-	        perror("");
 			switch (errno) {
 			case ENOENT:
 				this->_statusCode = 404;
@@ -382,5 +390,6 @@ std::string Response::deleteContent(const char *path) {
 		else
 			this->_statusCode = 200;
 	}
+	std::cout << _statusCode << std::endl;
 	return readBody(this->getStatusPage().c_str());
 }
