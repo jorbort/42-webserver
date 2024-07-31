@@ -1,0 +1,21 @@
+#header{
+    color: blue;
+}
+#header404{
+    color: aquamarine;
+
+
+}
+#error404{
+     color:red;
+}
+.headerdiv{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#header413{
+    color:darkslategray;
+    text-align: center;
+    text-decoration: underline;
+}

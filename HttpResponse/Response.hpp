@@ -20,10 +20,12 @@ class Response : private ResponseHeader{
 
 		Method	method;
 		char *	uri;
+		std::string	location;
 		char *	extension;
 		ServerConfigs *server;
 
 	private:
+
 		int							_statusCode;
 		std::map<int, std::string>	_errorPageMap;
 		std::string					_body;

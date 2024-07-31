@@ -352,6 +352,7 @@ void Server::RunServer(void)
 					HttpRequest request;
 					HttpRequestParser Request_parser;
 					Request_parser.parseRequest(request, requestString, requestSize);
+					std::cout << requestString <<std::endl;
 					size_t serverIndex = getServerIndex(events[n].data.fd);
 					Response response(request, conf._servers[serverIndex]);
 					std::string response_str = response.createResponse();

@@ -62,16 +62,10 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 		request_class._ErrorCode = 400;
 		return;
 	}
-	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines) || parseURI(request_class))
+	if (parseFirstLine(request_class, lines[0]) || parseHeaders(request_class, lines) || parseURI(request_class)){
 		return;
-	if(!isValidPath((request_class._URI_path).c_str())){
-		request_class._ErrorCode = 404;
-	return;
 	}
-	// if (bytes_read < req_str.length() && (request_class._headers.find("Transfer-Encoding") != request_class._headers.end()))
-
-	//std::cout << bytes_read << "bytes read " << req_str.size() << "req_str.size" << " " << len << " len"<< std::endl;
-		parseBody(request_class, original_str + bytes_read, len - bytes_read);
+	parseBody(request_class, original_str + bytes_read, len - bytes_read);
 }
 // Need to implement Folding?
 // check for bodys null characters how to implement = full request size needed from server;
@@ -85,7 +79,6 @@ size_t method_end = str.find(" ");
 	request_class._method = str.substr(0, method_end);
     if (check_method(request_class)) {
         request_class._ErrorCode = 405; // Method Not Allowed
-        std::cout << "3" << std::endl;
         return 1;
     }
     size_t uri_start = method_end + 1;
@@ -95,12 +88,12 @@ size_t method_end = str.find(" ");
         return 1;
     }
     request_class._URI = str.substr(uri_start, uri_end - uri_start);
-    std::cout << request_class._URI << std::endl;
+    //std::cout << request_class._URI << std::endl;
     size_t version_start = uri_end + 1;
     request_class._version = str.substr(version_start);
     if (request_class._version.compare("HTTP/1.1") != 0) {
         request_class._ErrorCode = 505; // HTTP Version Not Supported
-        std::cout << "6" << std::endl;
+        //std::cout << "6" << std::endl;
         return 1;
     }
     return 0;
@@ -151,7 +144,7 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 		if (uri[0] == ':'){
 			uri.erase(0, 1);
 			size_t Port_end = uri.find_first_not_of("0123456789", 1);
-			std::cout << Port_end << std::endl;
+			//std::cout << Port_end << std::endl;
 			request_class._URI_tcpPort = atol(uri.substr(0, Port_end).c_str());
 			uri.erase(0, Port_end);
 		}
@@ -166,7 +159,7 @@ bool HttpRequestParser::parseURI(HttpRequest &request_class){
 			std::stringstream ss(uri);
 			while (getline(ss, temp, '&'))
 			{
-				std::cout << temp << std::endl;
+				//std::cout << temp << std::endl;
 				size_t path_end = temp.find('=');
 				if (path_end == std::string::npos || temp.find('=') != temp.rfind('=')){
 					request_class._ErrorCode = 400;
@@ -226,10 +219,12 @@ bool	HttpRequestParser::check_method(HttpRequest &request_class){
 void	HttpRequestParser::parseBody(HttpRequest &request_class, char *begin, size_t contentlength){
 	size_t i = 0;
 	(void)contentlength;
+	if (!begin){
+		throw std::runtime_error("strin vacio  en el body");
+	}
+	std::cout << "content length" << request_class._ContentLength <<std::endl ;
 	while(i < request_class._ContentLength){
-		std::cout << *begin << std::endl;
 		request_class._body.push_back(*begin++);
-		std::cout << i << std::endl;
 		i++;
 	}
 }

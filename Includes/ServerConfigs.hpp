@@ -21,15 +21,13 @@ class ServerConfigs
 		struct sockaddr_in *_serverAddress;
 		int _fd;
 		int autoindex;
-		std::map<int, std::string> _errorPages;
 		std::vector<std::string> serverAllowedMethods;
 
 	public:
 
 		ServerConfigs();
 		~ServerConfigs();
-		void initErrorPages(void);
-
+		std::map<int, std::string> _errorPages;
 		void setListen(const std::string &port);
 		void addLocation(Location *location);
 		void setName(const std::string &name);

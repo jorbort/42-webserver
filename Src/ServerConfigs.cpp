@@ -22,7 +22,6 @@ ServerConfigs::ServerConfigs()
 	this->_fd = 0;
 	this->root = "";
 	this->hostIp = 0;
-	this->initErrorPages();
 	this->_serverAddress = new struct sockaddr_in;
 }
 
@@ -42,24 +41,6 @@ ServerConfigs::~ServerConfigs()
 /*
 ** --------------------------------- METHODS ----------------------------------
 */
-void ServerConfigs::initErrorPages()
-{
-	_errorPages[301] = "";
-	_errorPages[302] = "";
-	_errorPages[400] = "";
-	_errorPages[401] = "";
-	_errorPages[402] = "";
-	_errorPages[403] = "";
-	_errorPages[404] = "";
-	_errorPages[405] = "";
-	_errorPages[406] = "";
-	_errorPages[500] = "";
-	_errorPages[501] = "";
-	_errorPages[502] = "";
-	_errorPages[503] = "";
-	_errorPages[505] = "";
-}
-
 /*
 ** --------------------------------- ACCESSOR ---------------------------------
 */
@@ -285,15 +266,12 @@ void ServerConfigs::initSocket(void)
 	int optVal = 1;
 
 	this->_fd = socket(AF_INET, SOCK_STREAM,0);
-	std::cout << "fd: "<< this->_fd << std::endl;
 	if (this->_fd == -1)
 		throw std::runtime_error("Error: socket problems");
 
 	if (setsockopt(this->_fd, SOL_SOCKET, SO_REUSEADDR, &optVal, sizeof(optVal)) == -1) {
         throw std::runtime_error("setsockopt SO_REUSEADDR failed");
     }
-
-	std::cout << this->getListen() << "--" << this->getHostIp() << std::endl;
 	this->_serverAddress->sin_family = AF_INET;
 	this->_serverAddress->sin_port = htons(this->getListen());
 	this->_serverAddress->sin_addr.s_addr = this->getHostIp();

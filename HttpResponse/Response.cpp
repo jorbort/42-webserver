@@ -28,6 +28,19 @@ Response::~Response() {
 }
 
 std::string	Response::createResponse() {
+	if(this->server->getClientMaxBodySize() < this->_contentLength){
+		this->_statusCode = 413;
+		this->_body = readBody(this->getStatusPage().c_str());
+		std::string	response;
+		this->_contentLength = this->_body.size();
+		response = addStatusLine(this->_statusCode);
+		response += addDateHeader();
+		response += addContentTypeHeader(HTML);
+		response += addContentLengthHeader(this->_contentLength);
+		response += "\r\n";
+		response += this->_body;
+		return response;
+	}
     if (!strcmp(this->uri, "/")){
         free(this->uri);
         this->uri = strdup(this->server->getRoot().c_str());
@@ -71,8 +84,11 @@ std::string	Response::createResponse() {
 	}
 	else if (method == POST) {
 		std::string	response;
-
-		if (this->_isCGI)
+		if (!isUriInServer(this->location.c_str()) || !isMethodAllowed("POST",this->location.c_str())){
+			this->_statusCode = 403;
+			this->_body = readBody(this->getStatusPage().c_str());
+		}
+		else if (this->_isCGI)
 			this->_body = readBody(this->_CGIhandler->fd);
 		else
 			this->_body = writeContent(this->uri);
@@ -87,9 +103,14 @@ std::string	Response::createResponse() {
 	}
 	else if (method == DELETE) {
 		std::string response;
-
-		this->_body = deleteContent(this->uri);
-		std::cout << this->_body <<std::endl;
+		std::cout << this->location << std::endl;
+		if (!isUriInServer(this->location.c_str()) || !isMethodAllowed("DELETE",this->location.c_str())){
+			this->_statusCode = 403;
+			this->_body = readBody(this->getStatusPage().c_str());
+		}
+		else
+			this->_body = deleteContent(this->uri);
+		//std::cout << this->_body <<std::endl;
 		this->_contentLength = this->_body.size();
 		response = addStatusLine(this->_statusCode);
 		response += addDateHeader();
@@ -141,19 +162,25 @@ void	Response::setDefaultErrorBody() {
 }
 
 void	Response::initStatusPageMap() {
+	std::map<int,std::string>::iterator it = this->server->_errorPages.begin();
 	this->_errorPageMap[200] = "docs/web/status_pages/200.html";
 	this->_errorPageMap[201] = "docs/web/status_pages/201.html";
 	this->_errorPageMap[400] = "docs/web/status_pages/400.html";
 	this->_errorPageMap[403] = "docs/web/status_pages/403.html";
 	this->_errorPageMap[404] = "docs/web/status_pages/404.html";
 	this->_errorPageMap[405] = "docs/web/status_pages/405.html";
+	this->_errorPageMap[413] = "docs/web/status_pages/413.html";
 	this->_errorPageMap[500] = "docs/web/status_pages/500.html";
 	this->_errorPageMap[502] = "docs/web/status_pages/502.html";
+	for (;it != this->server->_errorPages.end(); ++it){
+		this->_errorPageMap[it->first] = it->second;	
+	}
 }
 
 std::string Response::getDirName(const std::string &path) {
     size_t pos = path.find_last_of("/\\");
     if (pos != std::string::npos) {
+		this->location = path.substr(0,pos);
         return path.substr(0, pos);
     } else {
         return ".";
@@ -163,7 +190,6 @@ std::string Response::getDirName(const std::string &path) {
 bool	Response::isURIAcceptable(const char *uri) {
 	struct stat info;
 	if (stat(uri, &info) != 0) {
-		perror("");
 		if (errno == ENOENT) {
             std::string path_str(uri);
             std::string dir = getDirName(path_str);
@@ -179,6 +205,7 @@ bool	Response::isURIAcceptable(const char *uri) {
 			}
 		}
 	} else if (info.st_mode & S_IFDIR) {
+		this->location = uri;
 		//Given uri points to directory.
 		if (method == POST || method == DELETE) {
 			this->_statusCode = 405;
@@ -205,6 +232,8 @@ bool	Response::isURIAcceptable(const char *uri) {
 			return false;
 		}
 	}
+	std::string path_str(uri);
+    std::string dir = getDirName(path_str);
 	this->_statusCode = 200;
 	return true;
 }
@@ -368,15 +397,18 @@ std::string	Response::writeContent(const char *path) {
 
 	if (access(path, F_OK) < 0) {
 		fd = open(path, O_WRONLY | O_CREAT, 0664);
+		
+		if (fd < 0 || write(fd, this->_requestContent, this->_requestContentLength) < 0)
+			this->_statusCode = 500;
 		this->_statusCode = 201;
 	} else if (access(path, W_OK) < 0) {
 		this->_statusCode = 403;
 	} else {
 		fd = open(path, O_WRONLY | O_TRUNC);
+		if (fd < 0 ||  write(fd, this->_requestContent, this->_requestContentLength) < 0)
+			this->_statusCode =500;
 		this->_statusCode = 200;
 	}
-	if (fd < 0 || write(fd, this->_requestContent, this->_requestContentLength) < 0)
-		this->_statusCode = 500;
 	close(fd);
 	return readBody(this->getStatusPage().c_str());
 }
