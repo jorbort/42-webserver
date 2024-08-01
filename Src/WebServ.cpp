@@ -72,7 +72,6 @@ void Server::signalHandler(int signum){
 		}
 		if (serverInstance->requestString != NULL)
 			delete[] serverInstance->requestString;
-		delete serverInstance;
 		serverInstance = NULL;
 
 	}

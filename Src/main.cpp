@@ -10,14 +10,12 @@ int main(int argc, char **argv)
 		Logger::print("Error", "Error : invalid amount of arguments");
 		return (1);
 	}
-	Server *webServer;
 	if (argc == 2)
 	{
 		try
 		{
-			webServer = new Server(argv[1]);
-			webServer->RunServer();
-			delete webServer;
+			Server webServer(argv[1]);
+			webServer.RunServer();
 		}
 		catch(std::exception &e)
 		{
@@ -29,9 +27,8 @@ int main(int argc, char **argv)
 	{
 		try
 		{
-			webServer = new Server();
-			webServer->RunServer();
-			delete webServer;
+			Server webServer;
+			webServer.RunServer();
 		}
 		catch (std::exception &e)
 		{

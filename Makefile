@@ -71,7 +71,7 @@ fclean: clean
 re: fclean all
 
 debug-leaks:
-	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME) config/test.conf
+	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME)
 
 run:
 	@  ./$(NAME) config/test.conf

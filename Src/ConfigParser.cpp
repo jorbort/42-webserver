@@ -193,9 +193,15 @@ void ConfigParser::ParseConfig()
 	for (size_t i = 0; i < this->nOfServers ; i++)
 	{
 		ServerConfigs *server = new ServerConfigs;
-		createServer(this->_ConfFile[i], *server);
-		server->checkServer(*server);
-		this->_servers.push_back(server);
+		try{
+			createServer(this->_ConfFile[i], *server);
+			server->checkServer(*server);
+			this->_servers.push_back(server);
+
+		}catch(...){
+			delete server;
+			throw;
+		}
 	}
     if (this->nOfServers > 1)
 		compareServers();
@@ -228,46 +234,51 @@ std::vector<std::string> ConfigParser::splitConfigLines(const std::string &conf)
 void ConfigParser::parseLocation(std::vector<std::string>::iterator &it,std::vector<std::string>::iterator &end, ServerConfigs & server)
 {
   Location *location = new Location();
-  std::string tmp = *it;
-  std::string::size_type start = tmp.find(" " ) + 1;
-  std::string::size_type pathEnd = tmp.find_first_of("{");
-  if (pathEnd == std::string::npos)
+  try{
+  	std::string tmp = *it;
+  	std::string::size_type start = tmp.find(" " ) + 1;
+  	std::string::size_type pathEnd = tmp.find_first_of("{");
+  	if (pathEnd == std::string::npos)
     throw std::invalid_argument("invalid scope in location");
-  location->setName(tmp.substr(start, pathEnd - start));
-	while (it != end)
-	{
-		++it;
-        std::string line = *it;
-        line = trim(line);
-        if (line.empty()) {
-            continue;
-        }
-		epurString(line);
-        std::string::size_type spacePos = line.find(" ");
-		std::string key = spacePos != std::string::npos ? line.substr(0, spacePos) : line;
-		std::string value = spacePos != std::string::npos ? line.substr(spacePos + 1) : "";
-		if (key != "}" && (value.empty() || value.find_first_not_of(' ') == std::string::npos)) {
-    		throw std::invalid_argument("Invalid value");
+  	location->setName(tmp.substr(start, pathEnd - start));
+		while (it != end)
+		{
+			++it;
+        	std::string line = *it;
+        	line = trim(line);
+        	if (line.empty()) {
+            	continue;
+        	}
+			epurString(line);
+        	std::string::size_type spacePos = line.find(" ");
+			std::string key = spacePos != std::string::npos ? line.substr(0, spacePos) : line;
+			std::string value = spacePos != std::string::npos ? line.substr(spacePos + 1) : "";
+			if (key != "}" && (value.empty() || value.find_first_not_of(' ') == std::string::npos)) {
+    			throw std::invalid_argument("Invalid value");
+			}
+			if (key == "root") {
+            	location->setRoot(value);
+        	} else if (key == "allow_methods") {
+            	location->addMethods(value);
+         	} else if (key == "autoindex") {
+            	location->toggleAutoIndex(value);
+        	} else if (key == "index") {
+            	location->setIndex(value);
+        	} else if (key == "upload_store") {
+            	location->setUploadPath(value);
+        	} else if (key == "cgi_path") {
+            	location->addCgiPath(value);
+        	}else if (key == "cgi_ext") {
+            	location->setCgiExtension(value);
+        	}
 		}
-		if (key == "root") {
-            location->setRoot(value);
-        } else if (key == "allow_methods") {
-            location->addMethods(value);
-         } else if (key == "autoindex") {
-            location->toggleAutoIndex(value);
-        } else if (key == "index") {
-            location->setIndex(value);
-        } else if (key == "upload_store") {
-            location->setUploadPath(value);
-        } else if (key == "cgi_path") {
-            location->addCgiPath(value);
-        }else if (key == "cgi_ext") {
-            location->setCgiExtension(value);
-        }
+    	if (!location->checkLocation())
+        	throw std::invalid_argument("conflicting information in  location cannot set up server ");
+    	server.addLocation(location);
+	}catch(...){
+		delete location;
+		throw;
 	}
-    if (!location->checkLocation())
-        throw std::invalid_argument("conflicting information in  location cannot set up server ");
-    server.addLocation(location);
 }
 
 

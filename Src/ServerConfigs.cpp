@@ -36,6 +36,7 @@ ServerConfigs::~ServerConfigs()
 	{
 		delete it->second;
 	}
+	locations.clear();
 }
 
 /*
