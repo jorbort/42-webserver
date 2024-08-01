@@ -57,4 +57,5 @@ class Response : private ResponseHeader{
 		bool isMethodAllowed(std::string method, std::string location);
 		bool isAutoIndex(std::string location);
 		std::string generateAutoIndex(std::string  filePath);
+		void getFormUri(std::string filename);
 };

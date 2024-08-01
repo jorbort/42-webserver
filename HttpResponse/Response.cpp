@@ -6,8 +6,10 @@
 #include <cstdlib>
 #include <cstdio>
 #include <algorithm>
+#include "../Includes/Logger.hpp"
 
 Response::Response(HttpRequest &request, ServerConfigs *server) {
+	Logger::print("Error",request._method);//llega un string vacio aca cuando intento hacer un post con una form 
 	this->method = getMethod(request._method);
 	this->uri = strdup(request._URI.c_str());
 	this->extension = getExtension(this->uri);
@@ -38,6 +40,8 @@ std::string	Response::createResponse() {
 		response += addDateHeader();
 		response += addContentTypeHeader(HTML);
 		response += addContentLengthHeader(this->_contentLength);
+		if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
+			response += connectionKeepAlive();
 		response += "\r\n";
 		response += this->_body;
 		return response;
@@ -79,17 +83,20 @@ std::string	Response::createResponse() {
 		response += addDateHeader();
 		response += addContentTypeHeader(HTML);
 		response += addContentLengthHeader(this->_contentLength);
+		if(_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
+			response += connectionKeepAlive();
 		response += "\r\n";
 		response += this->_body;
 		return response;
 	}
 	else if (method == POST) {
 		std::string	response;
-		if (!isUriInServer(this->location.c_str()) || !isMethodAllowed("POST",this->location.c_str())){
-			this->_statusCode = 403;
-			this->_body = readBody(this->getStatusPage().c_str());
+		if (_headers["Content-Type"].find("multipart/form-data") != std::string::npos){
+			std::string filename = _headers["Content-Disposition"];
+			Logger::print("OK", filename);
+			getFormUri(filename);
 		}
-		else if (this->_isCGI)
+		if (this->_isCGI)
 			this->_body = readBody(this->_CGIhandler->fd);
 		else
 			this->_body = writeContent(this->uri);
@@ -98,6 +105,8 @@ std::string	Response::createResponse() {
 		response += addDateHeader();
 		response += addContentTypeHeader(HTML);
 		response += addContentLengthHeader(this->_contentLength);
+		if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
+			response += connectionKeepAlive();
 		response += "\r\n";
 		response += this->_body;
 		return response;
@@ -117,6 +126,8 @@ std::string	Response::createResponse() {
 		response += addDateHeader();
 		response += addContentTypeHeader(HTML);
 		response += addContentLengthHeader(this->_contentLength);
+		if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
+			response += connectionKeepAlive();
 		response += "\r\n";
 		response += this->_body;
 		return response;
@@ -143,6 +154,32 @@ char *	Response::getExtension(const char *uri) {
 	if ((tmp = strrchr(uri, '.')) == NULL)
 		return NULL;
 	return (strdup(tmp + 1));
+}
+
+void Response::getFormUri(std::string str){
+	std::string url = this->uri;
+	std::string fileName;
+	std::size_t pos = str.find("filename=");
+	if (pos != std::string::npos){
+		pos += 9;
+		if (str[pos] == '\"'){
+			pos++;
+		}
+		std::size_t endPos = str.find("\"", pos);
+		if (endPos != std::string::npos){
+			fileName = str.substr(pos, endPos - pos);
+		}
+	}else{
+		std::size_t endPos = str.find(";", pos);
+		if (endPos == std::string::npos){
+			endPos = str.size();
+		}
+		fileName = str.substr(pos, endPos - pos);
+	}
+	std::string fullPath = url + "/" + fileName;
+	Logger::print("OK", fullPath);
+	free(this->uri);
+	this->uri = strdup(fullPath.c_str());
 }
 
 void	Response::parseRequestBody(const std::vector<char> &rqBody) {
@@ -195,9 +232,11 @@ bool	Response::isURIAcceptable(const char *uri) {
             std::string path_str(uri);
             std::string dir = getDirName(path_str);
 			if (stat(dir.c_str(), &info) != 0) {
+				Logger::print("Error", "isURIAcceptable: stat failed");
 				this->_statusCode = 404;
 				return false;
 			} else if (method != POST) {
+				Logger::print("Error", "isURIAcceptable: 2nd stat failed");
 				this->_statusCode = 404;
 				return false;
 			} else {
@@ -208,8 +247,18 @@ bool	Response::isURIAcceptable(const char *uri) {
 	} else if (info.st_mode & S_IFDIR) {
 		this->location = uri;
 		//Given uri points to directory.
-		if (method == POST || method == DELETE) {
+		if (method == DELETE) {
 			this->_statusCode = 405;
+			return false;
+		}
+		else if(method == POST && _headers["Content-Type"].find("multipart/form-data") != std::string::npos){
+			if (isUriInServer(uri)){
+				if(isMethodAllowed("POST", uri)){
+					this->_statusCode = 200;
+					return true;
+				}
+			}
+			this->_statusCode = 403;
 			return false;
 		}
 		else if (method == GET) {
@@ -339,6 +388,7 @@ std::string Response::readBody(const char *path) {
         }
     }
 	if ((fd = open(filePath.c_str(), O_RDONLY)) < 0) {
+			Logger::print("Error", "readBody: stat failed");
 			switch (errno) {
 			case ENOENT:
 				this->_statusCode = 404;

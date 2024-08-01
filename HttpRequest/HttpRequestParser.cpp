@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequestParser.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: juan-anm  <juan-anm@student.42barcel>      +#+  +:+       +#+        */
+/*   By: jorge <jorge@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/06/11 17:36:34 by juan-anm         ###   ########.fr       */
+/*   Updated: 2024/08/02 01:37:57 by jorge            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequestParser.hpp"
+#include "../Includes/Logger.hpp"
 
 HttpRequestParser::HttpRequestParser(){
 	_RealHeaders.push_back("Host");
@@ -41,7 +42,10 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	std::vector<std::string>	lines;
 	size_t 						bytes_read = 0;
 
+	Logger::print("Error", original_str);
+	std::cout<< CYAN << req_str << std::endl << RESET ;
 	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
+		std::cout << YELLOW << "Error en el request" << std::endl << RESET; //el error esta saltando aca 
 		request_class._ErrorCode = 400;
 		return;
 	}
@@ -77,7 +81,9 @@ size_t method_end = str.find(" ");
         return 1;
     }
 	request_class._method = str.substr(0, method_end);
+	Logger::print("Error", request_class._method);// testeando el POST /docs/web/uploads/ HTTP/1.1 el method esta vacio
     if (check_method(request_class)) {
+		Logger::print("Warning", "Error method esta vacio");
         request_class._ErrorCode = 405; // Method Not Allowed
         return 1;
     }

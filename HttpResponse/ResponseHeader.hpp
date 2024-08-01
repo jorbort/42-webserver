@@ -24,4 +24,5 @@ class ResponseHeader {
 		static std::string	getStatusCodeDescription(int status);
 		static std::string	getContentType(ContentType type);
 		static std::string	toString(int nb);
+		static std::string	connectionKeepAlive(void);
 };

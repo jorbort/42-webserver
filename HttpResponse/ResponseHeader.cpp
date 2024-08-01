@@ -80,6 +80,10 @@ std::string ResponseHeader::replaceNewlines(const std::string& input) {
     return result;
 }
 
+std::string ResponseHeader::connectionKeepAlive(void) {
+	return "Connection: keep-alive\r\n";
+}
+
 std::string	ResponseHeader::getStatusCodeDescription(int statusCode) {
 	switch (statusCode) {
 	//1xx: Information
