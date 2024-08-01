@@ -14,5 +14,5 @@ class CGIHandler {
 		char **	_argv;
 		char **	_envp;
 
-		char **	initEnvironment();
+		char ** initEnvironment(Response &response);
 };

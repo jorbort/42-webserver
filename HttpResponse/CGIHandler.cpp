@@ -21,7 +21,7 @@ CGIHandler::CGIHandler(Response &response) {
 	_argv[0] = strdup(_cgiPath);
 	_argv[1] = strdup(response.uri);
 	_argv[2] = NULL;
-	_envp = initEnvironment();//todo necesitamos implmentar cookies
+	_envp = initEnvironment(response);//todo necesitamos implmentar cookies
 	fd = -1;
 }
 
@@ -82,7 +82,32 @@ int CGIHandler::handleCGI() {
 	}
 }
 
-char **	CGIHandler::initEnvironment() {
-	//TODO
-	return NULL;
+char **	CGIHandler::initEnvironment(Response &response) {
+
+	// GET /sample_page.html HTTP/2.0
+	// Host: www.example.org
+	// Cookie: yummy_cookie=choco; tasty_cookie=strawberry
+	char** cookie_env;
+	size_t count = 0;
+	size_t pos = 0;
+	size_t len = 1;
+
+	if(response._headers.find("Cookie") == response._headers.end()){
+		return NULL;
+	}
+	else{
+		std::string cooki = response._headers.find("Cookies")->second;
+		while ((pos = cooki.find(";", pos)) != std::string::npos){
+			count++;
+			pos += 1; 
+		}
+		cookie_env = (char **)malloc(sizeof(char *) * (count + 1));
+		for (unsigned int i = 0; i  < (count + 1); i++){
+			cookie_env[i] = strdup((cooki.substr(len, cooki.find(';', len))).c_str());
+			len += strlen(cookie_env[i]);
+		}
+
+
+	}
+	return cookie_env;
 }
