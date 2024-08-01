@@ -45,7 +45,7 @@ class Response : private ResponseHeader{
 		std::string	getDirName(const std::string &path);
 		bool		isURIAcceptable(const char *uri);
 		bool		isCGI(const char *extension);
-		bool		isProcessableCGI(const char *extension);
+		bool		isProcessableCGI(const char *extension, std::vector<std::string> allowed_methods);
 		std::string	errorResponse();
 		std::string	getStatusPage();
 		std::string readBody(const char *path);

@@ -4,8 +4,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdlib>
+#include <signal.h>
+#include <sys/wait.h>
 
 CGIHandler::CGIHandler(Response &response) {
+	//falta tomar el cgi-bin del config file
 	if (strcmp(response.extension, "sh") == 0)
 		_cgiPath = strdup("/bin/bash");
 	else if (strcmp(response.extension, "py") == 0)
@@ -18,7 +21,7 @@ CGIHandler::CGIHandler(Response &response) {
 	_argv[0] = strdup(_cgiPath);
 	_argv[1] = strdup(response.uri);
 	_argv[2] = NULL;
-	_envp = initEnvironment();
+	_envp = initEnvironment();//todo necesitamos implmentar cookies
 	fd = -1;
 }
 
@@ -58,6 +61,23 @@ int CGIHandler::handleCGI() {
 	else {
 		close(pfd[1]);
 		this->fd = pfd[0];
+		int status;
+		int wpid = waitpid(pid,&status,WNOHANG);
+		if (wpid == 0){
+			sleep(1);
+			wpid = waitpid(pid, &status, WNOHANG);
+			if (wpid){
+				kill(pid, SIGKILL);
+				return(500);
+			}
+		}
+		else if (wpid < 0 ){
+			perror("waitpid");
+			return (500);
+		}
+		if (WEXITSTATUS(status) != 0){
+			return (500);
+		}
 		return (200);
 	}
 }

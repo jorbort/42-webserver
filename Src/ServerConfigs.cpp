@@ -17,7 +17,7 @@ ServerConfigs::ServerConfigs()
 {
 	this->port = 0;
 	this->autoindex = -1;
-	this->clientMaxBodySize = 300000000;
+	this->clientMaxBodySize = 30000000;
 	this->index = "";
 	this->_fd = 0;
 	this->root = "";

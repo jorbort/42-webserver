@@ -54,7 +54,7 @@ std::string	Response::createResponse() {
 	if (!isURIAcceptable(this->uri))
 		return errorResponse();
 	if (isCGI(this->extension)) {
-		if (!isProcessableCGI(this->extension))
+		if (!isProcessableCGI(this->extension, server->getLocation(location)->allowed_methods))
 			return errorResponse();
 		if (method != GET && method != POST) {
 			this->_statusCode = 405;
@@ -287,13 +287,13 @@ bool	Response::isCGI(const char *extension) {
 	}
 }
 
-bool	Response::isProcessableCGI(const char *extension) {
+bool	Response::isProcessableCGI(const char *extension, std::vector<std::string> allowed_methods) {
+	std::string ext = extension;
 	if (extension == NULL) {
 		this->_statusCode = 500;
 		return false;
 	}
-	if (strcmp(extension, "py") == 0 || \
-		strcmp(extension, "sh") == 0)
+	if (std::find(allowed_methods.begin(), allowed_methods.end(), ext) != allowed_methods.end())
 		return true;
 	else {
 		this->_statusCode = 502;
