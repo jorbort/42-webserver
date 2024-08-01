@@ -15,6 +15,7 @@ Response::Response(HttpRequest &request, ServerConfigs *server) {
 	this->_isCGI = false;
 	this->_CGIhandler = NULL;
 	this->server = server;
+	this->_headers = request.getHeaders();
 	parseRequestBody(request._body);
 	setDefaultErrorBody();
 	initStatusPageMap();

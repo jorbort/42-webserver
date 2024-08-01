@@ -36,6 +36,7 @@ class Response : private ResponseHeader{
 		CGIHandler *				_CGIhandler;
 		//int							_CGIfd;
 		std::string					_defaultErrorBody;
+		std::map<std::string, std::string> _headers;
 
 		Method		getMethod(const std::string &method);
 		char *		getExtension(const char *uri);

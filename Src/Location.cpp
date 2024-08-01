@@ -96,15 +96,15 @@ void Location::setCgiExtension(const std::string &ext)
 	std::istringstream iss(ext);
     std::string value;
 	std::vector<std::string> cgiExtensions ;
-	cgiExtensions.push_back("cgi");
-    cgiExtensions.push_back("pl");
-    cgiExtensions.push_back("py");
-    cgiExtensions.push_back("sh");
-    cgiExtensions.push_back("exe");
-    cgiExtensions.push_back("php");
-    cgiExtensions.push_back("rb");
-    cgiExtensions.push_back("tcl");
-	cgiExtensions.push_back("js");
+	cgiExtensions.push_back(".cgi");
+    cgiExtensions.push_back(".pl");
+    cgiExtensions.push_back(".py");
+    cgiExtensions.push_back(".sh");
+    cgiExtensions.push_back(".exe");
+    cgiExtensions.push_back(".php");
+    cgiExtensions.push_back(".rb");
+    cgiExtensions.push_back(".tcl");
+	cgiExtensions.push_back(".js");
     while (iss >> value)
     {
         if(std::find(cgiExtensions.begin(), cgiExtensions.end(),value) == cgiExtensions.end())
