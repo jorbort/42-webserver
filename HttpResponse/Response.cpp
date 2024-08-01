@@ -272,14 +272,14 @@ bool	Response::isCGI(const char *extension) {
 	if (extension == NULL)
 		return false;
 	std::vector<std::string> cgiExtensions ;
-	cgiExtensions.push_back("cgi");
-    cgiExtensions.push_back("pl");
-    cgiExtensions.push_back("py");
-    cgiExtensions.push_back("sh");
-    cgiExtensions.push_back("exe");
-    cgiExtensions.push_back("php");
-    cgiExtensions.push_back("rb");
-    cgiExtensions.push_back("tcl");
+	cgiExtensions.push_back(".cgi");
+    cgiExtensions.push_back(".pl");
+    cgiExtensions.push_back(".py");
+    cgiExtensions.push_back(".sh");
+    cgiExtensions.push_back(".exe");
+    cgiExtensions.push_back(".php");
+    cgiExtensions.push_back(".rb");
+    cgiExtensions.push_back(".tcl");
 	std::string ext = extension;
 	if (std::find(cgiExtensions.begin(), cgiExtensions.end() , ext) != cgiExtensions.end()){
 		return true;

@@ -82,32 +82,42 @@ int CGIHandler::handleCGI() {
 	}
 }
 
+// Cookie header Example-> Cookie: yummy_cookie=choco; tasty_cookie=strawberry
 char **	CGIHandler::initEnvironment(Response &response) {
-
-	// GET /sample_page.html HTTP/2.0
-	// Host: www.example.org
-	// Cookie: yummy_cookie=choco; tasty_cookie=strawberry
-	char** cookie_env;
-	size_t count = 0;
-	size_t pos = 0;
-	size_t len = 1;
-
-	if(response._headers.find("Cookie") == response._headers.end()){
+	if (response._headers.find("Cookie") == response._headers.end()) {
 		return NULL;
 	}
-	else{
-		std::string cooki = response._headers.find("Cookies")->second;
-		while ((pos = cooki.find(";", pos)) != std::string::npos){
-			count++;
-			pos += 1; 
-		}
-		cookie_env = (char **)malloc(sizeof(char *) * (count + 1));
-		for (unsigned int i = 0; i  < (count + 1); i++){
-			cookie_env[i] = strdup((cooki.substr(len, cooki.find(';', len))).c_str());
-			len += strlen(cookie_env[i]);
-		}
+	std::string cookieHeader = response._headers["Cookie"];
+	std::vector<std::string> cookies;
+	size_t pos = 0;
+	size_t end;
 
-
+	while ((end = cookieHeader.find(';', pos)) != std::string::npos) {
+		std::string cookie = cookieHeader.substr(pos, end - pos);
+		pos = end + 1;
+		// Trim whitespace
+		size_t start = cookie.find_first_not_of(" \t");
+		size_t last = cookie.find_last_not_of(" \t");
+		if (start != std::string::npos && last != std::string::npos) {
+			cookie = cookie.substr(start, last - start + 1);
+		}
+		cookies.push_back(cookie);
 	}
+	// Last cookie (or only cookie if no ';')
+	std::string lastCookie = cookieHeader.substr(pos);
+	size_t start = lastCookie.find_first_not_of(" \t");
+	size_t last = lastCookie.find_last_not_of(" \t");
+	if (start != std::string::npos && last != std::string::npos) {
+		lastCookie = lastCookie.substr(start, last - start + 1);
+	}
+	cookies.push_back(lastCookie);
+
+	char** cookie_env = new char*[cookies.size() + 1];
+	for (size_t i = 0; i < cookies.size(); ++i) {
+		std::cout << cookies[i] << std::endl;
+		cookie_env[i] = strdup(cookies[i].c_str());
+	}
+	cookie_env[cookies.size()] = NULL; // Null-terminate the array
+
 	return cookie_env;
 }
