@@ -58,4 +58,5 @@ class Response : private ResponseHeader{
 		bool isAutoIndex(std::string location);
 		std::string generateAutoIndex(std::string  filePath);
 		void getFormUri(std::string filename);
+		char * getContentDisposition(char *reqBody, std::string &filename);
 };

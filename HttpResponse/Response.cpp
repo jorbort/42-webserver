@@ -9,7 +9,6 @@
 #include "../Includes/Logger.hpp"
 
 Response::Response(HttpRequest &request, ServerConfigs *server) {
-	Logger::print("Error",request._method);//llega un string vacio aca cuando intento hacer un post con una form 
 	this->method = getMethod(request._method);
 	this->uri = strdup(request._URI.c_str());
 	this->extension = getExtension(this->uri);
@@ -91,14 +90,11 @@ std::string	Response::createResponse() {
 	}
 	else if (method == POST) {
 		std::string	response;
-		std::cout << _headers["Content-Type"] << std::endl;
-		std::cout << "content disposition: "<<_headers["Content-Disposition"] << std::endl;
 		if (_headers["Content-Type"].find("multipart/form-data") != std::string::npos){
-			std::string filename = " form-data; name=\"file\"; filename=\"test.conf\" ";  //_headers["Content-Disposition"];
-			Logger::print("Ok", "filename: " + filename);
+			std::string filename = "";
+			_requestContent = getContentDisposition(_requestContent, filename);
 			getFormUri(filename);
 		}
-		std::cout << "uri: " << this->uri << std::endl;
 		if (this->_isCGI)
 			this->_body = readBody(this->_CGIhandler->fd);
 		else if (this->_statusCode == 500){
@@ -119,14 +115,12 @@ std::string	Response::createResponse() {
 	}
 	else if (method == DELETE) {
 		std::string response;
-		std::cout << this->location << std::endl;
 		if (!isUriInServer(this->location.c_str()) || !isMethodAllowed("DELETE",this->location.c_str())){
 			this->_statusCode = 403;
 			this->_body = readBody(this->getStatusPage().c_str());
 		}
 		else
 			this->_body = deleteContent(this->uri);
-		//std::cout << this->_body <<std::endl;
 		this->_contentLength = this->_body.size();
 		response = addStatusLine(this->_statusCode);
 		response += addDateHeader();
@@ -162,6 +156,19 @@ char *	Response::getExtension(const char *uri) {
 	return (strdup(tmp + 1));
 }
 
+char * Response::getContentDisposition(char *reqBody, std::string &fileName){
+	std::string bodyStr = reqBody;
+	size_t pos = 0;
+	size_t endPos = bodyStr.find("\r\n\r\n");
+	std::string headerPart = bodyStr.substr(pos, endPos);
+	std::string tempBody = bodyStr.substr(endPos + 4);
+	fileName = headerPart.substr(headerPart.find("Content-Disposition") + 19, headerPart.find("\r\n") - headerPart.find("Content-Disposition"));
+	free(reqBody);
+	this->_requestContentLength = tempBody.size();
+	return strdup(tempBody.c_str());
+	
+}
+
 void Response::getFormUri(std::string str){
 	if(str.empty()){
 		this->_statusCode = 500;
@@ -187,7 +194,6 @@ void Response::getFormUri(std::string str){
 		fileName = str.substr(pos, endPos - pos);
 	}
 	std::string fullPath = url + "/" + fileName;
-	Logger::print("Ok", fullPath);
 	free(this->uri);
 	this->uri = strdup(fullPath.c_str());
 }
@@ -242,11 +248,9 @@ bool	Response::isURIAcceptable(const char *uri) {
             std::string path_str(uri);
             std::string dir = getDirName(path_str);
 			if (stat(dir.c_str(), &info) != 0) {
-				Logger::print("Error", "isURIAcceptable: stat failed");
 				this->_statusCode = 404;
 				return false;
 			} else if (method != POST) {
-				Logger::print("Error", "isURIAcceptable: 2nd stat failed");
 				this->_statusCode = 404;
 				return false;
 			} else {
@@ -256,24 +260,19 @@ bool	Response::isURIAcceptable(const char *uri) {
 		}
 	} else if (info.st_mode & S_IFDIR) {
 		this->location = uri;
-		std::cout << _headers["Content-Type"] << std::endl;
 		//Given uri points to directory.
 		if (method == DELETE) {
 			this->_statusCode = 405;
 			return false;
 		}
 		else if(method == POST && _headers["Content-Type"].find("multipart/form-data") != std::string::npos){
-			std::cout << "uri to test " << uri << std::endl;
 			if (isUriInServer(uri)){
-				std::cout << CYAN << "uri in server true" << RESET << std::endl;
 				if(isMethodAllowed("POST", uri)){
-					std::cout << CYAN << "isMethodAllowed true" << RESET << std::endl;
 					this->_statusCode = 200;
 					return true;
 				}
 			}
 			this->_statusCode = 403;
-			std::cout << CYAN << "403 Forbidden isURIAcceptable" << RESET << std::endl;
 			return false;
 		}
 		else if (method == GET) {
@@ -361,11 +360,6 @@ bool	Response::isProcessableCGI(const char *extension, std::vector<std::string> 
 		this->_statusCode = 500;
 		return false;
 	}
-	std::cout << ext << std::endl;
-	std::vector<std::string>::iterator it = cgiextensions.begin();
-	for (; it != cgiextensions.end(); it++){
-		std::cout << *it << std::endl;
-	}
 	if (std::find(cgiextensions.begin(), cgiextensions.end(), ext) != cgiextensions.end())
 		return true;
 	else {
@@ -411,7 +405,6 @@ std::string Response::readBody(const char *path) {
         }
     }
 	if ((fd = open(filePath.c_str(), O_RDONLY)) < 0) {
-			Logger::print("Error", "readBody: stat failed");
 			switch (errno) {
 			case ENOENT:
 				this->_statusCode = 404;
@@ -495,6 +488,5 @@ std::string Response::deleteContent(const char *path) {
 		else
 			this->_statusCode = 200;
 	}
-	std::cout << _statusCode << std::endl;
 	return readBody(this->getStatusPage().c_str());
 }

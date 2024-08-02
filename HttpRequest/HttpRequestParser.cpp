@@ -34,7 +34,6 @@ HttpRequestParser::HttpRequestParser(){
 
 HttpRequestParser::~HttpRequestParser(){}
 
-// void	HttpRequestParser::parseRequest(HttpRequest &request_class, const char *begin, const char *end){
 void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_str, size_t len){
 	std::string					line;
 	std::string 				req_str = original_str;
@@ -42,13 +41,10 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 	std::vector<std::string>	lines;
 	size_t 						bytes_read = 0;
 
-	Logger::print("Error", original_str);
-	std::cout<< CYAN << req_str << std::endl << RESET ;
-	// // if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
-	// 	std::cout << YELLOW << "Error en el request" << std::endl << RESET; //el error esta saltando aca 
-	// 	request_class._ErrorCode = 400;
-	// 	return;
-	// }
+	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){ 
+		request_class._ErrorCode = 400;
+		return;
+	}
 	while (std::getline(Req, line)){
 		bytes_read += line.length() + 1;
 		if (!line.empty() && line.at(line.length() - 1) == '\r')
@@ -81,9 +77,7 @@ size_t method_end = str.find(" ");
         return 1;
     }
 	request_class._method = str.substr(0, method_end);
-	Logger::print("Error", request_class._method);// testeando el POST /docs/web/uploads/ HTTP/1.1 el method esta vacio
     if (check_method(request_class)) {
-		Logger::print("Warning", "Error method esta vacio");
         request_class._ErrorCode = 405; // Method Not Allowed
         return 1;
     }
@@ -94,7 +88,6 @@ size_t method_end = str.find(" ");
         return 1;
     }
     request_class._URI = str.substr(uri_start, uri_end - uri_start);
-    //std::cout << request_class._URI << std::endl;
     size_t version_start = uri_end + 1;
     request_class._version = str.substr(version_start);
     if (request_class._version.compare("HTTP/1.1") != 0) {
@@ -197,17 +190,15 @@ bool	HttpRequestParser::check_request_str(const char *str){
 bool	HttpRequestParser::invalid_CRLF(const std::string &str){
 int count = 0;
 size_t pos = 0;
-
 while ((pos = str.find("\r\n\r\n", pos)) != std::string::npos) {
 	count++;
 	pos += 4; // Move ahead by 4 characters to avoid finding the same sequence again
 }
-if (count > 1)
+if (count > 2)
 	return 1;
 else
 	return 0;
 }
-
 bool	HttpRequestParser::check_method(HttpRequest &request_class){
 	if (request_class._method == "GET")
 		request_class._RequestMethod = GET;
@@ -228,7 +219,6 @@ void	HttpRequestParser::parseBody(HttpRequest &request_class, char *begin, size_
 	if (!begin){
 		throw std::runtime_error("strin vacio  en el body");
 	}
-	std::cout << "content length" << request_class._ContentLength <<std::endl ;
 	while(i < request_class._ContentLength){
 		request_class._body.push_back(*begin++);
 		i++;
