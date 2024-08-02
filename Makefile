@@ -37,7 +37,7 @@ CC              := c++
 CFLAGS          := -Wall -Werror -Wextra -g
 DEPFLAGS        := -MMD
 EXTRAFLAGS      := -std=c++98
-DEBUG           := #-fsanitize=address
+DEBUG           :=# -fsanitize=address
 
 all             : $(OBJDIR) $(NAME)
 

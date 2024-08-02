@@ -91,13 +91,19 @@ std::string	Response::createResponse() {
 	}
 	else if (method == POST) {
 		std::string	response;
+		std::cout << _headers["Content-Type"] << std::endl;
+		std::cout << "content disposition: "<<_headers["Content-Disposition"] << std::endl;
 		if (_headers["Content-Type"].find("multipart/form-data") != std::string::npos){
-			std::string filename = _headers["Content-Disposition"];
-			Logger::print("Ok", filename);
+			std::string filename = " form-data; name=\"file\"; filename=\"test.conf\" ";  //_headers["Content-Disposition"];
+			Logger::print("Ok", "filename: " + filename);
 			getFormUri(filename);
 		}
+		std::cout << "uri: " << this->uri << std::endl;
 		if (this->_isCGI)
 			this->_body = readBody(this->_CGIhandler->fd);
+		else if (this->_statusCode == 500){
+				this->_body = readBody(this->getStatusPage().c_str());
+			}
 		else
 			this->_body = writeContent(this->uri);
 		this->_contentLength = this->_body.size();
@@ -157,6 +163,10 @@ char *	Response::getExtension(const char *uri) {
 }
 
 void Response::getFormUri(std::string str){
+	if(str.empty()){
+		this->_statusCode = 500;
+		return;
+	}
 	std::string url = this->uri;
 	std::string fileName;
 	std::size_t pos = str.find("filename=");

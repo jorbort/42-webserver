@@ -257,6 +257,7 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 	ssize_t totalBytesRead = 0;
 	std::string requestChecker = "";
 
+	sleep(1);
 	requestString = new char[bufferSize];
 	requestString[0] = '\0';
 	totalBytesRead = readHeader(clientFd, requestString);
