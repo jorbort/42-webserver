@@ -141,6 +141,13 @@ std::vector<std::string>::iterator Location::getMethods(void)
 	const std::vector<std::string>::iterator it = this->allowed_methods.begin();
 	return (it);
 }
+
+std::vector<std::string>::iterator Location::getCgiExtensions(void)
+{
+	const std::vector<std::string>::iterator it = this->cgiExtensions.begin();
+	return (it);
+}
+
 int Location::isAutoindex(void)
 {
 	return (this->autoindex);

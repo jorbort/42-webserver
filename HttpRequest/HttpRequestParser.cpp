@@ -6,7 +6,7 @@
 /*   By: jorge <jorge@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/05/15 19:23:57 by juan-anm          #+#    #+#             */
-/*   Updated: 2024/08/02 01:37:57 by jorge            ###   ########.fr       */
+/*   Updated: 2024/08/02 01:46:35 by jorge            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,11 +44,11 @@ void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_
 
 	Logger::print("Error", original_str);
 	std::cout<< CYAN << req_str << std::endl << RESET ;
-	if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
-		std::cout << YELLOW << "Error en el request" << std::endl << RESET; //el error esta saltando aca 
-		request_class._ErrorCode = 400;
-		return;
-	}
+	// // if (req_str.empty() || check_request_str(req_str.c_str()) || invalid_CRLF(req_str)){
+	// 	std::cout << YELLOW << "Error en el request" << std::endl << RESET; //el error esta saltando aca 
+	// 	request_class._ErrorCode = 400;
+	// 	return;
+	// }
 	while (std::getline(Req, line)){
 		bytes_read += line.length() + 1;
 		if (!line.empty() && line.at(line.length() - 1) == '\r')

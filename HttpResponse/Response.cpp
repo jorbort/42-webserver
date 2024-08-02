@@ -59,7 +59,7 @@ std::string	Response::createResponse() {
 	if (!isURIAcceptable(this->uri))
 		return errorResponse();
 	if (isCGI(this->extension)) {
-		if (!isProcessableCGI(this->extension, server->getLocation(location)->allowed_methods))
+		if (!isProcessableCGI(this->extension, server->getLocation("./cgi-bin")->cgiExtensions))
 			return errorResponse();
 		if (method != GET && method != POST) {
 			this->_statusCode = 405;
@@ -93,7 +93,7 @@ std::string	Response::createResponse() {
 		std::string	response;
 		if (_headers["Content-Type"].find("multipart/form-data") != std::string::npos){
 			std::string filename = _headers["Content-Disposition"];
-			Logger::print("OK", filename);
+			Logger::print("Ok", filename);
 			getFormUri(filename);
 		}
 		if (this->_isCGI)
@@ -177,7 +177,7 @@ void Response::getFormUri(std::string str){
 		fileName = str.substr(pos, endPos - pos);
 	}
 	std::string fullPath = url + "/" + fileName;
-	Logger::print("OK", fullPath);
+	Logger::print("Ok", fullPath);
 	free(this->uri);
 	this->uri = strdup(fullPath.c_str());
 }
@@ -246,19 +246,24 @@ bool	Response::isURIAcceptable(const char *uri) {
 		}
 	} else if (info.st_mode & S_IFDIR) {
 		this->location = uri;
+		std::cout << _headers["Content-Type"] << std::endl;
 		//Given uri points to directory.
 		if (method == DELETE) {
 			this->_statusCode = 405;
 			return false;
 		}
 		else if(method == POST && _headers["Content-Type"].find("multipart/form-data") != std::string::npos){
+			std::cout << "uri to test " << uri << std::endl;
 			if (isUriInServer(uri)){
+				std::cout << CYAN << "uri in server true" << RESET << std::endl;
 				if(isMethodAllowed("POST", uri)){
+					std::cout << CYAN << "isMethodAllowed true" << RESET << std::endl;
 					this->_statusCode = 200;
 					return true;
 				}
 			}
 			this->_statusCode = 403;
+			std::cout << CYAN << "403 Forbidden isURIAcceptable" << RESET << std::endl;
 			return false;
 		}
 		else if (method == GET) {
@@ -312,6 +317,7 @@ bool Response::isMethodAllowed(std::string method, std::string location){
 
 bool Response::isUriInServer(const char *uri){
 	Location *location = server->getLocation(uri);
+
 	if (location == NULL)
 		return false;
 	return true;
@@ -337,13 +343,20 @@ bool	Response::isCGI(const char *extension) {
 	}
 }
 
-bool	Response::isProcessableCGI(const char *extension, std::vector<std::string> allowed_methods) {
-	std::string ext = extension;
+bool	Response::isProcessableCGI(const char *extension, std::vector<std::string> cgiextensions) {
+	std::string ext = ".";
+	ext += extension;
+
 	if (extension == NULL) {
 		this->_statusCode = 500;
 		return false;
 	}
-	if (std::find(allowed_methods.begin(), allowed_methods.end(), ext) != allowed_methods.end())
+	std::cout << ext << std::endl;
+	std::vector<std::string>::iterator it = cgiextensions.begin();
+	for (; it != cgiextensions.end(); it++){
+		std::cout << *it << std::endl;
+	}
+	if (std::find(cgiextensions.begin(), cgiextensions.end(), ext) != cgiextensions.end())
 		return true;
 	else {
 		this->_statusCode = 502;
@@ -447,8 +460,7 @@ std::string	Response::writeContent(const char *path) {
 	int fd = -1;
 
 	if (access(path, F_OK) < 0) {
-		fd = open(path, O_WRONLY | O_CREAT, 0664);
-		
+		fd = open(path, O_WRONLY | O_CREAT, 0664);	
 		if (fd < 0 || write(fd, this->_requestContent, this->_requestContentLength) < 0)
 			this->_statusCode = 500;
 		this->_statusCode = 201;
