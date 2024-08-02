@@ -344,10 +344,13 @@ bool	Response::isCGI(const char *extension) {
     cgiExtensions.push_back(".php");
     cgiExtensions.push_back(".rb");
     cgiExtensions.push_back(".tcl");
-	std::string ext = extension;
+	std::string ext = ".";
+	ext += extension;
+	std::cout << "EXTENSION: " << ext << std::endl;
 	if (std::find(cgiExtensions.begin(), cgiExtensions.end() , ext) != cgiExtensions.end()){
 		return true;
 	} else {
+		std::cout << "false" << std::endl;
 		return false;
 	}
 }
