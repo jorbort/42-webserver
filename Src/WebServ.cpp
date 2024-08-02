@@ -356,7 +356,7 @@ void Server::RunServer(void)
 					size_t serverIndex = getServerIndex(events[n].data.fd);
 					Response response(request, conf._servers[serverIndex]);
 					std::string response_str = response.createResponse();
-					//Logger::print("Ok", response_str);
+					Logger::print("Ok", response_str);
 					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}
 				delete[] requestString;

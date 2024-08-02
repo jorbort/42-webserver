@@ -58,22 +58,28 @@ std::string	Response::createResponse() {
 	if (!isURIAcceptable(this->uri))
 		return errorResponse();
 	if (isCGI(this->extension)) {
-		if (!isProcessableCGI(this->extension, server->getLocation("./cgi-bin")->cgiExtensions))
+		if (!isProcessableCGI(this->extension, server->getLocation("./cgi-bin")->cgiExtensions)){
+			std::cout << RED << "not procesablecgi ?" <<std::endl ;
 			return errorResponse();
+		}
 		if (method != GET && method != POST) {
 			this->_statusCode = 405;
 			return errorResponse();
 		}
 		this->_isCGI = true;
 		this->_CGIhandler = new CGIHandler(*this);
-		if ((this->_statusCode = this->_CGIhandler->handleCGI()) != 200)
+		if ((this->_statusCode = this->_CGIhandler->handleCGI()) != 200){
+			std::cout << RED << "error dentro de cgi handler" <<std::endl;
 			return errorResponse();
+		}
 	}
 	if (method == GET) {
 		std::string	response;
 
-		if (this->_isCGI)
+		if (this->_isCGI){
+			std::cout << RED << this->_statusCode << std::endl;
 			this->_body = readBody(this->_CGIhandler->fd);
+		}
 		else{
 			this->_body = readBody(this->uri);
 		}
