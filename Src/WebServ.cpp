@@ -257,7 +257,6 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 	ssize_t totalBytesRead = 0;
 	std::string requestChecker = "";
 
-	//usleep(1000);
 	requestString = new char[bufferSize];
 	requestString[0] = '\0';
 	totalBytesRead = readHeader(clientFd, requestString);
@@ -352,16 +351,21 @@ void Server::RunServer(void)
 					HttpRequest request;
 					HttpRequestParser Request_parser;
 					Request_parser.parseRequest(request, requestString, requestSize);
-					std::cout << requestString << std::endl;
 					size_t serverIndex = getServerIndex(events[n].data.fd);
 					Response response(request, conf._servers[serverIndex]);
 					std::string response_str = response.createResponse();
-					Logger::print("Ok", response_str);
+					if(response._headers.find("Connection") != response._headers.end() && response._headers["Connection"] == "close")
+						keepAlive = false;
 					write(events[n].data.fd, response_str.c_str(),response_str.size());
 				}
 				delete[] requestString;
 				requestString = NULL;
 				this->requestString = NULL;
+				if (!keepAlive){
+					close(events[n].data.fd);
+					epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
+					clientToServer.erase(events[n].data.fd);
+				}
 			}
 		}
 	}

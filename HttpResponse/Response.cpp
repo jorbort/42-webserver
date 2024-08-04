@@ -59,7 +59,6 @@ std::string	Response::createResponse() {
 		return errorResponse();
 	if (isCGI(this->extension)) {
 		if (!isProcessableCGI(this->extension, server->getLocation("./cgi-bin")->cgiExtensions)){
-			std::cout << RED << "not procesablecgi ?" <<std::endl ;
 			return errorResponse();
 		}
 		if (method != GET && method != POST) {
@@ -69,7 +68,6 @@ std::string	Response::createResponse() {
 		this->_isCGI = true;
 		this->_CGIhandler = new CGIHandler(*this);
 		if ((this->_statusCode = this->_CGIhandler->handleCGI()) != 200){
-			std::cout << RED << "error dentro de cgi handler" <<std::endl;
 			return errorResponse();
 		}
 	}
@@ -77,7 +75,6 @@ std::string	Response::createResponse() {
 		std::string	response;
 
 		if (this->_isCGI){
-			std::cout << RED << this->_statusCode << std::endl;
 			this->_body = readBody(this->_CGIhandler->fd);
 		}
 		else{
@@ -352,11 +349,9 @@ bool	Response::isCGI(const char *extension) {
     cgiExtensions.push_back(".tcl");
 	std::string ext = ".";
 	ext += extension;
-	std::cout << "EXTENSION: " << ext << std::endl;
 	if (std::find(cgiExtensions.begin(), cgiExtensions.end() , ext) != cgiExtensions.end()){
 		return true;
 	} else {
-		std::cout << "false" << std::endl;
 		return false;
 	}
 }

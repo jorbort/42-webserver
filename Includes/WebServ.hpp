@@ -25,6 +25,7 @@ class Server
 		int sfd;
 		std::map<int, size_t> clientToServer;
 	public:
+		bool keepAlive;
 		Server(void);
 		Server(char *path);
 		Server( Server const & src );

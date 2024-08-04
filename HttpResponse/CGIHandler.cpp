@@ -66,8 +66,9 @@ int CGIHandler::handleCGI() {
 		if (wpid == 0){
 			sleep(1);
 			wpid = waitpid(pid, &status, WNOHANG);
-			if (wpid){
+			if (wpid == 0){
 				kill(pid, SIGKILL);
+				perror("waitpid");
 				return(500);
 			}
 		}
@@ -76,6 +77,7 @@ int CGIHandler::handleCGI() {
 			return (500);
 		}
 		if (WEXITSTATUS(status) != 0){
+			perror("wexitstatus");
 			return (500);
 		}
 		return (200);
