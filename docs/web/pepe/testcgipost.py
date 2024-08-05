@@ -1,46 +1,34 @@
 #!/usr/bin/env python3
+
 import os
 import sys
-import html
+import urllib.parse
 
-def main():
-    # Read the request body
-    content_length = int(os.environ.get('CONTENT_LENGTH', 0))
-    request_body = sys.stdin.read(content_length)
+print("Content-Type: text/html")
+print()
+print("<html><body>")
+print("<h1>CGI Script Output</h1>")
+print("<h2>Environment Variables</h2>")
+for key, value in sorted(os.environ.items()):
+    print(f"{key}: {value}<br>")
 
-    # Debugging output
-    print("Content-Type: text/html")
-    print()  # End of headers
-    print("<html><head><title>CGI Script Output</title></head><body>")
-    print("<h1>CGI Script Output</h1>")
-    print("<h2>Debugging Output</h2>")
-    print("<pre>")
-    print(f"CONTENT_LENGTH: {content_length}")
-    print(f"Request Body: {request_body}")
-    print("</pre>")
+print("<h2>Request Body</h2>")
+try:
+    content_length = int(os.environ.get('HTTP_CONTENT_LENGTH', 0))
+    input_data = sys.stdin.read(content_length)
+    print(f"<pre>{input_data}</pre>")
+except Exception as e:
+    print(f"Error reading input: {e}")
 
-    # Parse the request body
-    form_data = {}
-    if request_body:
-        for pair in request_body.split('&'):
-            key, value = pair.split('=')
-            form_data[key] = html.escape(value)
+print("<h2>Processed Form Data</h2>")
+try:
+    form_data = urllib.parse.parse_qs(input_data)
+    name = form_data.get("name", ["None"])[0]
+    email = form_data.get("email", ["None"])[0]
+    print(f"Name: {name}<br>")
+    print(f"Email: {email}<br>")
+except Exception as e:
+    print(f"Error processing form data: {e}")
 
-    # Print the HTML response
-    print("<h2>Environment Variables</h2>")
-    print("<pre>")
-    for key, value in os.environ.items():
-        print(f"{key}: {value}")
-    print("</pre>")
-
-    # Print request body
-    print("<h2>Request Body</h2>")
-    print("<pre>")
-    for key, value in form_data.items():
-        print(f"{key}: {value}")
-    print("</pre>")
-
-    print("</body></html>")
-
-if __name__ == "__main__":
-    main()
+print("</body></html>")
+#fp=sys.stdin, environ=os.environ, keep_blank_values=True

@@ -44,34 +44,44 @@ CGIHandler::~CGIHandler() {
 int CGIHandler::handleCGI(std::string requestBody) {
 
 	int		pfd[2];
-	int		pfd_in[2];
+	FILE	*filein = tmpfile();
+	long	fdin = fileno(filein);
+	int 	savedSTDIn = dup(STDIN_FILENO);
 	pid_t	pid;
 
-	if (pipe(pfd) == -1 || pipe(pfd_in) == -1)
+	int written = write(fdin, requestBody.c_str(), requestBody.size());
+
+	std::cout << "written: " << written << std::endl ;
+	if (written == -1){
+		perror("write");
+		fclose(filein);
+		return 500;
+	}
+	lseek(fdin, 0, SEEK_SET);
+
+	if (pipe(pfd) == -1)
 		return 500;
 	if ((pid = fork()) == -1)
-		return (close(pfd[0]), close(pfd[1]), close(pfd_in[0]), close(pfd_in[1]), 500);
+		return (close(pfd[0]), close(pfd[1]),fclose(filein), 500);
 	if (pid == 0) {
 		close(pfd[0]);
-		close(pfd_in[1]);
-
-		if (dup2(pfd[1], STDOUT_FILENO) == -1) 
-			return (close(pfd[1]), close(pfd_in[0]), 500);
+		if (dup2(fdin, STDIN_FILENO) == -1)
+			return (close(pfd[1]), close(fdin), 500);
+		close(fdin);
+		if (dup2(pfd[1], STDOUT_FILENO) == -1){
+			return (close(pfd[1]), 500);
+		} 
 		close(pfd[1]);
-		if (dup2(pfd_in[0], STDIN_FILENO) == -1)
-			return (close(pfd_in[0]), 500);
-		close(pfd_in[0]);
-
 		execve(_cgiPath, _argv, _envp);
 		perror("execve");
 		exit(1);
 	}
 	else {
+		close (fdin);
+		dup2(savedSTDIn, STDIN_FILENO);
+		fclose(filein);
+		close(savedSTDIn);
 		close(pfd[1]);
-		close(pfd_in[0]);
-		write(pfd_in[1], requestBody.c_str(), requestBody.size());
-		close(pfd_in[1]);
-
 		this->fd = pfd[0];
 		int status;
 		int wpid = waitpid(pid,&status,WNOHANG);
@@ -98,39 +108,72 @@ int CGIHandler::handleCGI(std::string requestBody) {
 
 // Cookie header Example-> Cookie: yummy_cookie=choco; tasty_cookie=strawberry
 char **	CGIHandler::initEnvironment(Response &response) {
-	if (response._headers.find("Cookie") == response._headers.end()) {
-		return NULL;
-	}
-	std::string cookieHeader = response._headers["Cookie"];
-	std::vector<std::string> cookies;
-	size_t pos = 0;
-	size_t end;
+	// if (response._headers.find("Cookie") == response._headers.end()) {
+	// 	return NULL;
+	// }
+	// std::string cookieHeader = response._headers["Cookie"];
+	// std::vector<std::string> cookies;
+	// size_t pos = 0;
+	// size_t end;
 
-	while ((end = cookieHeader.find(';', pos)) != std::string::npos) {
-		std::string cookie = cookieHeader.substr(pos, end - pos);
-		pos = end + 1;
-		// Trim whitespace
-		size_t start = cookie.find_first_not_of(" \t");
-		size_t last = cookie.find_last_not_of(" \t");
-		if (start != std::string::npos && last != std::string::npos) {
-			cookie = cookie.substr(start, last - start + 1);
-		}
-		cookies.push_back(cookie);
-	}
-	// Last cookie (or only cookie if no ';')
-	std::string lastCookie = cookieHeader.substr(pos);
-	size_t start = lastCookie.find_first_not_of(" \t");
-	size_t last = lastCookie.find_last_not_of(" \t");
-	if (start != std::string::npos && last != std::string::npos) {
-		lastCookie = lastCookie.substr(start, last - start + 1);
-	}
-	cookies.push_back(lastCookie);
+	// while ((end = cookieHeader.find(';', pos)) != std::string::npos) {
+	// 	std::string cookie = cookieHeader.substr(pos, end - pos);
+	// 	pos = end + 1;
+	// 	// Trim whitespace
+	// 	size_t start = cookie.find_first_not_of(" \t");
+	// 	size_t last = cookie.find_last_not_of(" \t");
+	// 	if (start != std::string::npos && last != std::string::npos) {
+	// 		cookie = cookie.substr(start, last - start + 1);
+	// 	}
+	// 	cookies.push_back(cookie);
+	// }
+	// // Last cookie (or only cookie if no ';')
+	// std::string lastCookie = cookieHeader.substr(pos);
+	// size_t start = lastCookie.find_first_not_of(" \t");
+	// size_t last = lastCookie.find_last_not_of(" \t");
+	// if (start != std::string::npos && last != std::string::npos) {
+	// 	lastCookie = lastCookie.substr(start, last - start + 1);
+	// }
+	// cookies.push_back(lastCookie);
 
-	char** cookie_env = new char*[cookies.size() + 1];
-	for (size_t i = 0; i < cookies.size(); ++i) {
-		cookie_env[i] = strdup(cookies[i].c_str());
-	}
-	cookie_env[cookies.size()] = NULL; // Null-terminate the array
+	// char** cookie_env = new char*[cookies.size() + 1];
+	// for (size_t i = 0; i < cookies.size(); ++i) {
+	// 	cookie_env[i] = strdup(cookies[i].c_str());
+	// }
+	// cookie_env[cookies.size()] = NULL; // Null-terminate the array
 
-	return cookie_env;
+	// return cookie_env;
+    if (response._headers.empty()) {
+        return NULL;
+    }
+
+    std::vector<std::string> env_vars;
+    std::map<std::string, std::string>::iterator it;
+    for (it = response._headers.begin(); it != response._headers.end(); ++it) {
+        std::string env_name = transformHeaderName(it->first);
+        std::string env_value = env_name + "=" + it->second;
+        env_vars.push_back(env_value);
+    }
+
+    char** env_array = new char*[env_vars.size() + 1];
+    for (size_t i = 0; i < env_vars.size(); ++i) {
+        env_array[i] = strdup(env_vars[i].c_str());
+    }
+    env_array[env_vars.size()] = NULL; // Null-terminate the array
+
+    return env_array;
+
+}
+
+std::string CGIHandler::transformHeaderName(const std::string &header_name) {
+    std::string result = "HTTP_";
+    for (size_t i = 0; i < header_name.size(); ++i) {
+        char c = header_name[i];
+        if (c == '-') {
+            result += '_';
+        } else {
+            result += std::toupper(c);
+        }
+    }
+    return result;
 }

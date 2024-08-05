@@ -16,4 +16,5 @@ class CGIHandler {
 		char **	_envp;
 
 		char ** initEnvironment(Response &response);
+		std::string transformHeaderName(const std::string &header_name);
 };
