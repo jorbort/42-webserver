@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <algorithm>
 #include "../Includes/Logger.hpp"
+#include <sstream>
 
 Response::Response(HttpRequest &request, ServerConfigs *server) {
 	this->method = getMethod(request._method);
@@ -220,10 +221,14 @@ void	Response::parseRequestBody(const std::vector<char> &rqBody) {
 	_requestContent[_requestContentLength] = '\0';
 }
 
-std::string addCookieHeader(std::string cookie){
-	std::string header = "Set-Cookie: ";
-	while (header << getline(cookie, ";")){
-		header += "\r\nSet-Cookie: ";
+std::string Response::addCookieHeader(std::string cookie){
+	std::string header = "";
+	std::istringstream buff(cookie);
+	std::string segment;
+	while ( std::getline(buff, segment, ';')){
+		header += "Set-Cookie: ";
+		header += segment;
+		header += "\r\n";
 	}
 	std::cout << "header: " << header << std::endl;
 	return header;
