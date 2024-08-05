@@ -36,7 +36,8 @@ CGIHandler::~CGIHandler() {
 	i = 0;
 	while (_envp != NULL && _envp[i] != NULL)
 		free (_envp[i++]);
-	free (_envp);
+	if(_envp)
+		delete []_envp;
 	close(fd);
 }
 
