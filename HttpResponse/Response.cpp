@@ -88,6 +88,9 @@ std::string	Response::createResponse() {
 		response += addContentLengthHeader(this->_contentLength);
 		if(_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
 			response += connectionKeepAlive();
+		if(_headers.find("Cookie") != _headers.end()){
+			response += addCookieHeader(_headers["Cookie"]);
+		}
 		response += "\r\n";
 		response += this->_body;
 		return response;
@@ -113,6 +116,9 @@ std::string	Response::createResponse() {
 		response += addContentLengthHeader(this->_contentLength);
 		if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
 			response += connectionKeepAlive();
+		if(_headers.find("Cookie") != _headers.end()){
+			response += addCookieHeader(_headers["Cookie"]);
+		}
 		response += "\r\n";
 		response += this->_body;
 		return response;
@@ -130,8 +136,12 @@ std::string	Response::createResponse() {
 		response += addDateHeader();
 		response += addContentTypeHeader(HTML);
 		response += addContentLengthHeader(this->_contentLength);
-		if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
+		if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive"){
 			response += connectionKeepAlive();
+		}
+		if(_headers.find("Cookie") != _headers.end()){
+			response += addCookieHeader(_headers["Cookie"]);
+		}
 		response += "\r\n";
 		response += this->_body;
 		return response;
@@ -208,6 +218,15 @@ void	Response::parseRequestBody(const std::vector<char> &rqBody) {
 	for (int i = 0; i < _requestContentLength; i++)
 		_requestContent[i] = rqBody[i];
 	_requestContent[_requestContentLength] = '\0';
+}
+
+std::string addCookieHeader(std::string cookie){
+	std::string header = "Set-Cookie: ";
+	while (header << getline(cookie, ";")){
+		header += "\r\nSet-Cookie: ";
+	}
+	std::cout << "header: " << header << std::endl;
+	return header;
 }
 
 void	Response::setDefaultErrorBody() {

@@ -127,7 +127,6 @@ char **	CGIHandler::initEnvironment(Response &response) {
 
 	char** cookie_env = new char*[cookies.size() + 1];
 	for (size_t i = 0; i < cookies.size(); ++i) {
-		std::cout << cookies[i] << std::endl;
 		cookie_env[i] = strdup(cookies[i].c_str());
 	}
 	cookie_env[cookies.size()] = NULL; // Null-terminate the array
