@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
+
 import cgi
+import cgitb
+import os
 
-print("Content-Type: text/html\n")
-print("<html><head><title>CGI Example</title></head>")
-print("<body>")
-print("<h1>CGI Script Output</h1>")
+# Enable debugging
+cgitb.enable()
 
+print("Content-Type: text/html")    # HTML is following
+print()                             # blank line, end of headers
+
+# Parse form data
 form = cgi.FieldStorage()
-if form:
-    for key in form.keys():
-        print(f"<p>{key}: {form.getvalue(key)}</p>")
-else:
-    print("<p>No parameters were passed.</p>")
 
-print("</body></html>")
+# Retrieve form fields
+name = form.getvalue('name')
+email = form.getvalue('email')
+
+# Output the form data
+print("<html>")
+print("<head>")
+print("<title>CGI Form Data</title>")
+print("</head>")
+print("<body>")
+print("<h1>Form Data Received</h1>")
+print(f"<p>Name: {name}</p>")
+print(f"<p>Email: {email}</p>")
+print("</body>")
+print("</html>")

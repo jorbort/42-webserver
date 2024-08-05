@@ -40,26 +40,37 @@ CGIHandler::~CGIHandler() {
 	close(fd);
 }
 
-int CGIHandler::handleCGI() {
+int CGIHandler::handleCGI(std::string requestBody) {
 
 	int		pfd[2];
+	int		pfd_in[2];
 	pid_t	pid;
 
-	if (pipe(pfd) == -1)
+	if (pipe(pfd) == -1 || pipe(pfd_in) == -1)
 		return 500;
 	if ((pid = fork()) == -1)
-		return (close(pfd[0]), close(pfd[1]), 500);
+		return (close(pfd[0]), close(pfd[1]), close(pfd_in[0]), close(pfd_in[1]), 500);
 	if (pid == 0) {
 		close(pfd[0]);
+		close(pfd_in[1]);
+
 		if (dup2(pfd[1], STDOUT_FILENO) == -1) 
-			return (close(pfd[1]), 500);
+			return (close(pfd[1]), close(pfd_in[0]), 500);
 		close(pfd[1]);
+		if (dup2(pfd_in[0], STDIN_FILENO) == -1)
+			return (close(pfd_in[0]), 500);
+		close(pfd_in[0]);
+
 		execve(_cgiPath, _argv, _envp);
 		perror("execve");
 		exit(1);
 	}
 	else {
 		close(pfd[1]);
+		close(pfd_in[0]);
+		write(pfd_in[1], requestBody.c_str(), requestBody.size());
+		close(pfd_in[1]);
+
 		this->fd = pfd[0];
 		int status;
 		int wpid = waitpid(pid,&status,WNOHANG);

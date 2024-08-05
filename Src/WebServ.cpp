@@ -352,6 +352,7 @@ void Server::RunServer(void)
 					HttpRequestParser Request_parser;
 					Request_parser.parseRequest(request, requestString, requestSize);
 					size_t serverIndex = getServerIndex(events[n].data.fd);
+					std::cout << requestString << std::endl;
 					Response response(request, conf._servers[serverIndex]);
 					std::string response_str = response.createResponse();
 					if(response._headers.find("Connection") != response._headers.end() && response._headers["Connection"] == "close")

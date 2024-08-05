@@ -67,7 +67,8 @@ std::string	Response::createResponse() {
 		}
 		this->_isCGI = true;
 		this->_CGIhandler = new CGIHandler(*this);
-		if ((this->_statusCode = this->_CGIhandler->handleCGI()) != 200){
+		std::string body(_requestContent);
+		if ((this->_statusCode = this->_CGIhandler->handleCGI(body)) != 200){
 			return errorResponse();
 		}
 	}
@@ -206,6 +207,7 @@ void	Response::parseRequestBody(const std::vector<char> &rqBody) {
 	_requestContentLength = rqBody.size();
 	for (int i = 0; i < _requestContentLength; i++)
 		_requestContent[i] = rqBody[i];
+	_requestContent[_requestContentLength] = '\0';
 }
 
 void	Response::setDefaultErrorBody() {
