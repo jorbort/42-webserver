@@ -332,8 +332,33 @@ bool	Response::isURIAcceptable(const char *uri) {
 	}
 	std::string path_str(uri);
     std::string dir = getDirName(path_str);
-	this->_statusCode = 200;
-	return true;
+	std::cout << dir << std::endl;
+	if (method == GET){
+		if (isUriInServer(dir.c_str())){
+			if (isMethodAllowed("GET", dir)){
+				this->_statusCode = 200;
+				return true;
+			}
+		}
+	}
+	else if (method == POST){
+		if (isUriInServer(dir.c_str())){
+			if (isMethodAllowed("POST", dir)){
+				this->_statusCode = 200;
+				return true;
+			}
+		}
+	}
+	else if (method == DELETE){
+		if (isUriInServer(dir.c_str())){
+			if (isMethodAllowed("DELETE", dir)){
+				this->_statusCode = 200;
+				return true;
+			}
+		}
+	}
+	this->_statusCode = 403;
+	return false;
 }
 
 bool Response::isAutoIndex(std::string location){
