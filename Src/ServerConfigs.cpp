@@ -131,32 +131,31 @@ void ServerConfigs::addErrorPage(const std::string &errors)
 
 void ServerConfigs::setBodySize(const std::string &number)
 {
-	long num;
-	int mult;
-	if (number.length() > 10)
-		throw std::invalid_argument("body size is to big max size up to 10 digit numbers");
-	bool isChar = number.find_first_of("MmgGkK") != std::string::npos ? true :false;
-	if(isChar)
-	{
-		if (number[number.size() -1] == 'M' || number[number.size() -1] =='m' ){
-			if (number.size() > 4)
-				throw std::invalid_argument("body size is to big max size is 999 Megabytes");
-			mult = 1048576;
-		}
-		if (number[number.size()-1] == 'G' || number[number.size() -1] == 'g')
-			throw std::invalid_argument("body size is to big max size is 999 Megabytes");
-		if (number[number.size()-1] == 'K' || number[number.size() -1] == 'k'){
-			if (number.size() > 7)
-				throw std::invalid_argument("body size is to big max size is 999 Megabytes");
-			mult =  1024;
-		}
-		num = mult * std::atoi(number.substr(0, number.size()).c_str());
-	}
-	else
-	{
-		num = std::atoi(number.substr(0, number.size()).c_str());
-	}
-	this->clientMaxBodySize = num;
+        long num;
+        long mult;
+
+        if (number.find_first_not_of("0123456789MmGgKk") != std::string::npos)
+                throw std::invalid_argument("invalid body size argument");
+        bool isChar = number.find_first_of("MmGgKk") != std::string::npos ? true :false;
+        if(isChar)
+        {
+                if (number[number.size() -1] == 'M' || number[number.size() -1] =='m' )
+                        mult = 1048576;
+                else if (number[number.size()-1] == 'G' || number[number.size() -1] == 'g')
+                        mult = 1073741824;
+                else if (number[number.size()-1] == 'K' || number[number.size() -1] == 'k')
+                        mult =  1024;
+                else
+                        throw std::invalid_argument("invalid body size argument");
+                num = mult * std::atol(number.substr(0, number.size()).c_str());
+        }
+        else
+        {
+                num = std::atoi(number.substr(0, number.size()).c_str());
+        }
+        if (num > 5368709120)
+                throw std::invalid_argument("body size is to big, max size up to 5G");
+        this->clientMaxBodySize = num;
 }
 
 void ServerConfigs::setRoot(const std::string &root)
