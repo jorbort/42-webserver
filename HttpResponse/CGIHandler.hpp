@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 class Response;
 
@@ -17,4 +18,5 @@ class CGIHandler {
 
 		char ** initEnvironment(Response &response);
 		std::string transformHeaderName(const std::string &header_name);
+		char * selectCGIBIN(char *path, std::vector<std::string> &cgipaths);
 };

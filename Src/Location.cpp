@@ -89,6 +89,10 @@ void Location::addCgiPath(const std::string &cgi)
     	}
 		this->cgiPath.push_back(value);
 	}
+	// std::vector<std::string>::iterator it = this->cgiPath.begin();
+	// for(; it != this->cgiPath.end(); it++){
+	// 	std::cout << *it <<std::endl;
+	// }
 }
 
 void Location::setCgiExtension(const std::string &ext)

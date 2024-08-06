@@ -6,23 +6,132 @@
 #include <cstdlib>
 #include <signal.h>
 #include <sys/wait.h>
+#include <algorithm>
+
 
 CGIHandler::CGIHandler(Response &response) {
-	//falta tomar el cgi-bin del config file
-	if (strcmp(response.extension, "sh") == 0)
-		_cgiPath = strdup("/bin/bash");
-	else if (strcmp(response.extension, "py") == 0)
-		_cgiPath = strdup("/usr/bin/python3");
-	else {
-		perror("execve");
-		exit(1);
+	_cgiPath = selectCGIBIN(response.extension, response.server->getLocation("./cgi-bin")->cgiPath);
+	if (_cgiPath == NULL){
+		perror("cgipath");
+		throw std::runtime_error("CGIHandler: CGI path not found");
 	}
 	_argv = (char **)malloc(sizeof(char *) * 3);
 	_argv[0] = strdup(_cgiPath);
 	_argv[1] = strdup(response.uri);
 	_argv[2] = NULL;
-	_envp = initEnvironment(response);//todo necesitamos implmentar cookies
+	_envp = initEnvironment(response);
 	fd = -1;
+}
+
+char *CGIHandler::selectCGIBIN(char *ext, std::vector<std::string> &cgiPaths){
+	std::string extension = ext;
+	std::vector<std::string>::iterator it = cgiPaths.begin();
+	for(; it != cgiPaths.end(); it++){
+		std::cout << *it <<std::endl;
+	}
+	std::cout << "extension: " << extension << std::endl;
+	std::vector<std::string> possibleCGI;
+    possibleCGI.push_back("pl");
+    possibleCGI.push_back("py");
+    possibleCGI.push_back("sh");
+    possibleCGI.push_back("exe");
+    possibleCGI.push_back("php");
+    possibleCGI.push_back("rb");
+    possibleCGI.push_back("tcl");
+	possibleCGI.push_back("js");
+	size_t i = 0;
+	while (possibleCGI.size() > i){
+		if (extension == possibleCGI[i]){
+			break;
+		}
+		i++;
+	}
+	std::cout << "i: " << i << std::endl;
+	switch (i){
+		case 0:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/usr/bin/perl");
+			if (itv != cgiPaths.end()){
+				std::string perl = *itv;
+				return strdup(perl.c_str());
+			}
+			else{
+				return NULL;
+			}	
+		}
+		case 1:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/usr/bin/python3");
+			if (itv != cgiPaths.end()){
+				std::string python = *itv;
+				return strdup(python.c_str());
+			}
+			else{
+				return NULL;
+			}
+		}
+		case 2:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/bin/bash");
+			if (itv != cgiPaths.end()){
+				std::string bash = *itv;
+				return strdup(bash.c_str());
+			}
+			else{
+				return NULL;
+			}
+		}
+		case 3:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "exe");
+			if (itv != cgiPaths.end()){
+				std::string exe = *itv;
+				return strdup(exe.c_str());
+			}
+			else{
+				return NULL;
+			}
+		}
+		case 4:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/usr/bin/php");
+			if (itv != cgiPaths.end()){
+				std::string php = *itv;
+				return strdup(php.c_str());
+			}
+			else{
+				return NULL;
+			}
+		}
+		case 5:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/usr/bin/ruby");
+			if (itv != cgiPaths.end()){
+				std::string ruby = *itv;
+				return strdup(ruby.c_str());
+			}
+			else{
+				return NULL;
+			}
+		}
+		case 6:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/usr/bin/tclsh");
+			if (itv != cgiPaths.end()){
+				std::string tcl = *itv;
+				return strdup(tcl.c_str());
+			}
+			else{
+				return NULL;
+			}
+		}
+		case 7:{
+			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/usr/bin/node");
+			if (itv != cgiPaths.end()){
+				std::string node = *itv;
+				return strdup(node.c_str());
+			}
+			else{
+				return NULL;
+			}
+		}
+		default:
+			return NULL;
+	}
+	
 }
 
 CGIHandler::~CGIHandler() {
@@ -51,7 +160,6 @@ int CGIHandler::handleCGI(std::string requestBody) {
 
 	int written = write(fdin, requestBody.c_str(), requestBody.size());
 
-	std::cout << "written: " << written << std::endl ;
 	if (written == -1){
 		perror("write");
 		fclose(filein);
@@ -106,7 +214,6 @@ int CGIHandler::handleCGI(std::string requestBody) {
 	}
 }
 
-// Cookie header Example-> Cookie: yummy_cookie=choco; tasty_cookie=strawberry
 char **	CGIHandler::initEnvironment(Response &response) {
 	// if (response._headers.find("Cookie") == response._headers.end()) {
 	// 	return NULL;

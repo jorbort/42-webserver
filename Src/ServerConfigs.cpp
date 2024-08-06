@@ -134,14 +134,14 @@ void ServerConfigs::setBodySize(const std::string &number)
 	long num;
 	int mult;
 	if (number.length() > 10)
-		throw std::invalid_argument("body size is to big max size is 10M bytes");
+		throw std::invalid_argument("body size is to big max size up to 10 digit numbers");
 	bool isChar = number.find_first_of("MmgGkK") != std::string::npos ? true :false;
 	if(isChar)
 	{
 		if (number[number.size() -1] == 'M' || number[number.size() -1] =='m' )
 			mult = 1048576;
 		if (number[number.size()-1] == 'G' || number[number.size() -1] == 'g')
-			throw std::invalid_argument("body size is to big max size is 10M bytes");
+			throw std::invalid_argument("body size is to big max size is 999 Megabytes");
 		if (number[number.size()-1] == 'K' || number[number.size() -1] == 'k')
 			mult =  1024;
 		num = mult * std::atoi(number.substr(0, number.size()).c_str());

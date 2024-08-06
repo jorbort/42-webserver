@@ -67,7 +67,13 @@ std::string	Response::createResponse() {
 			return errorResponse();
 		}
 		this->_isCGI = true;
-		this->_CGIhandler = new CGIHandler(*this);
+		try{
+			this->_CGIhandler = new CGIHandler(*this);
+		}
+		catch(const std::exception &e){
+			this->_statusCode = 500;
+			return errorResponse();
+		}
 		std::string body(_requestContent);
 		if ((this->_statusCode = this->_CGIhandler->handleCGI(body)) != 200){
 			return errorResponse();
@@ -230,7 +236,6 @@ std::string Response::addCookieHeader(std::string cookie){
 		header += segment;
 		header += "\r\n";
 	}
-	std::cout << "header: " << header << std::endl;
 	return header;
 }
 
