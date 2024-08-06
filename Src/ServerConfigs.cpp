@@ -151,7 +151,7 @@ void ServerConfigs::setBodySize(const std::string &number)
         }
         else
         {
-                num = std::atoi(number.substr(0, number.size()).c_str());
+                num = std::atol(number.substr(0, number.size()).c_str());
         }
         if (num > 5368709120)
                 throw std::invalid_argument("body size is to big, max size up to 5G");
