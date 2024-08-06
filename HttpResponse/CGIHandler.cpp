@@ -26,10 +26,6 @@ CGIHandler::CGIHandler(Response &response) {
 char *CGIHandler::selectCGIBIN(char *ext, std::vector<std::string> &cgiPaths){
 	std::string extension = ext;
 	std::vector<std::string>::iterator it = cgiPaths.begin();
-	for(; it != cgiPaths.end(); it++){
-		std::cout << *it <<std::endl;
-	}
-	std::cout << "extension: " << extension << std::endl;
 	std::vector<std::string> possibleCGI;
     possibleCGI.push_back("pl");
     possibleCGI.push_back("py");
@@ -46,7 +42,6 @@ char *CGIHandler::selectCGIBIN(char *ext, std::vector<std::string> &cgiPaths){
 		}
 		i++;
 	}
-	std::cout << "i: " << i << std::endl;
 	switch (i){
 		case 0:{
 			std::vector<std::string>::iterator itv = std::find(cgiPaths.begin(), cgiPaths.end(), "/usr/bin/perl");

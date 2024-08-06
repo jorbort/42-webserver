@@ -31,7 +31,7 @@ Response::~Response() {
 }
 
 std::string	Response::createResponse() {
-	if(this->server->getClientMaxBodySize() < this->_contentLength){
+	if(this->server->getClientMaxBodySize() < this->_requestContentLength){
 		this->_statusCode = 413;
 		this->_body = readBody(this->getStatusPage().c_str());
 		std::string	response;
@@ -42,6 +42,8 @@ std::string	Response::createResponse() {
 		response += addContentLengthHeader(this->_contentLength);
 		if (_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
 			response += connectionKeepAlive();
+		else if(_headers.find("Connection") != _headers.end() && _headers["Connection"] == "close")
+			response += "Connection: close\r\n";
 		response += "\r\n";
 		response += this->_body;
 		return response;
@@ -95,6 +97,10 @@ std::string	Response::createResponse() {
 		response += addContentLengthHeader(this->_contentLength);
 		if(_headers.find("Connection") != _headers.end() && _headers["Connection"] == "keep-alive")
 			response += connectionKeepAlive();
+		else if(_headers.find("Connection") != _headers.end() && _headers["Connection"] == "close")
+			response += "Connection: close\r\n";
+		else if(_headers.find("Connection") != _headers.end() && _headers["Connection"] == "close")
+			response += "Connection: close\r\n";
 		if(_headers.find("Cookie") != _headers.end()){
 			response += addCookieHeader(_headers["Cookie"]);
 		}
@@ -225,6 +231,7 @@ void	Response::parseRequestBody(const std::vector<char> &rqBody) {
 	for (int i = 0; i < _requestContentLength; i++)
 		_requestContent[i] = rqBody[i];
 	_requestContent[_requestContentLength] = '\0';
+
 }
 
 std::string Response::addCookieHeader(std::string cookie){
@@ -332,7 +339,6 @@ bool	Response::isURIAcceptable(const char *uri) {
 	}
 	std::string path_str(uri);
     std::string dir = getDirName(path_str);
-	std::cout << dir << std::endl;
 	if (method == GET){
 		if (isUriInServer(dir.c_str())){
 			if (isMethodAllowed("GET", dir)){
@@ -516,6 +522,7 @@ std::string	Response::readBody(const int &fd) {
 		body.append(buffer);
 		buffer[0] = '\0';
 	}
+	close(fd);
 	return body;
 }
 

@@ -37,7 +37,7 @@ CC              := c++
 CFLAGS          := -Wall -Werror -Wextra -g
 DEPFLAGS        := -MMD
 EXTRAFLAGS      := -std=c++98
-DEBUG           := -fsanitize=address
+DEBUG           := #-fsanitize=fd
 
 all             : $(OBJDIR) $(NAME)
 
@@ -71,7 +71,7 @@ fclean: clean
 re: fclean all
 
 debug-leaks:
-	valgrind -s --tool=memcheck --leak-check=full --track-origins=yes --show-leak-kinds=all ./$(NAME)
+	valgrind -s --tool=memcheck --leak-check=full --track-fds=yes --track-origins=yes --show-leak-kinds=all ./$(NAME)
 
 run:
 	@  ./$(NAME) config/test.conf

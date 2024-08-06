@@ -70,8 +70,11 @@ void Server::signalHandler(int signum){
 		{
 			close(serverInstance->conf._servers[i]->getSocket());
 		}
+		if (serverInstance->epoolFD != -1)
+			close(serverInstance->epoolFD);
 		if (serverInstance->requestString != NULL)
 			delete[] serverInstance->requestString;
+		serverInstance->~Server();
 		serverInstance = NULL;
 
 	}
@@ -86,7 +89,7 @@ Server::Server(char *path)
 	signal(SIGTSTP, Server::signalHandler);
 	signal(SIGTERM, Server::signalHandler);
 	requestString = NULL;
-
+	epoolFD = -1;
 	std::string arg = path;
     conf.setConfPath(arg);
 	try
@@ -136,8 +139,10 @@ void Server::acceptNewConnection(int fd,int epolFd, size_t serverIndex)
 	struct epoll_event event;
 	event.events = EPOLLIN;
 	event.data.fd = clientFd;
-	if (epoll_ctl(epolFd, EPOLL_CTL_ADD, clientFd, &event) == -1)
+	if (epoll_ctl(epolFd, EPOLL_CTL_ADD, clientFd, &event) == -1){
+		close(clientFd);
 		throw std::runtime_error("Error: epoll_ctl failed to add fd");
+	}
 	clientToServer[clientFd] = serverIndex;
 }
 
@@ -289,7 +294,7 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 		{
 			delete [] requestString;
 			requestString = NULL;
-			Logger::print("Error", "Error reading fomr client");
+			Logger::print("Error", "Error reading from client");
 			return -1;
 		}
 		totalBytesRead += bodySize;
@@ -301,6 +306,7 @@ ssize_t Server::readClientData(int clientFd, char *&requestString) {
 void Server::RunServer(void)
 {
 	int epollFd = epoll_create1(0);
+	this->epoolFD = epollFd;
 	if (epollFd < 0)
 		throw SocketException();
 	struct epoll_event event, events[MAX_EVENTS];
@@ -331,7 +337,13 @@ void Server::RunServer(void)
 						break;
 					}
 				}
-				acceptNewConnection(events[n].data.fd, epollFd, serverIndex);
+				try{
+					acceptNewConnection(events[n].data.fd, epollFd, serverIndex);
+				}
+				catch(std::exception &e)
+				{
+					std::cout << e.what() << std::endl;
+				}
 			}
 			else
 			{

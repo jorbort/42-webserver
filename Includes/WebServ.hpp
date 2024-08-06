@@ -25,6 +25,7 @@ class Server
 		int sfd;
 		std::map<int, size_t> clientToServer;
 	public:
+		int epoolFD;
 		bool keepAlive;
 		Server(void);
 		Server(char *path);
