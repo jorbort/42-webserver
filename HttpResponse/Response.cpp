@@ -9,6 +9,7 @@
 #include "../Includes/Logger.hpp"
 #include <sstream>
 
+
 Response::Response(HttpRequest &request, ServerConfigs *server) {
 	this->method = getMethod(request._method);
 	this->uri = strdup(request._URI.c_str());
@@ -235,6 +236,7 @@ void	Response::parseRequestBody(const std::vector<char> &rqBody) {
 }
 
 std::string Response::addCookieHeader(std::string cookie){
+	
 	std::string header = "";
 	std::istringstream buff(cookie);
 	std::string segment;

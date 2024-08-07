@@ -25,7 +25,6 @@ CGIHandler::CGIHandler(Response &response) {
 
 char *CGIHandler::selectCGIBIN(char *ext, std::vector<std::string> &cgiPaths){
 	std::string extension = ext;
-	std::vector<std::string>::iterator it = cgiPaths.begin();
 	std::vector<std::string> possibleCGI;
     possibleCGI.push_back("pl");
     possibleCGI.push_back("py");

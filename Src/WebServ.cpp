@@ -369,7 +369,11 @@ void Server::RunServer(void)
 					std::string response_str = response.createResponse();
 					if(response._headers.find("Connection") != response._headers.end() && response._headers["Connection"] == "close")
 						keepAlive = false;
-					write(events[n].data.fd, response_str.c_str(),response_str.size());
+					if(write(events[n].data.fd, response_str.c_str(),response_str.size()) <= 0){
+						close(events[n].data.fd);
+						epoll_ctl(epollFd, EPOLL_CTL_DEL, events[n].data.fd, NULL);
+						clientToServer.erase(events[n].data.fd);
+					}
 				}
 				delete[] requestString;
 				requestString = NULL;
