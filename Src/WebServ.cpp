@@ -48,6 +48,8 @@ Server::Server(void)
 	std::string path = "config/default.conf";
 	serverInstance = this;
 	signal(SIGINT, Server::signalHandler);
+	signal(SIGTSTP, Server::signalHandler);
+	signal(SIGTERM, Server::signalHandler);
 	requestString = NULL;
 
     conf.setConfPath(path);

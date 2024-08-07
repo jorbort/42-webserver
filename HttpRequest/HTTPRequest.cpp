@@ -14,7 +14,11 @@
 
 HttpRequest::HttpRequest() : _ErrorCode(0), _RequestMethod(NONE), _URI_tcpPort(0), _chunked(0), _ContentLength(0) {}
 
-HttpRequest::~HttpRequest(){}
+HttpRequest::~HttpRequest(){
+	_headers.clear();
+	_URI_query.clear();
+	_body.clear();
+}
 
 int HttpRequest::getErrorCode() const{
 	return(_ErrorCode);

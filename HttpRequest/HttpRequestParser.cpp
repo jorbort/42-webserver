@@ -32,7 +32,9 @@ HttpRequestParser::HttpRequestParser(){
 	_RealHeaders.push_back("Transfer-Encoding");
 }
 
-HttpRequestParser::~HttpRequestParser(){}
+HttpRequestParser::~HttpRequestParser(){
+	_RealHeaders.clear();
+}
 
 void	HttpRequestParser::parseRequest(HttpRequest &request_class, char *original_str, size_t len){
 	std::string					line;
